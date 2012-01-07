@@ -33,6 +33,45 @@ piHEAP = function(n,A,no,Ao){
   }
 }
 
+piHEAPspecial = function(n,no){
+  ## Harte book Eq. 4.15 pg. 94
+  if(length(n) > 1){
+    sapply(1:length(n),function(k){
+      sum(sapply(n[k]:no, function(q) (1/(no+1)) / (q + 1)))
+    })
+  }  
+  else{
+    sum(sapply(n:no,function(q) (1/(no+1)) / (q + 1)))
+  }
+}
+
+piHEAP2 = function(n,A,no,Ao){
+  i = log2(Ao/A)
+  if(i == 1)
+    out = 1/(no+1)
+  else{
+    for(j in 2:i){
+      if(j == 2)
+        out = piHEAPspecial(n,no)
+      else
+        out = sum(sapply(n:no,function(q) out / (q+1)))
+    }
+  }  
+  return(out)
+}
+
+piHEAP3 = function(n,A,no,Ao){
+  i = log2(Ao/A)
+  if(i == 1)
+    out = 1/(no+1)
+  else{
+    A = A*2 
+    out = sum(sapply(n:no,function(q) piHEAP3(n,A,no,Ao) / (q + 1)))
+  }
+  return(out)
+}
+
+
 piNegBi = function(n,A,no,Ao,k=1){
   ## Harte book Eq. 4.16 pg. 95
   nbar = no*A/Ao
