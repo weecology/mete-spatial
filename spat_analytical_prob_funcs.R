@@ -11,7 +11,9 @@ g = function(no,Mo){
   factorial(Mo + no - 1) / (factorial(no) * factorial(Mo - 1))
 }
 
+
 piLap = function(n,A,no,Ao){
+  ## Generalized Laplace
   ## Harte book Eq. 4.11 pg. 93
   ## returns the probability that n individuals are located in a randomly
   ## chosen cell that is Mo times smaller than the area it is embedded within.
@@ -21,56 +23,15 @@ piLap = function(n,A,no,Ao){
 }
 
 piHEAP = function(n,A,no,Ao){
-  ## Harte book Eq. 4.15 pg. 94
-  i = log2(Ao/A)
-  if(length(n) > 1){
-    sapply(1:length(n),function(j){
-      sum(sapply(n[j]:no, function(q) piLap(q,Ao/2^(i-1),no,Ao) / (q + 1)))
-    })
-  }  
-  else{
-    sum(sapply(n:no,function(q) piLap(q,Ao/2^(i-1),no,Ao) / (q + 1)))
-  }
-}
-
-piHEAPspecial = function(n,no){
-  ## Harte book Eq. 4.15 pg. 94
-  if(length(n) > 1){
-    sapply(1:length(n),function(k){
-      sum(sapply(n[k]:no, function(q) (1/(no+1)) / (q + 1)))
-    })
-  }  
-  else{
-    sum(sapply(n:no,function(q) (1/(no+1)) / (q + 1)))
-  }
-}
-
-piHEAP2 = function(n,A,no,Ao){
-  i = log2(Ao/A)
-  if(i == 1)
-    out = 1/(no+1)
-  else{
-    for(j in 2:i){
-      if(j == 2)
-        out = piHEAPspecial(n,no)
-      else
-        out = sum(sapply(n:no,function(q) out / (q+1)))
-    }
-  }  
-  return(out)
-}
-
-piHEAP3 = function(n,A,no,Ao){
   i = log2(Ao/A)
   if(i == 1)
     out = 1/(no+1)
   else{
     A = A*2 
-    out = sum(sapply(n:no,function(q) piHEAP3(n,A,no,Ao) / (q + 1)))
+    out = sum(sapply(n:no,function(q) piHEAP(q,A,no,Ao) / (q + 1)))
   }
   return(out)
 }
-
 
 piNegBi = function(n,A,no,Ao,k=1){
   ## Harte book Eq. 4.16 pg. 95
@@ -106,4 +67,5 @@ piMETEiter = function(n,A,no,Ao){
     sum(sapply(n:no,function(q) piMETE(q,Ao/2^(i-1),no,Ao) / (q + 1)))
   }
 }
+
 
