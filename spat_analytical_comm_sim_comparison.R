@@ -7,23 +7,23 @@ source('spat_analytical_prob_funcs.R')
 
 ## generate some comparitive frequency distributions
 ## example from pg 96 fig 4.1
-pdf('analytical_prob_funcs.pdf',width=14,height=7)
+#pdf('analytical_prob_funcs.pdf',width=14,height=7)
 par(mfrow=c(1,2))
-no = 100
+no = 112
 n = 0:5
 Ao = 64
 A = 1
 out = matrix(NA,nrow=6,ncol=length(n))
 out[1,] = piBin(n,A,no,Ao)
 out[2,] = piLap(n,A,no,Ao)
-out[3,] = piHEAP(n,A,no,Ao)
+out[3,] = c(0.57472809658067414, 0.15558976660434137, 0.077363698402898418, 0.047001514587896545, 0.03158361878558593,0.022563113003141268)
+#out[3,] = sapply(n,function(x) piHEAP(x,A,no,Ao))
 out[4,]= piMETE(n,A,no,Ao)
 out[5,]= piMETEiter(n,A,no,Ao)
 out[6,] = piNegBi(n,A,no,Ao)
 
-
 plot(n,out[1,],ylim=range(out,na.rm=TRUE),type='n',ylab='Probabiliy',
-     main='No = 100, A = Ao/64')
+     main=paste('No = ',no,', A = Ao/',Ao,sep=''))
 for(i in 1:4)
   lines(n,out[i,],col=i,type='l',lwd=2)
 for(i in 5:6)
@@ -41,7 +41,7 @@ A = 1
 out = matrix(NA,nrow=6,ncol=length(n))
 out[1,] = piBin(n,A,no,Ao)
 out[2,] = piLap(n,A,no,Ao)
-out[3,] = piHEAP(n,A,no,Ao)
+out[3,] = sapply(n,function(x) piHEAP(x,A,no,Ao))
 out[4,]= piMETE(n,A,no,Ao)
 out[5,]= piMETEiter(n,A,no,Ao)
 out[6,] = piNegBi(n,A,no,Ao)
@@ -56,24 +56,18 @@ legend('topright',c('bin','lap','heap','mete','meteiter','negbin(k=1)'),col=1:6,
        lwd=c(rep(3,4),NA,NA),lty=c(rep(1,4),NA,NA),pch=c(rep(NA,4),19,19),cex=2,bty='n')
 ## mete and negbi are equivalent
 ## heap and meteiter are equivalent
-dev.off()
+#dev.off()
 
-S = round(10^seq(log10(10),log10(100),length.out=20))
-N = round(10^seq(log10(120),log10(5e5),length.out=20))
+comms = read.csv('./comms/simulated_comms_S1_N112_C500_B7_grid.txt',header=TRUE)
+comms = as.matrix(comms)
+## reshape for ease of analysis
+Ncomms = 500
+Nquads = 64
 
-comms = read.csv(paste('./comms/simulated_comms_S',S[1],'_N',N[1],
-                '_C200_B13_grid.txt',sep=''),header=TRUE)
-comm1 = as.matrix(comms[comms[,1]==1,-(1:3)])
-filler = matrix(rep(1:max(comm1),each=ncol(comm1)),nrow=max(comm1),byrow=TRUE)
-cnts = apply(rbind(comm1,filler),2,table)-1
-freqs = cnts/nrow(comm1)
-no = apply(comm1,2,sum)
-n = 1:max(comm1)
-Ao = nrow(comm1)
+commMat = matrix(comms[,4],ncol=Ncomms,nrow=Nquads)
+filler = matrix(rep(0:max(commMat),each=ncol(commMat)),nrow=max(commMat)+1,byrow=TRUE)
+cnts = apply(rbind(commMat,filler),2,table) - 1
+freqs = cnts/nrow(commMat)
+freqAvg = apply(freqs,1,mean)
 
-i = 4
-plot(n,freqs[-1,i],log='y')
-lines(n,piMETE(n,1,no[i],Ao),col='red')
-
-
-
+lines(0:5,freqAvg[1:6],type='o') ## Matches perfectly with HEAP from Fig 4.1
