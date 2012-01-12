@@ -3,7 +3,7 @@
 ## in the BCI census 7 which was surveyed in 2010 for each spatial
 ## scale of interest
 ## Metadata: bci50ha.doc
-setwd('/home/danmcglinn/maxent')
+setwd('/home/danmcglinn/maxent/spat')
 
 library(vegan)
 library(danspkg)

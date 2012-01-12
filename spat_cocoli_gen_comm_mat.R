@@ -9,7 +9,8 @@
 
 ## read in data from the 1998 census (i.e. census 3)
 
-dat = read.csv('/home/danmcglinn/CTFSplots/cocoli/cocoli_census3_filtered.csv',header=TRUE)
+dat = read.csv('/home/danmcglinn/CTFSplots/cocoli/cocoli_census3_filtered.csv',
+               header=TRUE)
 
 uniSpeciesNames = as.character(sort(unique(dat$spcode)))
 dat$spnum = match(dat$spcode,uniSpeciesNames)

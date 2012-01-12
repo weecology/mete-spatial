@@ -1,4 +1,4 @@
-setwd('/home/danmcglinn/maxent')
+setwd('/home/danmcglinn/maxent/spat')
 
 source('spat_sim_vario_func.R')
 

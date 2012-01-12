@@ -2,7 +2,7 @@
 
 pdf('grid_vs_transect.pdf',width=14,height=14)
 
-setwd('/home/danmcglinn/maxent')
+setwd('/home/danmcglinn/maxent/spat')
 ##varWithin
 
 load('./varWithin/varWithin_S100_N10000_C200_B11_transect_binary.Rdata')

@@ -1,7 +1,7 @@
 ## Purpose: to analyze Green et al's serpentine dataset
 ## data here: http://socrates.berkeley.edu/~hartelab/articles/serpentine_data.xls
 ## metadata here: http://socrates.berkeley.edu/~hartelab/MaxEnt.html
-setwd('/home/danmcglinn/maxent')
+setwd('/home/danmcglinn/maxent/spat')
 
 library(vegan)
 library(danspkg)

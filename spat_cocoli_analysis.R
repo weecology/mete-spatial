@@ -3,7 +3,7 @@
 ## in the cocoli census 3 which was surveyed in 1998 for each spatial
 ## scale of interest
 ## Metadata: cocoli_files.doc
-setwd('/home/danmcglinn/maxent')
+setwd('/home/danmcglinn/maxent/spat')
 
 library(vegan)
 library(danspkg)
