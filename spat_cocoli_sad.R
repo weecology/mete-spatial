@@ -12,7 +12,7 @@ sadAbs2 = apply(comms[comms[,1] == grains[7],-(1:3)],2,sum)
 
 ## drop species in each with abundances of zero
 sadAbs1 = sadAbs1[sadAbs1>0]
-sadAbs2 = sadAbs1[sadAbs2>0]
+sadAbs2 = sadAbs2[sadAbs2>0]
 
 write.table(matrix(sort(sadAbs1,dec=TRUE),nrow=1),
             file='./data/cocoli_sad_1.csv',sep=',',row.names=FALSE,
