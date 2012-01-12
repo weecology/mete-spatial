@@ -22,14 +22,28 @@ out[4,]= piMETE(n,A,no,Ao)
 out[5,]= piMETEiter(n,A,no,Ao)
 out[6,] = piNegBi(n,A,no,Ao)
 
+comms = read.csv('./comms/simulated_comms_S1_N112_C500_B7_grid.txt',header=TRUE)
+comms = as.matrix(comms)
+## reshape for ease of analysis
+Ncomms = 500
+Nquads = 64
+
+commMat = matrix(comms[,4],ncol=Ncomms,nrow=Nquads)
+filler = matrix(rep(0:max(commMat),each=ncol(commMat)),nrow=max(commMat)+1,byrow=TRUE)
+cnts = apply(rbind(commMat,filler),2,table) - 1
+freqs = cnts/nrow(commMat)
+freqAvg = apply(freqs,1,mean)
+
 plot(n,out[1,],ylim=range(out,na.rm=TRUE),type='n',ylab='Probabiliy',
      main=paste('No = ',no,', A = Ao/',Ao,sep=''))
 for(i in 1:4)
   lines(n,out[i,],col=i,type='l',lwd=2)
 for(i in 5:6)
- points(n,out[i,],col=i,pch=19,cex=1.5)
-legend('topright',c('bin','lap','heap','mete','meteiter','negbin(k=1)'),col=1:6,
-       lwd=c(rep(3,4),NA,NA),lty=c(rep(1,4),NA,NA),pch=c(rep(NA,4),19,19),cex=2,bty='n')
+  points(n,out[i,],col=i,pch=19,cex=1.5)
+points(0:5,freqAvg[1:6],cex=1.5) ## Matches perfectly with HEAP from Fig 4.1
+legend('topright',c('bin','lap','heap','mete','meteiter','negbin(k=1)','simulator'),
+       col=c(1:6,1),lwd=c(rep(3,4),rep(NA,3)),lty=c(rep(1,4),rep(NA,3)),
+       pch=c(rep(NA,4),19,19,1),cex=2,bty='n')
 ## lap, mete and negbi are equivalent
 ## heap and meteiter are equivalent
 
@@ -46,23 +60,11 @@ out[4,]= piMETE(n,A,no,Ao)
 out[5,]= piMETEiter(n,A,no,Ao)
 out[6,] = piNegBi(n,A,no,Ao)
 
-plot(n,out[1,],ylim=range(out,na.rm=TRUE),type='n',ylab='Probability',
-     main='No = 5, A = Ao/4')
-for(i in 1:4)
-  lines(n,out[i,],col=i,type='l',lwd=2)
-for(i in 5:6)
- points(n,out[i,],col=i,pch=19,cex=1.5)
-legend('topright',c('bin','lap','heap','mete','meteiter','negbin(k=1)'),col=1:6,
-       lwd=c(rep(3,4),NA,NA),lty=c(rep(1,4),NA,NA),pch=c(rep(NA,4),19,19),cex=2,bty='n')
-## mete and negbi are equivalent
-## heap and meteiter are equivalent
-#dev.off()
-
-comms = read.csv('./comms/simulated_comms_S1_N112_C500_B7_grid.txt',header=TRUE)
+comms = read.csv('./comms/simulated_comms_S1_N5_C500_B3_grid.txt',header=TRUE)
 comms = as.matrix(comms)
 ## reshape for ease of analysis
 Ncomms = 500
-Nquads = 64
+Nquads = 4
 
 commMat = matrix(comms[,4],ncol=Ncomms,nrow=Nquads)
 filler = matrix(rep(0:max(commMat),each=ncol(commMat)),nrow=max(commMat)+1,byrow=TRUE)
@@ -70,4 +72,18 @@ cnts = apply(rbind(commMat,filler),2,table) - 1
 freqs = cnts/nrow(commMat)
 freqAvg = apply(freqs,1,mean)
 
-lines(0:5,freqAvg[1:6],type='o') ## Matches perfectly with HEAP from Fig 4.1
+
+plot(n,out[1,],ylim=range(out,na.rm=TRUE),type='n',ylab='Probability',
+     main='No = 5, A = Ao/4')
+for(i in 1:4)
+  lines(n,out[i,],col=i,type='l',lwd=2)
+for(i in 5:6)
+ points(n,out[i,],col=i,pch=19,cex=1.5)
+points(0:5,freqAvg[1:6],cex=1.5) ## Matches perfectly with HEAP from Fig 4.1
+legend('topright',c('bin','lap','heap','mete','meteiter','negbin(k=1)','simulator'),
+       col=c(1:6,1),lwd=c(rep(3,4),rep(NA,3)),lty=c(rep(1,4),rep(NA,3)),
+       pch=c(rep(NA,4),19,19,1),cex=2,bty='n')
+## mete and negbi are equivalent
+## heap and meteiter are equivalent
+#dev.off()
+
