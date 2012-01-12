@@ -3,9 +3,9 @@
 ## which was surveyed in 1998 for each spatial scale of interest
 ## Metadata: cocoli_files.doc 
 ## There is a visual diagram of the Sherman plot in the following publication,
-## which is fairly close to the cocoli plot except for two 40 m strips 
+## which is fairly close to the Cocoli plot except for two 40 m strips 
 ## Condit, R. et al. 2004. Tropical forest dynamics across a rainfall gradient
-## and the impact of an El Niño dry season. Journal of Tropical Ecology, 20: 51-72.
+## and the impact of an El Nino dry season. Journal of Tropical Ecology, 20: 51-72.
 
 ## read in data from the 1998 census (i.e. census 3)
 
