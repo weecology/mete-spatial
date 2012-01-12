@@ -8,9 +8,30 @@ g = function(no,Mo){
   ## Harte book Eq. 4.10 pg. 93
   ## returns the number of ways no indistinguishable individuals can be 
   ## arranged into Mo cells
-  factorial(Mo + no - 1) / (factorial(no) * factorial(Mo - 1))
+  ## The algebraic form of the function is: 
+  ## factorial(Mo + no - 1) / (factorial(no) * factorial(Mo - 1))
+  ## But the following function makes numerical shortcuts so that fewer
+  ## terms must be multiplied together
+  num = 1
+  den = 1
+  termDiff = no - Mo
+  nDrop = ifelse(termDiff >= 0,termDiff + 1,0)
+  if(nDrop > 0){
+    for(i in 1:(no - nDrop)){
+      num = num * (no + Mo - i)
+    }  
+    den = factorial(no - nDrop)
+  }
+  else{
+    i = 0 
+    while(i < no){
+      num = num * (no + Mo - 1 - i)
+      i = i + 1
+    }
+    den = factorial(no)
+  }
+  return(num/den)
 }
-
 
 piLap = function(n,A,no,Ao){
   ## Generalized Laplace
@@ -18,8 +39,8 @@ piLap = function(n,A,no,Ao){
   ## returns the probability that n individuals are located in a randomly
   ## chosen cell that is Mo times smaller than the area it is embedded within.
   ## no is the total number of individuals in the larger area.
-  Mo = Ao / A
-  g(no - n, Mo - 1) / g(no, Mo)
+ Mo = Ao / A
+ sapply(n,function(x)g(no - x,Mo - 1) / g(no,Mo))
 }
 
 piHEAP = function(n,A,no,Ao){
@@ -52,20 +73,4 @@ piMETE = function(n,A,no,Ao){
     (nbar/(1+nbar))^n / (1+nbar)
   }
 }
-
-piMETEiter = function(n,A,no,Ao){
-  ## iterative METE approach, downscaling only
-  ## special case when A = Ao / 2 applies
-  ## Harge Book Eq. 7.51 pg. 159
-  i = log2(Ao/A)
-  if(length(n) > 1){
-    sapply(1:length(n),function(j){
-      sum(sapply(n[j]:no, function(q) piMETE(q,Ao/2^(i-1),no,Ao) / (q + 1)))
-    })
-  }  
-  else{
-    sum(sapply(n:no,function(q) piMETE(q,Ao/2^(i-1),no,Ao) / (q + 1)))
-  }
-}
-
 
