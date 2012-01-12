@@ -1,5 +1,5 @@
 ## spatial summaries
-setwd('/home/danmcglinn/maxent/trunk')
+setwd('/home/danmcglinn/maxent')
 
 ## var Within
 load('./varWithin/varWithin_S100_N10000_C200_B11_grid_binary.Rdata')

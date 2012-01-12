@@ -89,7 +89,7 @@ for(A in seq_along(quadLen)){
   }
 }
 
-write.csv(comms,file='/home/danmcglinn/maxent/trunk/data/cocoli_comms.csv',
+write.csv(comms,file='/home/danmcglinn/maxent/spat/data/cocoli_comms.csv',
           row.names=FALSE)
 save(comms,file='/home/danmcglinn/CTFSplots/cocoli/cocoli_comms_census3.Rdata')
 

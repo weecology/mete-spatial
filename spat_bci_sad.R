@@ -1,4 +1,4 @@
-setwd('/home/danmcglinn/maxent/trunk')
+setwd('/home/danmcglinn/maxent')
 
 ## read in comms file for the 2010 census (i.e., census7) of BCI
 comms = read.csv('./data/bci_comms.csv',header=TRUE)

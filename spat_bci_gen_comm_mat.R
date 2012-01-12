@@ -53,7 +53,7 @@ for(A in seq_along(quadLen)){
   }
 }
 
-write.csv(comms,file='/home/danmcglinn/maxent/trunk/data/bci_comms.csv',
+write.csv(comms,file='/home/danmcglinn/maxent/spat/data/bci_comms.csv',
           row.names=FALSE)
 save(comms,file='/home/danmcglinn/CTFSplots/BCI/bci_comms_census7.Rdata')
 
