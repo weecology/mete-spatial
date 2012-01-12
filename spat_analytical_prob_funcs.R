@@ -60,17 +60,3 @@ piNegBi = function(n,A,no,Ao,k=1){
   (factorial(n + k - 1) / (factorial(n)*factorial(k-1))) * (nbar / (k + nbar))^n * (k / (k+nbar))^k
 }
 
-piMETE = function(n,A,no,Ao){
-  ## special case when A = Ao / 2
-  ## Harge Book Eq. 7.51 pg. 159
-  ## approximation of pi when A << Ao
-  ## Harte book Eq. 7.53 pg. 160
-  if(Ao / A == 2){
-    1 / (1 + no) 
-  }
-  else{
-    nbar = no*A/Ao
-    (nbar/(1+nbar))^n / (1+nbar)
-  }
-}
-
