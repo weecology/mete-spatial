@@ -16,9 +16,9 @@ S= ncol(comms)-3
 par(mfrow=c(1,2))
 plot(1:S,sort(sadAvg[,1],dec=TRUE),ylim=range(sadAvg),log='y',type='n')
 for(i in seq_along(grains))
-  lines(1:S,sort(sadAvg[,i]+1,dec=TRUE),type='o',col=i)
+  lines(1:S,sort(sadAvg[,i],dec=TRUE),type='o',col=i)
 plot(1:S,sort(sadAvg[,1],dec=TRUE),ylim=range(sadAvg),log='xy',type='n')
 for(i in seq_along(grains))
-  lines(1:S,sort(sadAvg[,i]+1,dec=TRUE),type='o',col=i)
+  lines(1:S,sort(sadAvg[,i],dec=TRUE),type='o',col=i)
 
 
