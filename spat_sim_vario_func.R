@@ -1941,6 +1941,56 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
 }
 
 
+len = function(Nbisect){
+  2^floor(Nbisect/2) 
+}
+
+wid = function(Nbisect){
+  sapply(Nbisect,function(Nbisect){
+  if(Nbisect %% 2 == 0)
+   len(Nbisect)/2
+  else
+   len(Nbisect)
+  })
+}
+
+##3.19 ##
+'makeCommMat' = function(spnum,S,coords,quadLen,quadN,domain,grainSuffix=NULL)
+{ 
+  ## Output: 
+  ## A community matrix where each row is a differnet pixel on a grid.  
+  ## Arguments:
+  ## spnum : an integer specifying species id
+  ## S : the size of the species pool may be larger than the number of unique 
+  ##     spnum
+  ## coords : two column matrix (x,y) specifying the spatial coordinates
+  ## quadLen : the length on one edge of the square quadrat size for each grain
+  ## quadN : the number of quadrats at each spatial grain
+  ## domain : specifies the spatial domain of the area:  (xmin, xmax, ymin, ymax)
+  ## grainSuffix : if supplied the grain colmn will have this appended to it
+  ##               so that it is clear what community this cooresponds with
+  comms = matrix(NA,nrow=sum(quadN),ncol=S+3)
+  colnames(comms) = c('grain','x','y',paste('sp',1:S,sep=''))
+  irow = 1
+  for(A in seq_along(quadLen)){
+    xbreaks = seq(domain[1],domain[2],quadLen[A])
+    ybreaks = seq(domain[3],domain[4],quadLen[A]) 
+    for (x in 1:(length(xbreaks)-1)) {
+      for (y in 1:(length(ybreaks)-1)) {
+        inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x+1] & 
+                  ybreaks[y] <=  coords[,2] &  coords[,2] < ybreaks[y+1]   
+        if(!is.null(grainSuffix))
+          comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),grainSuffix,sep=''),x,y)
+        else
+          comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),sep=''),x,y)
+        comms[irow, -c(1:3)] = as.integer(table(c(spnum[inQuad],1:S)) - 1)
+        irow = irow + 1 
+      }
+    }
+  }
+  return(comms)
+}
+
 
 #####Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS#####
 
