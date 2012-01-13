@@ -7,6 +7,8 @@
 ## Condit, R. et al. 2004. Tropical forest dynamics across a rainfall gradient
 ## and the impact of an El Nino dry season. Journal of Tropical Ecology, 20: 51-72.
 
+source('/home/danmcglinn/maxent/spat/spat_sim_vario_func.R')
+
 ## read in data from the 1998 census (i.e. census 3)
 
 dat = read.csv('/home/danmcglinn/CTFSplots/cocoli/cocoli_census3_filtered.csv',
@@ -28,70 +30,23 @@ points(dat2$x,dat2$y,col='blue',pch='.')
 shortSide = 100
 longSide = 200
 
-len = function(Nbisect){
-  2^floor(Nbisect/2) 
-}
-
-wid = function(Nbisect){
-  sapply(Nbisect,function(Nbisect){
-  if(Nbisect %% 2 == 0)
-   len(Nbisect)/2
-  else
-   len(Nbisect)
-  })
-}
-
 ## for square quadrats the lengths are in meters defined here
-quadLen = round(shortSide/ wid(c(14,12,10,8,6,4)), 2)
-quadN = round(shortSide/quadLen) * round(longSide/quadLen)
+nPixels = wid(c(14,12,10,8,6,4))
+quadLen = shortSide/ nPixels
+quadN = nPixels^2 * (longSide / shortSide)
 ## generate a site x species matrix for each spatial scale
 
-comms = matrix(NA, nrow=sum(quadN)*2 ,ncol=S+3)
-colnames(comms) = c('grain','x','y',paste('sp',1:S,sep=''))
-irow = 1
-
 ## work with dat1 first 
-minx = 0
-maxx = 100
-miny = 100
-maxy = 300
-
-for(A in seq_along(quadLen)){
-  xbreaks = seq(minx,maxx,quadLen[A])
-  ybreaks = seq(miny,maxy,quadLen[A]) 
-  for (x in 1:(length(xbreaks)-1)) {
-    for (y in 1:(length(ybreaks)-1)) {
-      inQuad =  xbreaks[x] <= dat1$x & dat1$x < xbreaks[x+1] & 
-                ybreaks[y] <= dat1$y & dat1$y < ybreaks[y+1]   
-      comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),'_1',sep=''),x,y)
-      comms[irow, -c(1:3)] = as.integer(table(c(dat1$spnum[inQuad],1:S)) - 1)
-      irow = irow + 1 
-    }
-  }
-}
+comms1 = makeCommMat(dat1$spnum,S,cbind(dat1$x,dat1$y),quadLen,quadN,
+                     c(0,100,100,300),'_1')
 
 ## work with dat2 now
-minx = 0
-maxx = 200
-miny = 0
-maxy = 100
+comms2 = makeCommMat(dat2$spnum,S,cbind(dat2$x,dat2$y),quadLen,quadN,
+                     c(0,200,0,100),'_2')
 
-for(A in seq_along(quadLen)){
-  xbreaks = seq(minx,maxx,quadLen[A])
-  ybreaks = seq(miny,maxy,quadLen[A]) 
-  for (x in 1:(length(xbreaks)-1)) {
-    for (y in 1:(length(ybreaks)-1)) {
-      inQuad =  xbreaks[x] <= dat2$x & dat2$x < xbreaks[x+1] & 
-                ybreaks[y] <= dat2$y & dat2$y < ybreaks[y+1]   
-      comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),'_2',sep=''),x,y)
-      comms[irow, -c(1:3)] = as.integer(table(c(dat2$spnum[inQuad],1:S)) - 1)
-      irow = irow + 1 
-    }
-  }
-}
+comms = rbind(comms1,comms2)
 
 write.csv(comms,file='/home/danmcglinn/maxent/spat/data/cocoli_comms.csv',
           row.names=FALSE)
 save(comms,file='/home/danmcglinn/CTFSplots/cocoli/cocoli_comms_census3.Rdata')
 
-     
