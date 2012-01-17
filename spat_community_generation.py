@@ -29,16 +29,26 @@ if(len(sys.argv) > 1):
     ncomm = int(sys.argv[3]) 
     bisec = int(sys.argv[4])
     transect = str2bool(sys.argv[5])
+    abu = sys.argv[6]
 else:
     S = 10
     N = 100
     ncomm = 1
     bisec = 9
     transect = False
+    abu = None
+
+if(abu != None):
+    datafile = open(abu,'r')
+    datareader = csv.reader(datafile)
+    data = []
+    for row in datareader:
+        data.append(row)
+    abu = [int(x) for x in data[0]]
 
 nquad = 2 ** (bisec - 1) # number of quadrats per community 
-
-comms = [mete.sim_spatial_whole(S, N, bisec, transect) for i in range(0, ncomm)]
+ 
+comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
 
 # Make an array so that the data is easier to output
 out = np.empty((ncomm, nquad, S + 3)) 
