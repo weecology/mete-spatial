@@ -30,6 +30,7 @@ if(len(sys.argv) > 1):
     bisec = int(sys.argv[4])
     transect = str2bool(sys.argv[5])
     abu = sys.argv[6]
+    commName = sys.argv[7]
 else:
     S = 10
     N = 100
@@ -37,7 +38,8 @@ else:
     bisec = 9
     transect = False
     abu = None
-
+    commName = None
+    
 if(abu != None):
     datafile = open(abu,'r')
     datareader = csv.reader(datafile)
@@ -64,12 +66,35 @@ for i in range(1, S+1):
 header = ['comm','x','y'] + header
 
 if(transect):
-    filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
+    if(commName is None):  
+        if(abu is None):
+            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
+        else:
+            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect_empirSAD_'
+                        + '.txt')
+    else:
+        if(abu is None):
+            filename = ('./comms/simulated_comms_' + commName + '_transect.txt')
+        else:
+            filename = ('./comms/simulated_comms_' + commName + '_transect_empirSAD.txt')
 else:
-    filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
-    
+    if(commName is None):
+        if(abu is None):
+            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
+        else:
+            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid_empirSAD_'
+                        + '.txt')
+    else:
+        if(abu is None):
+            filename = ('./comms/simulated_comms_' + commName + '_grid.txt')
+        else:
+            filename = ('./comms/simulated_comms_' + commName + '_grid_empirSAD.txt')
+
+
 writer = open(filename,'wb') 
 datawriter = csv.writer(writer)
 datawriter.writerow(header)
