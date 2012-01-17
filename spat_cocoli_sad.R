@@ -5,10 +5,12 @@ comms = read.csv('./data/cocoli_comms.csv',header=TRUE)
 grains = unique(comms[,1])
 
 ## there is two 200 x 100 m quadrats
+grain1 = grains[grep('_1',grains)][1]
+grain2 = grains[grep('_2',grains)][1]
 
 ## calculate empirical SAD/RAD for each
-sadAbs1 = apply(comms[comms[,1] == grains[1],-(1:3)],2,sum)
-sadAbs2 = apply(comms[comms[,1] == grains[7],-(1:3)],2,sum)
+sadAbs1 = apply(comms[comms$grain == grain1,-(1:3)],2,sum)
+sadAbs2 = apply(comms[comms$grain == grain2,-(1:3)],2,sum)
 
 ## drop species in each with abundances of zero
 sadAbs1 = sadAbs1[sadAbs1>0]
