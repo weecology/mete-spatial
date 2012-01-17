@@ -1,0 +1,40 @@
+svn checkout https://weecology.svn.beanstalkapp.com/maxent
+
+git clone https://dmcglinn@github.com/weecology/METE.git
+
+## generate BCI community comparison
+python spat_community_generation.py 301 204988 200 14 False &
+
+
+## generate communities to make grid vs transect comparisons on
+python spat_community_generation.py 100 10000 200 11 False &
+python spat_community_generation.py 100 10000 200 11 True &
+
+
+## analyze directional comparisons in spatial patterns
+Rscript spat_analysis.R 100 10000 200 11 FALSE binary sorensen 90 0 >error_sorensen_grid_90deg.log 2>&1 &
+Rscript spat_analysis.R 100 10000 200 11 FALSE binary sorensen 0 0 >error_sorensen_grid_0deg.log 2>&1 &
+Rscript spat_analysis.R 100 10000 200 11 FALSE binary varWithin 90 0 >error_varWithin_grid_90deg.log 2>&1 &
+Rscript spat_analysis.R 100 10000 200 11 FALSE binary varWithin 0 0 >error_varWithin_grid_0deg.log 2>&1 &
+
+## analyze omidirectional variograms of empirical datasets
+Rscript spat_sherman_analysis.R sorensen abu >error_sorensen_abu_sherm.log 2>&1 &
+Rscript spat_sherman_analysis.R varWithin abu >error_varWithin_abu_sherm.log 2>&1 &
+Rscript spat_sherman_analysis.R sorensen binary >error_sorensen_binary_sherm.log 2>&1 &
+Rscript spat_sherman_analysis.R varWithin binary >error_varWithin_binary_sherm.log 2>&1 &
+
+Rscript spat_cocoli_analysis.R sorensen abu >error_sorensen_abu_cocoli.log 2>&1 &
+Rscript spat_cocoli_analysis.R varWithin abu >error_varWithin_abu_cocoli.log 2>&1 &
+Rscript spat_cocoli_analysis.R sorensen binary >error_sorensen_binary_cocoli.log 2>&1 &
+Rscript spat_cocoli_analysis.R varWithin binary >error_varWithin_binary_cocoli.log 2>&1 &
+
+Rscript spat_bci_analysis.R sorensen abu >error_sorensen_abu_bci.log 2>&1 &
+Rscript spat_bci_analysis.R varWithin abu >error_varWithin_abu_bci.log 2>&1 &
+Rscript spat_bci_analysis.R sorensen binary >error_sorensen_binary_bci.log 2>&1 &
+Rscript spat_bci_analysis.R varWithin binary >error_varWithin_binary_bci.log 2>&1 &
+
+Rscript spat_serp_analysis.R sorensen abu >error_sorensen_abu_serp.log 2>&1 &
+Rscript spat_serp_analysis.R varWithin abu >error_varWithin_abu_serp.log 2>&1 &
+Rscript spat_serp_analysis.R sorensen binary >error_sorensen_binary_serp.log 2>&1 &
+Rscript spat_serp_analysis.R varWithin binary >error_varWithin_binary_serp.log 2>&1 &
+
