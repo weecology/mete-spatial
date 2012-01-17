@@ -37,7 +37,7 @@ else:
     ncomm = 1
     bisec = 9
     transect = False
-    abu = None
+    abu = 'None'
     commName = None
     
 if(abu != 'None'):
