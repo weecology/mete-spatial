@@ -2,8 +2,23 @@ svn checkout https://weecology.svn.beanstalkapp.com/maxent/trunk /home/danmcglin
 
 git clone https://dmcglinn@github.com/weecology/METE.git /home/danmcglinn/maxent/core/
 
-## generate BCI community comparison
-python spat_community_generation.py 301 204988 200 14 False &
+## generate empirically based communities WITHOUT fixing the SAD
+python spat_community_generation.py 301 205096 200 14 False None bci &
+python spat_community_generation.py 136 4411 200 14 False None cocoli1 &
+python spat_community_generation.py 141 4241 200 14 False None cocoli2 &
+python spat_community_generation.py 181 7502 200 14 False None sherman1 &
+python spat_community_generation.py 168 7743 200 14 False None sherman2 &
+python spat_community_generation.py 191 6660 200 14 False None sherman3 &
+python spat_community_generation.py 24 37182 200 14 False None serp &
+
+## generate empircally based communities WITH fixing the SAD
+python spat_community_generation.py 301 205096 200 14 False ./data/bci_sad.csv bci &
+python spat_community_generation.py 136 4411 200 14 False ./data/cocoli_sad_1.csv cocoli1 &
+python spat_community_generation.py 141 4241 200 14 False ./data/cocoli_sad_2.csv cocoli2 &
+python spat_community_generation.py 181 7502 200 14 False ./data/sherman_sad_1.csv sherman1 &
+python spat_community_generation.py 168 7743 200 14 False ./data/sherman_sad_2.csv sherman2 &
+python spat_community_generation.py 191 6660 200 14 False ./data/sherman_sad_3.csv sherman3 &
+python spat_community_generation.py 24 37182 200 14 False ./data/serpentine_sad.csv serp &
 
 
 ## generate communities to make grid vs transect comparisons on
