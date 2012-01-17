@@ -76,9 +76,11 @@ if(transect):
                         + '.txt')
     else:
         if(abu is None):
-            filename = ('./comms/simulated_comms_' + commName + '_transect.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
+                        '_B' + str(bisec) + '_transect.txt')
         else:
-            filename = ('./comms/simulated_comms_' + commName + '_transect_empirSAD.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
+                        '_B' + str(bisec) + '_transect_empirSAD.txt')
 else:
     if(commName is None):
         if(abu is None):
@@ -90,9 +92,11 @@ else:
                         + '.txt')
     else:
         if(abu is None):
-            filename = ('./comms/simulated_comms_' + commName + '_grid.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
+                        '_B' + str(bisec) + '_grid.txt')
         else:
-            filename = ('./comms/simulated_comms_' + commName + '_grid_empirSAD.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
+                        '_B' + str(bisec) + '_grid_empirSAD.txt')
 
 
 writer = open(filename,'wb') 
