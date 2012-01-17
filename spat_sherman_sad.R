@@ -4,7 +4,7 @@ setwd('/home/danmcglinn/maxent/spat')
 comms = read.csv('./data/sherman_comms.csv',header=TRUE)
 grains = unique(comms$grain)
 
-## there is one 140 x 140 m quad and two 200 x 100 m quadrats
+## there is are two 200 x 100 m quadrats and one 140 x 140 m quad
 grain1 = grains[grep('_1',grains)][1]
 grain2 = grains[grep('_2',grains)][1]
 grain3 = grains[grep('_3',grains)][1]
