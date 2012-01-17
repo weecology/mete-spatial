@@ -8,8 +8,8 @@ python spat_community_generation.py 136 4411 200 14 False None cocoli1 &
 python spat_community_generation.py 141 4241 200 14 False None cocoli2 &
 python spat_community_generation.py 181 7502 200 14 False None sherman1 &
 python spat_community_generation.py 168 7743 200 14 False None sherman2 &
-python spat_community_generation.py 191 6660 200 14 False None sherman3 &
-python spat_community_generation.py 24 37182 200 14 False None serp &
+python spat_community_generation.py 191 6660 200 13 False None sherman3 &
+python spat_community_generation.py 24 37182 200 9 False None serp &
 
 ## generate empircally based communities WITH fixing the SAD
 python spat_community_generation.py 301 205096 200 14 False ./data/bci_sad.csv bci &
@@ -17,8 +17,8 @@ python spat_community_generation.py 136 4411 200 14 False ./data/cocoli_sad_1.cs
 python spat_community_generation.py 141 4241 200 14 False ./data/cocoli_sad_2.csv cocoli2 &
 python spat_community_generation.py 181 7502 200 14 False ./data/sherman_sad_1.csv sherman1 &
 python spat_community_generation.py 168 7743 200 14 False ./data/sherman_sad_2.csv sherman2 &
-python spat_community_generation.py 191 6660 200 14 False ./data/sherman_sad_3.csv sherman3 &
-python spat_community_generation.py 24 37182 200 14 False ./data/serpentine_sad.csv serp &
+python spat_community_generation.py 191 6660 200 13 False ./data/sherman_sad_3.csv sherman3 &
+python spat_community_generation.py 24 37182 200 9 False ./data/serpentine_sad.csv serp &
 
 
 ## generate communities to make grid vs transect comparisons on
