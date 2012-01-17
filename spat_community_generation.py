@@ -40,14 +40,16 @@ else:
     abu = None
     commName = None
     
-if(abu != None):
+if(abu != 'None'):
     datafile = open(abu,'r')
     datareader = csv.reader(datafile)
     data = []
     for row in datareader:
         data.append(row)
     abu = [int(x) for x in data[0]]
-
+else:
+    abu = None
+ 
 nquad = 2 ** (bisec - 1) # number of quadrats per community 
  
 comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
