@@ -21,6 +21,7 @@ if( length(clArgs) > 1){
   metricsToCalc = clArgs[7]
   direction = clArgs[8]
   tolerance = clArgs[9]
+  name = clArgs[10]
 }
 if( !exists(as.character(substitute(S))) ){
   S = 10
@@ -32,14 +33,23 @@ if( !exists(as.character(substitute(S))) ){
   metricsToCalc = 'all'
   direction = NA
   tolerance = NA
+  name = NA
 }
-
 
 direction = ifelse(is.na(direction),'omnidirectional',as.numeric(direction))
 tolerance = ifelse(is.na(tolerance),tolerance,as.numeric(tolerance)) 
-fileSuffix = ifelse(transect,
-             paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
-             paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+
+if(is.na(name)){
+  fileSuffix = ifelse(transect,
+               paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
+               paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+}
+if(!is.na(name)){
+  fileSuffix = ifelse(transect,
+               paste('_',name,'_C',ncomm,'_B',bisec,'_transect',sep=''),
+               paste('_',name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+}
+
 fileName = paste('simulated_comms',fileSuffix,'.txt',sep='')
 comms = read.csv(file.path('./comms',fileName),header=T)
 gc()
