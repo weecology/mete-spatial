@@ -37,7 +37,7 @@ if( !exists(as.character(substitute(S))) ){
 }
 
 direction = ifelse(direction == 'NA','omnidirectional',as.numeric(direction))
-tolerance = ifelse(tolerance == 'NA',tolerance,as.numeric(tolerance)) 
+tolerance = ifelse(tolerance == 'NA',NA,as.numeric(tolerance)) 
 
 if(name == 'NA'){
   fileSuffix = ifelse(transect,
