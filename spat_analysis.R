@@ -31,20 +31,20 @@ if( !exists(as.character(substitute(S))) ){
   transect = FALSE
   dataType = 'both'
   metricsToCalc = 'all'
-  direction = NA
-  tolerance = NA
-  name = NA
+  direction = 'NA'
+  tolerance = 'NA'
+  name = 'NA'
 }
 
-direction = ifelse(is.na(direction),'omnidirectional',as.numeric(direction))
-tolerance = ifelse(is.na(tolerance),tolerance,as.numeric(tolerance)) 
+direction = ifelse(direction == 'NA','omnidirectional',as.numeric(direction))
+tolerance = ifelse(tolerance == 'NA',tolerance,as.numeric(tolerance)) 
 
-if(is.na(name)){
+if(name == 'NA'){
   fileSuffix = ifelse(transect,
                paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
                paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
 }
-if(!is.na(name)){
+if(name != 'NA'){
   fileSuffix = ifelse(transect,
                paste('_',name,'_C',ncomm,'_B',bisec,'_transect',sep=''),
                paste('_',name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
