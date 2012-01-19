@@ -74,15 +74,15 @@ if(transect):
                         '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
         else:
             filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect_empirSAD_'
-                        + '.txt')
+                        '_empirSAD' + '_C' +  str(ncomm) + '_B' + str(bisec) +
+                        '_transect.txt')
     else:
         if(abu is None):
             filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
                         '_B' + str(bisec) + '_transect.txt')
         else:
-            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
-                        '_B' + str(bisec) + '_transect_empirSAD.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_empirSAD' + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
 else:
     if(commName is None):
         if(abu is None):
@@ -90,15 +90,15 @@ else:
                         '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
         else:
             filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid_empirSAD_'
-                        + '.txt')
+                        '_empirSAD' + '_C' + str(ncomm) + '_B' + str(bisec) + 
+                        '_grid.txt')
     else:
         if(abu is None):
             filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
                         '_B' + str(bisec) + '_grid.txt')
         else:
-            filename = ('./comms/simulated_comms_' + commName + '_C' + str(ncomm) + 
-                        '_B' + str(bisec) + '_grid_empirSAD.txt')
+            filename = ('./comms/simulated_comms_' + commName + '_empirSAD' + 
+                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
 
 
 writer = open(filename,'wb') 
