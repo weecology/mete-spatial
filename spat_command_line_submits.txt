@@ -53,3 +53,7 @@ Rscript spat_serp_analysis.R varWithin abu >error_varWithin_abu_serp.log 2>&1 &
 Rscript spat_serp_analysis.R sorensen binary >error_sorensen_binary_serp.log 2>&1 &
 Rscript spat_serp_analysis.R varWithin binary >error_varWithin_binary_serp.log 2>&1 &
 
+## analyze omidirectional variograms of simulated empirical datasets
+
+Rscript spat_analysis.R 301 205096 200 11 FALSE binary sorensen 90 0 bci >error_.log 2>&1 &
+
