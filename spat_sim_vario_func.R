@@ -1816,9 +1816,10 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,
   return(out)
 }
 
+
 calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
-                          hmax=NA,nperm=NULL,RPargs=NULL,writeToFile=FALSE,
-                          fileSuffix=NULL){
+                          hmax=NA,direction='omidirectional',tolerance=NA,nperm=NULL,
+                          RPargs=NULL,writeToFile=FALSE,fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -1844,8 +1845,13 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
   registerDoSNOW(sfGetCluster())
   if(metricsToCalc == 'all')
     metricsToCalc = c('varWithin','varBetween','jaccard','sorensen')
+  if(writeToFile){
+    if(direction != 'omnidirectional')
+      fileSuffix = paste(fileSuffix,'_',direction,'deg',sep='') 
+  }
   commNames = unique(comms[,1])
   out = vector('list',length(commNames))
+  names(out) = paste('comm',commNames,sep='')
   foreach(i = 1:length(commNames), .inorder = TRUE) %dopar% {
     coords = as.matrix(comms[comms[,1] == commNames[i],2:3])
     mat = as.matrix(comms[comms[,1] == commNames[i],-c(1:3)])
@@ -1854,7 +1860,9 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
     if(any('varWithin' %in% metricsToCalc)){
       if(i == 1)
         varWithin = vector('list', length(commNames))      
-      varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE)
+      varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,
+                           direction=direction,tolerance=tolerance,
+                           unit.angle='degrees')
       if(!is.null(nperm)){ 
         varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
                                    meth='random')
@@ -1869,7 +1877,9 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
     if(any('varBetween' %in% metricsToCalc)){
       if(i == 1)
         varBetween = vector('list', length(commNames))      
-      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE) 
+      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,
+                           direction=direction,tolerance=tolerance,
+                           unit.angle='degrees') 
       if(!is.null(nperm)){ 
         varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
                                     meth='randpat',RPargs=RPargs)
@@ -1883,7 +1893,9 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
     if(any('jaccard' %in% metricsToCalc)){
       if(i == 1)
         jaccard = vector('list', length(commNames))  
-      jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard') 
+      jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard',
+                           direction=direction,tolerance=tolerance,
+                           unit.angle='degrees') 
       jaccardNull = NULL
       jaccardExp = 1 - jacExp(mat,1) #  to convert into a dissimiarlity
       if(dataType == 'abu'){
@@ -1900,7 +1912,9 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
       if(i == 1)
         sorensen = vector('list', length(commNames))  
       ## bray-curtis is equiv to sorensen        
-      sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray') 
+      sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray',
+                           direction=direction,tolerance=tolerance,
+                           unit.angle='degrees') 
       sorensenNull = NULL
       sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
       if(dataType == 'abu'){
@@ -1919,19 +1933,19 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
     }
     if(writeToFile){      
       ## update result files as loop proceeds
-      if(!is.null(varWithin)){   
+      if(any('varWithin' %in% metricsToCalc)){
         save(varWithin,file=paste(getwd(),'/varWithin/varWithin',
              fileSuffix,'_',dataType,'.Rdata',sep=''))  
       }
-      if(!is.null(varBetween)){         
+      if(any('varBetween' %in% metricsToCalc)){
         save(varBetween,file=paste(getwd(),'/varBetween/varBetween',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }
-      if(!is.null(jaccard)){     
+      if(any('jaccard' %in% metricsToCalc)){
         save(jaccard,file=paste(getwd(),'/jaccard/jaccard',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }
-      if(!is.null(sorensen)){
+      if(any('sorensen' %in% metricsToCalc)){
         save(sorensen,file=paste(getwd(),'/sorensen/sorensen',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }             
