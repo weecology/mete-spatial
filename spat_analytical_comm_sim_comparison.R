@@ -4,7 +4,7 @@
 setwd('/home/danmcglinn/maxent/spat')
 
 source('spat_analytical_prob_funcs.R')
-
+dyn.load('heap.so')
 ## generate some comparitive frequency distributions
 ## example from pg 96 fig 4.1
 #pdf('analytical_prob_funcs.pdf',width=14,height=7)
@@ -16,8 +16,7 @@ A = 1
 out = matrix(NA,nrow=4,ncol=length(n))
 out[1,] = piBin(n,A,no,Ao)
 out[2,] = piLap(n,A,no,Ao)
-out[3,] = c(0.57472809658067414, 0.15558976660434137, 0.077363698402898418, 0.047001514587896545, 0.03158361878558593,0.022563113003141268)
-#out[3,] = sapply(n,function(x) piHEAP(x,A,no,Ao))
+out[3,] = piHEAPfast(n,A,no,Ao)
 out[4,] = piNegBi(n,A,no,Ao)
 
 comms = read.csv('./comms/simulated_comms_S1_N112_C500_B7_grid.txt',header=TRUE)
@@ -52,7 +51,7 @@ A = 1
 out = matrix(NA,nrow=4,ncol=length(n))
 out[1,] = piBin(n,A,no,Ao)
 out[2,] = piLap(n,A,no,Ao)
-out[3,] = sapply(n,function(x) piHEAP(x,A,no,Ao))
+out[3,] = piHEAPfast(n,A,no,Ao)
 out[4,] = piNegBi(n,A,no,Ao)
 
 comms = read.csv('./comms/simulated_comms_S1_N5_C500_B3_grid.txt',header=TRUE)
