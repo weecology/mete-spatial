@@ -18,10 +18,7 @@ import csv
 import sys
 
 import mete
-
-def str2bool(v):
-  return v.lower() in ("yes", "true", "t", "1")
-
+import spat
 
 if(len(sys.argv) > 1):
     S = int(sys.argv[1]) 
@@ -30,7 +27,7 @@ if(len(sys.argv) > 1):
     bisec = int(sys.argv[4])
     transect = str2bool(sys.argv[5])
     abu = sys.argv[6]
-    comm_name = sys.argv[7]
+    shrt_name = sys.argv[7]
 else:
     S = 10
     N = 100
@@ -38,7 +35,7 @@ else:
     bisec = 9
     transect = False
     abu = 'None'
-    comm_name = None
+    shrt_name = None
     
 if(abu != 'None'):
     datafile = open(abu,'r')
@@ -67,39 +64,7 @@ for i in range(1, S+1):
 
 header = ['comm','x','y'] + header
 
-if(transect):
-    if(comm_name is None):  
-        if(abu is None):
-            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
-        else:
-            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_empirSAD' + '_C' +  str(ncomm) + '_B' + str(bisec) +
-                        '_transect.txt')
-    else:
-        if(abu is None):
-            filename = ('./comms/simulated_comms_' + comm_name + '_C' + str(ncomm) + 
-                        '_B' + str(bisec) + '_transect.txt')
-        else:
-            filename = ('./comms/simulated_comms_' + comm_name + '_empirSAD' + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_transect.txt')
-else:
-    if(comm_name is None):
-        if(abu is None):
-            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
-        else:
-            filename = ('./comms/simulated_comms_S' + str(S) + '_N' + str(N) + 
-                        '_empirSAD' + '_C' + str(ncomm) + '_B' + str(bisec) + 
-                        '_grid.txt')
-    else:
-        if(abu is None):
-            filename = ('./comms/simulated_comms_' + comm_name + '_C' + str(ncomm) + 
-                        '_B' + str(bisec) + '_grid.txt')
-        else:
-            filename = ('./comms/simulated_comms_' + comm_name + '_empirSAD' + 
-                        '_C' + str(ncomm) + '_B' + str(bisec) + '_grid.txt')
-
+filename = spat.comm_filename(S,N,ncomm,bisec,transect,abu,shrt_name)
 
 writer = open(filename,'wb') 
 datawriter = csv.writer(writer)
