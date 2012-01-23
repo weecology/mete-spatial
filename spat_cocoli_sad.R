@@ -17,10 +17,10 @@ sadAbs1 = sadAbs1[sadAbs1>0]
 sadAbs2 = sadAbs2[sadAbs2>0]
 
 write.table(matrix(sort(sadAbs1,dec=TRUE),nrow=1),
-            file='./data/cocoli_sad_1.csv',sep=',',row.names=FALSE,
+            file='./data/cocoli1_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
 write.table(matrix(sort(sadAbs2,dec=TRUE),nrow=1),
-            file='./data/cocoli_sad_2.csv',sep=',',row.names=FALSE,
+            file='./data/cocoli2_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
             
 sadAvg = sapply(grains,function(x) apply(comms[comms[,1]==x,-(1:3)],2,mean))

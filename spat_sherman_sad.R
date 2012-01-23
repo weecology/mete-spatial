@@ -20,13 +20,13 @@ sadAbs2 = sadAbs2[sadAbs2>0]
 sadAbs3 = sadAbs3[sadAbs3>0]
 
 write.table(matrix(sort(sadAbs1,dec=TRUE),nrow=1),
-            file='./data/sherman_sad_1.csv',sep=',',row.names=FALSE,
+            file='./data/sherman1_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
 write.table(matrix(sort(sadAbs2,dec=TRUE),nrow=1),
-            file='./data/sherman_sad_2.csv',sep=',',row.names=FALSE,
+            file='./data/sherman2_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
 write.table(matrix(sort(sadAbs3,dec=TRUE),nrow=1),
-            file='./data/sherman_sad_3.csv',sep=',',row.names=FALSE,
+            file='./data/sherman3_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
             
 sadAvg = sapply(grains,function(x) apply(comms[comms[,1]==x,-(1:3)],2,mean))
