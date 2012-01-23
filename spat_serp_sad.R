@@ -6,7 +6,7 @@ grains = unique(comms$grain)
 ## calculate empirical SAD/RAD
 sadAbs = apply(comms[comms[,1]==grains[1],-(1:3)],2,sum)
 write.table(matrix(sort(sadAbs,dec=TRUE),nrow=1),
-            file='./data/serpentine_sad.csv',sep=',',row.names=FALSE,
+            file='./data/serp_sad.csv',sep=',',row.names=FALSE,
             col.names=FALSE)
 sadAvg = sapply(grains,function(x) apply( comms[comms[,1]==x,-(1:3)],2,mean))
 radAvg = sadAvg/apply(sadAvg,2,sum)
