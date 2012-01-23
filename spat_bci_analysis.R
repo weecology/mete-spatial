@@ -23,7 +23,7 @@ if( !exists(as.character(substitute(metricsToCalc))) ){
 comms = read.csv('./data/bci_comms.csv',header=TRUE)
 
 ## compute  Dist Decay statistics
-metrics = calcMetrics(comms,metricsToCalc,dataType,writeToFile=TRUE,fileSuffix='_BCI')
+metrics = calcMetrics(comms,metricsToCalc,dataType,writeToFile=TRUE,fileSuffix='_bci')
 
 
 
