@@ -44,12 +44,20 @@ avgResults = function(results,combine = NULL){
   out = vector('list',length(results))
   names(out) = names(results)
   for(i in seq_along(results)){
-    if(is.null(combine[[i]]))
+    if(is.na(combine[[i]][1]))
       combine[[i]] = results[[i]]$Comm
-    avg = tapply(results[[i]]$Metric,list(results[[i]]$Dist,combine[[i]]),mean)
-    dist = as.numeric(row.names(avg))
-    row.names(avg) = NULL
-    out[[i]] = cbind(dist,avg)
+    unicombine = unique(combine[[i]])
+    for(j in seq_along(unicombine)){
+      true = combine[[i]] == unicombine[j]
+      Dist = tapply(results[[i]]$Dist[true],round(results[[i]]$Dist[true],3),mean)
+      Metric = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),mean)
+      N = tapply(results[[i]]$N[true],round(results[[i]]$Dist[true],3),sum)
+      Comm = rep(unicombine[j],length(Metric))
+      if(j == 1)
+        out[[i]] = data.frame(Dist,Metric,N,Comm)
+      else
+        out[[i]] = rbind(out[[i]],data.frame(Dist,Metric,N,Comm))
+    }  
   }
   return(out)
 }
@@ -61,17 +69,67 @@ empirSorBin = reshapeResults(empirBin,'sorensen')
 empirSorAbu = reshapeResults(empirAbu,'sorensen')
 
 combine = vector('list',length=length(empirSorBin))
-combine$bci = NULL
-combine$cocoli = ifelse(empirSorBin$cocoli$Comm > 6,empirSorBin$cocoli$Comm - 6,
-                        empirSorBin$cocoli$Comm)
-combine$sherman = ifelse(empirSorBin$sherman$Comm > 6 & empirSorBin$sherman$Comm < 13,
-                         empirSorBin$sherman$Comm - 6, empirSorBin$sherman$Comm)
-combine$serp = NULL
+combine[[1]] = NA
+combine[[2]] = ifelse(empirSorBin$cocoli$Comm > 6,empirSorBin$cocoli$Comm - 6,
+                      empirSorBin$cocoli$Comm)
+combine[[3]] = ifelse(empirSorBin$sherman$Comm > 6 & empirSorBin$sherman$Comm < 13,
+                      empirSorBin$sherman$Comm - 6, empirSorBin$sherman$Comm)
+combine[[4]] = NA
 
 empirSorBinAvg = avgResults(empirSorBin,combine)
+empirSorAbuAvg = avgResults(empirSorAbu,combine)
 
-plot(empirSorBinAvg[[2]][,1],empirSorBinAvg[[2]][,2],ylim=range(empirSorBinAvg[[2]][,-1],na.rm=T))
-plot(empirSorBinAvg[[2]][,1],empirSorBinAvg[[2]][,6])
+#pdf('spat_empir_bin_DD_curves.pdf')
+par(mfrow=c(2,2))
+for(i in seq_along(empirSorBinAvg)){
+  unigrains = unique(empirSorBinAvg[[i]]$Comm)
+  plot(Metric ~ Dist,data = empirSorBinAvg[[i]],subset= Comm == i,
+     xlim = range(Dist), ylim = range(Metric),type='n',main=names(empirSorBinAvg)[i])
+  for(j in seq_along(unigrains)){
+    lines(Metric ~ Dist,data = empirSorBinAvg[[i]],subset= Comm == unigrains[j],
+          col=j,lwd=2)
+  }  
+}
+
+
+par(mfrow=c(2,2))
+for(i in seq_along(empirSorBinAvg)){
+  unigrains = unique(empirSorBinAvg[[i]]$Comm)
+  plot(Metric ~ Dist,data = empirSorBinAvg[[i]],subset= Comm == i,log='xy',
+     xlim = range(Dist), ylim = range(Metric),type='n',main=names(empirSorBinAvg)[i])
+  for(j in seq_along(unigrains)){
+    lines(Metric ~ Dist,data = empirSorBinAvg[[i]],subset= Comm == unigrains[j],
+          col=j,lwd=2)
+  }  
+}
+
+#dev.off()
+
+#pdf('spat_empir_abu_DD_curves.pdf')
+par(mfrow=c(2,2))
+for(i in seq_along(empirSorAbuAvg)){
+  unigrains = unique(empirSorAbuAvg[[i]]$Comm)
+  plot(Metric ~ Dist,data = empirSorAbuAvg[[i]],subset= Comm == i,
+     xlim = range(Dist), ylim = range(Metric),type='n',main=names(empirSorAbuAvg)[i])
+  for(j in seq_along(unigrains)){
+    lines(Metric ~ Dist,data = empirSorAbuAvg[[i]],subset= Comm == unigrains[j],
+          col=j,lwd=2)
+  }  
+}
+
+
+par(mfrow=c(2,2))
+for(i in seq_along(empirSorAbuAvg)){
+  unigrains = unique(empirSorAbuAvg[[i]]$Comm)
+  plot(Metric ~ Dist,data = empirSorAbuAvg[[i]],subset= Comm == i,log='xy',
+     xlim = range(Dist), ylim = range(Metric),type='n',main=names(empirSorAbuAvg)[i])
+  for(j in seq_along(unigrains)){
+    lines(Metric ~ Dist,data = empirSorAbuAvg[[i]],subset= Comm == unigrains[j],
+          col=j,lwd=2)
+  }  
+}
+
+#dev.off()
 
 
 vGridExpAvg = apply(vGridExp,1,mean)
