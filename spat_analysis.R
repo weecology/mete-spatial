@@ -5,6 +5,7 @@
 library(danspkg)
 library(vegan)
 library(snowfall)
+library(bigmemory)
 
 setwd('/home/danmcglinn/maxent/spat')
 
@@ -22,6 +23,7 @@ if( length(clArgs) > 1){
   direction = clArgs[8]
   tolerance = clArgs[9]
   name = clArgs[10]
+  big = clArgs[11]
 }
 if( !exists(as.character(substitute(S))) ){
   S = 10
@@ -34,6 +36,7 @@ if( !exists(as.character(substitute(S))) ){
   direction = 'NA'
   tolerance = 'NA'
   name = 'NA'
+  big = FALSE
 }
 
 direction = ifelse(direction == 'NA','omnidirectional',as.numeric(direction))
@@ -51,7 +54,12 @@ if(name != 'NA'){
 }
 
 fileName = paste('simulated_comms',fileSuffix,'.txt',sep='')
-comms = read.csv(file.path('./comms',fileName),header=T)
+if(big)
+  comms = read.big.matrix(file.path('./comms',fileName),header=TRUE,
+                          type='integer',sep=',',descriptor = fileSuffix)
+if(!big)
+  comms = read.csv(file.path('./comms',fileName),header=T)
+
 gc()
 
 nperm = NULL
