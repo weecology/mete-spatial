@@ -946,7 +946,6 @@ dist.cross.real<-function(x){
                                unit.angle,distance.metric)
   }
   else{
-    x = as.matrix(x)
     vobject$parms = data.frame(grain,hmax,S=ncol(x),N=nrow(x),pos.neg,
                                median,direction,tolerance,unit.angle,
                                distance.metric)
