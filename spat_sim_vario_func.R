@@ -1894,8 +1894,10 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
-      if(i == 1)
+      if(i == 1){
         varWithin = vector('list', length(commNames))      
+        names(varWithin) = commNames
+      }     
       varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees')
@@ -1911,8 +1913,10 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
                             varWithinExp=varWithinExp)
     }
     if(any('varBetween' %in% metricsToCalc)){
-      if(i == 1)
+      if(i == 1){
         varBetween = vector('list', length(commNames))      
+        names(varBetween) = commNames
+      }       
       varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
@@ -1927,8 +1931,10 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
                              varBetweenNull=varBetweenNull)
     }
     if(any('jaccard' %in% metricsToCalc)){
-      if(i == 1)
+      if(i == 1){
         jaccard = vector('list', length(commNames))  
+        names(jaccard) = commNames
+      }  
       jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard',
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
@@ -1945,8 +1951,10 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
                           jaccardExpAbuToBinary=jaccardExpAbuToBinary)
     }
     if(any('sorensen' %in% metricsToCalc)){
-      if(i == 1)
-        sorensen = vector('list', length(commNames))  
+      if(i == 1){
+        sorensen = vector('list', length(commNames))
+        names(sorensen) = commNames
+      }   
       ## bray-curtis is equiv to sorensen        
       sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray',
                            direction=direction,tolerance=tolerance,
