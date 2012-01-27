@@ -71,12 +71,12 @@ python spat_community_generation.py 24 37182 200 9 False ./data/serpentine_sad.c
 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA bci TRUE -o error_bin_sorensen_bci.log 
 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA bci TRUE -o error_abu_sorensen_bci.log 
 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA bci_empirSAD TRUE -o error_bin_sorensen_bci_empirSAD.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA bci_empirSAD TRUE -o error_abu_sorensen_bci_empirSAD.log 
+(zoe) Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA bci_empirSAD TRUE -o error_abu_sorensen_bci_empirSAD.log 
 
-Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA bci TRUE -o error_bin_varWithin_bci.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA bci TRUE -o error_abu_varWithin_bci.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA bci_empirSAD TRUE -o error_bin_varWithin_bci_empirSAD.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA bci_empirSAD TRUE -o error_abu_varWithin_bci_empirSAD.log 
+(zoe) Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA bci TRUE -o error_bin_varWithin_bci.log 
+bsub -q week -J bci Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA bci TRUE -o error_abu_varWithin_bci.log 
+bsub -q week -J bci Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA bci_empirSAD TRUE -o error_bin_varWithin_bci_empirSAD.log 
+bsub -q week -J bci Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA bci_empirSAD TRUE -o error_abu_varWithin_bci_empirSAD.log 
 ##cocoli1
 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA cocoli1 TRUE -o error_bin_sorensen_cocoli1.log 
 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli1 TRUE -o error_abu_sorensen_cocoli1.log 
@@ -86,20 +86,20 @@ Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli1_empirSAD TRU
 Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA cocoli1 TRUE -o error_bin_varWithin_cocoli1.log 
 Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA cocoli1 TRUE -o error_abu_varWithin_cocoli1.log 
 Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA cocoli1_empirSAD TRUE -o error_bin_varWithin_cocoli1_empirSAD.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA cocoli1_empirSAD TRUE -o error_abu_varWithin_cocoli1_empirSAD.log 
+(wash) Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA cocoli1_empirSAD TRUE -o error_abu_varWithin_cocoli1_empirSAD.log 
 ##cocoli2
-Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA cocoli2 TRUE -o error_bin_sorensen_cocoli2.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli2 TRUE -o error_abu_sorensen_cocoli2.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA cocoli2_empirSAD TRUE -o error_bin_sorensen_cocoli2_empirSAD.log 
-Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli2_empirSAD TRUE -o error_abu_sorensen_cocoli2_empirSAD.log 
+(wash) Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA cocoli2 TRUE -o error_bin_sorensen_cocoli2.log 
+(wash) Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli2 TRUE -o error_abu_sorensen_cocoli2.log 
+(wash) Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA cocoli2_empirSAD TRUE -o error_bin_sorensen_cocoli2_empirSAD.log 
+bsub -q week -J cocoli2 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA cocoli2_empirSAD TRUE -o error_abu_sorensen_cocoli2_empirSAD.log 
 
 bsub -q week -J cocoli2 Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA cocoli2 TRUE -o error_bin_varWithin_cocoli2.log 
 bsub -q week -J cocoli2 Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA cocoli2 TRUE -o error_abu_varWithin_cocoli2.log 
 bsub -q week -J cocoli2 Rscript spat_analysis.R 0 0 200 14 FALSE binary varWithin NA NA cocoli2_empirSAD TRUE -o error_bin_varWithin_cocoli2_empirSAD.log 
 bsub -q week -J cocoli2 Rscript spat_analysis.R 0 0 200 14 FALSE abu varWithin NA NA cocoli2_empirSAD TRUE -o error_abu_varWithin_cocoli2_empirSAD.log 
 ##sherman1
-bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA sherman1 TRUE -o error_bin_sorensen_sherman1.log 
-bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA sherman1 TRUE -o error_abu_sorensen_sherman1.log 
+(jayne) bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA sherman1 TRUE -o error_bin_sorensen_sherman1.log 
+(jayne) bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA sherman1 TRUE -o error_abu_sorensen_sherman1.log 
 bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE binary sorensen NA NA sherman1_empirSAD TRUE -o error_bin_sorensen_sherman1_empirSAD.log 
 bsub -q week -J sherman1 Rscript spat_analysis.R 0 0 200 14 FALSE abu sorensen NA NA sherman1_empirSAD TRUE -o error_abu_sorensen_sherman1_empirSAD.log 
 
