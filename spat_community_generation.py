@@ -25,7 +25,7 @@ if(len(sys.argv) > 1):
     N = int(sys.argv[2]) 
     ncomm = int(sys.argv[3]) 
     bisec = int(sys.argv[4])
-    transect = str2bool(sys.argv[5])
+    transect = spat.str2bool(sys.argv[5])
     abu = sys.argv[6]
     shrt_name = sys.argv[7]
 else:
