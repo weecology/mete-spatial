@@ -2049,6 +2049,101 @@ wid = function(Nbisect){
   return(comms)
 }
 
+'getResults' = function(names,metric,dataType)
+{
+  ## Purpose: to import the results of the 'calcMetrics' function
+  ## and to load them into a list
+  ## Arguments:
+  ## names: the short names that were used in the naming of the output files
+  ## metric: the metric calculated, see 'calcMetrics' for options
+  ## dataType: the data type of interest, 'binary' or 'abu'
+  results = vector('list',length=length(names))
+  names(results) = names
+  for(i in seq_along(results)){
+    load(paste('./',metric,'/',metric,'_',names[i],'_',dataType,'.Rdata',
+               sep=''))
+    results[[i]] = eval(parse(text=metric))
+  }
+  return(results)
+}
+
+'reshapeResults' = function(results,metric){
+  ## Purpose: to reshape the results from a nested list to a matrix
+  ## of the most important information
+  out= vector('list',length=length(results))
+  names(out) = names(results)
+  for(i in seq_along(results)){ ## the datset
+    vExp = vector('list',length=length(results[[i]]))
+    Dist = vExp
+    n = vExp
+    for(j in seq_along(results[[i]])){ ## the grain/community
+      Dist[[j]] = results[[i]][[j]][[1]]$vario$Dist
+      n[[j]] = results[[i]][[j]][[1]]$vario$n
+      if(any(metric %in% c('sorensen','jaccard')))
+        vExp[[j]] = 1 - results[[i]][[j]][[1]]$vario$exp.var
+      else
+        vExp[[j]] = results[[i]][[j]][[1]]$vario$exp.var
+    }
+    if(is.null(names(results[[i]])))
+      commNames = 1:length(results[[i]])
+    out[[i]] = data.frame(Dist = unlist(Dist),Metric = unlist(vExp),N = unlist(n))
+    out[[i]] = data.frame(out[[i]],
+               Comm = unlist(mapply(rep,commNames,each=sapply(vExp,length))))
+  }
+  return(out)
+}  
+
+avgResults = function(results,combine = NULL){
+  ## Purpose: to compute the averages of the results given a vector 'combine'
+  ## Arguments
+  ## combine:  a matrix, each row specifies an index, each column specifies a 
+  ##           different one to average over. If combine is NA then no elements
+  ##           are averaged over.
+  out = vector('list',length(results))
+  names(out) = names(results)
+  for(i in seq_along(results)){
+    if(is.na(combine[[i]][1]))
+      combine[[i]] = results[[i]]$Comm
+    unicombine = unique(combine[[i]])
+    for(j in seq_along(unicombine)){
+      true = combine[[i]] == unicombine[j]
+      Dist = tapply(results[[i]]$Dist[true],round(results[[i]]$Dist[true],3),mean)
+      Metric = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),mean)
+      N = tapply(results[[i]]$N[true],round(results[[i]]$Dist[true],3),sum)
+      Comm = rep(unicombine[j],length(Metric))
+      if(j == 1)
+        out[[i]] = data.frame(Dist,Metric,N,Comm)
+      else
+        out[[i]] = rbind(out[[i]],data.frame(Dist,Metric,N,Comm))
+    }  
+  }
+  return(out)
+}
+
+plotEmpir = function(results,log="",col=NULL,lwd=NULL){
+  ## Purpose: to plot the results, expects that the graphical window has been 
+  ## setup appropriately 
+  ## Arguments
+  ## results: a list from which the results should be ploted
+  ## log: which axes are to be log transformed
+  ## col: what colors to use
+  ## lwd: the line width of the lines
+  if(is.null(lwd))
+    lwd = 2
+  for(i in seq_along(results)){
+    unigrains = unique(results[[i]]$Comm)
+    if(is.null(col))
+      col = 1:length(unigrains)
+    plot(Metric ~ Dist,data = results[[i]],subset= Comm == i,
+         xlim = range(Dist), ylim = range(Metric),type='n',log=log,
+         main=names(results)[i])
+    for(j in seq_along(unigrains)){
+      lines(Metric ~ Dist,data = results[[i]],subset= Comm == unigrains[j],
+            col=col[j],lwd=lwd)
+    }  
+  }
+}
+
 
 #####Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS#####
 
