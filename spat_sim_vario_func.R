@@ -2256,7 +2256,8 @@ sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), R
      ##make SIM into a site x species pres/absence matrix to be input into vario
      mat <- apply(census(SIM,snap=length(SIM$snaps)),c(1,2),as.logical)*1
      mat <- mat[,apply(mat,2,sum)>0] ##drop species that never occur
-     mat[as.vector(no.bbs),] <- -999 ##the code that identifies cells not sampled
+     if(exists('no.bbs'))
+       mat[as.vector(no.bbs),] <- -999 ##the code that identifies cells not sampled
      ###
      V.rand <- vario(mat,SIM$coords,pos.neg=FALSE) ##because we only need the expected variance
      VP.rand <- null.perms(mat,V.rand,NPERM,coords=SIM$coords,meth='random',npar=NPAR)
@@ -2268,7 +2269,6 @@ sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), R
      VP[,-1,]<-VP.spat$vario ## obs and pos/neg 
      VP[,2,] <- VP.spat$vario[,2,]+VP.spat$vario[,3,] ##add pos and neg fractions together to get the 'true' observed var
      if(!is.null(DESTDIRRAW)){
-  
       ##save time intensive results 
       OBJS <- paste(PREFIX, 'M', M, 'D', FRACTAL[D], 'K', max(K), 'S', S, 's', NICH.WD[s], 'u', DISP.WD[u],'rep', REP.ID[m],'.Rdata', sep = '')
       save(SIM,VP.rand,VP.spat,file=paste(DESTDIRRAW,"/",OBJS,sep=''))
