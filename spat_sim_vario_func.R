@@ -1035,7 +1035,7 @@ dist.cross.real<-function(x){
                               ratio = obs.gamma/exp.gamma)
     }
   }  
-  if(as.vector(x))
+  if(is.vector(x))
     vobject$p = sum(x)/length(x)
   else
     vobject$p = apply(x,2,sum,na.rm=TRUE)/nrow(x)
