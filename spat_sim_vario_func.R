@@ -94,7 +94,7 @@ site.rand<-function(mat){
  ##site totals are randomized, species totals are fixed
  N<-nrow(mat)
  rmat<- apply(mat,2,function(x) x[sample(N)])
- rdists<- dist.cross.real(rmat)
+ rdists<- getCovFractions(rmat)
  rpos.cv<- sum(rdists$pos)/(N*(N-1)/2)
  rneg.cv<- sum(rdists$neg)/(N*(N-1)/2)
  rtot.cv<- rpos.cv + rneg.cv
@@ -809,24 +809,25 @@ FixUnSamp2<-function(oarray,rarray){
 #####Part III - ANALYZING AND GRAPHING RESULTS#####
 
 ##3.1##
-dist.cross.real<-function(x){
- ##Purpose: calculates the lower diagonal of a sp covariance matrix
- ##to provide the positive and negative fractions of covariance
- ##output is two lower triangular matrices, each in vector format
- ##Called within the function 'vario'
- ##Arguments: 
- ##x is a sitexsp matrix (sp as columns) of real numbers
- ##rows are the sites, columnas are the species
- N<-as.integer(nrow(x))
- S<-as.integer(ncol(x)) 
- x<-as.double(ifelse(is.na(x) | x==-999,-99999,x))
- pos<-as.double(rep(0,(N*(N-1))/2))
- neg<-as.double(rep(0,(N*(N-1))/2))
- result<-.C("loopcovreal",x,N,S,pos,neg)
- out<-list()
- out$pos<-result[[4]]
- out$neg<-result[[5]]
- out
+'getCovFractions' = function(x)
+{
+  ## Purpose: calculates the lower diagonal of a sp covariance matrix
+  ## to provide the positive and negative fractions of covariance
+  ## output is two lower triangular matrices, each in vector format
+  ## Called within the function 'vario'
+  ## Arguments: 
+  ## x is a sitexsp matrix (sp as columns) of real numbers
+  ## rows are the sites, columns are the species
+  N = as.integer(nrow(x))
+  S = as.integer(ncol(x)) 
+  x = as.double(ifelse(is.na(x) | x == -999,-99999,x))
+  pos = as.double(rep(0,(N*(N-1))/2))
+  neg = as.double(rep(0,(N*(N-1))/2))
+  result = .C('loopcovreal',x,N,S,pos,neg,PACKAGE = vario)
+  out = list()
+  out$pos = result[[4]]
+  out$neg = result[[5]]
+  return(out)
 } 
 
 ##3.2##
@@ -1199,7 +1200,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
   require(snowfall)
   sfInit(parallel=TRUE, cpus=npar, type="SOCK")
   sfClusterSetupRNG()
-  sfExport("pop", "vobject", "coords", "meth", "all", "sp", "RPargs", "RandPatPar", "RandPat", "FixUnSamp","FixUnSamp2", "SpatPerm2D", "SpatPerm2D.str", "vario", "dist.cross.real", "null.gen")
+  sfExport("pop", "vobject", "coords", "meth", "all", "sp", "RPargs", "RandPatPar", "RandPat", "FixUnSamp","FixUnSamp2", "SpatPerm2D", "SpatPerm2D.str", "vario", "getCovFractions", "null.gen")
   if(linux)
    sfClusterEval(dyn.load("danspkg.so"))
   else{
