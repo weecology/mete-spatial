@@ -2229,17 +2229,28 @@ sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), R
    for(u in 1:length(DISP.WD)) { 
     for(m in 1:REPS) {
      if(is.character(ENV)){
-      HAB <- gen.env(M = M, env = ENV, D = FRACTAL[D])
-      OPTIM <- runif(S,.1,.9)*M #species ennviornmental optima
+      if(ENV == 'neutral'){
+       HAB = 1
+       OPTIM = 1
+      }
+      else{
+       HAB <- gen.env(M = M, env = ENV, D = FRACTAL[D])
+       OPTIM <- runif(S,.1,.9)*M #species ennviornmental optima
+      }
      }
      else{
       HAB <- ifelse(is.na(ENV),0,ENV)
       OPTIM <- runif(S,range(ENV,na.rm=TRUE)) #species ennviornmental optima
      }
-     if(is.null(SIMINPUT))
-      D.est <- D.vario.est(HAB)
-     else
+     if(is.null(SIMINPUT)){
+      if(ENV == 'neutral')
+       D.est <- NA
+      else
+       D.est <- D.vario.est(HAB)
+     }
+     else{
       D.est <- FRACTAL
+     }
      SIM <- neut.sim.uni(M = M, K = K, S = S, s = NICH.WD[s], u = DISP.WD[u],b = BIRTH, d = DEATH, m = IMMIGRATE,habitat = HAB,
                          fitness = OPTIM,fec = FEC, time = TIME, cycles = CYCLES, mig = MIG, grad.len = grad.len)
      ##make SIM into a site x species pres/absence matrix to be input into vario
