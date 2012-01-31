@@ -934,19 +934,27 @@ dist.cross.real<-function(x){
   }
   if (is.na(hmax))
     hmax = round((max(Dist)/2)/grain) * grain
+  if (is.vector(x)){
+    S = 1
+    N = length(x)
+  }
+  else{
+    S = ncol(x)
+    N = nrow(x)
+  } 
   vobject = list()
   if(class(x) == "sim"){
     if(binary)
       x = apply(census(x,snap=snap),c(1,2),as.logical)*1
     else
      x = census(x,snap=snap)
-    vobject$parms = data.frame(grain,hmax,S=ncol(x),N=nrow(x),pos.neg,
+    vobject$parms = data.frame(grain,hmax,S=S,N=N,pos.neg,
                                median,niche.wid.rel=x$p$s.rel,
                                disp.wid.rel=x$p$u.rel, direction,tolerance,
                                unit.angle,distance.metric)
   }
   else{
-    vobject$parms = data.frame(grain,hmax,S=ncol(x),N=nrow(x),pos.neg,
+    vobject$parms = data.frame(grain,hmax,S=S,N=N,pos.neg,
                                median,direction,tolerance,unit.angle,
                                distance.metric)
   }
@@ -989,7 +997,7 @@ dist.cross.real<-function(x){
   vobject$vario = cbind(vobject$vario, exp.var = exp.gamma)
   if(median)
     exp.med = sapply(exp.split,median,na.rm=TRUE)
-  if(ncol(x) > 1){ ## i.e. x is a site x sp matrix and not simply a vector
+  if(!is.vector(x)){ ## i.e. x is a site x sp matrix and not simply a vector
     ## if 'x' is a sitexsp pres/abse matrix the following computes site species richness
     rich = apply(x,1,sum)
     ## see equation 7 in Wagner, H. 2003. Spatial covariance in plant
