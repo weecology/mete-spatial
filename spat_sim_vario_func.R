@@ -1035,7 +1035,10 @@ dist.cross.real<-function(x){
                               ratio = obs.gamma/exp.gamma)
     }
   }  
-  vobject$p = apply(x,2,sum,na.rm=TRUE)/nrow(x)
+  if(as.vector(x))
+    vobject$p = sum(x)/length(x)
+  else
+    vobject$p = apply(x,2,sum,na.rm=TRUE)/nrow(x)
   vobject$perm = FALSE
   ## the above line indicates to the function 'vGraph' if the variogram is the
   ## result of a randomization or not
