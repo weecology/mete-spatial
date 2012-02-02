@@ -2098,9 +2098,12 @@ wid = function(Nbisect){
     }
     if(is.null(names(results[[i]])))
       commNames = 1:length(results[[i]])
+    else
+      commNames = names(results[[i]])
     out[[i]] = data.frame(Dist = unlist(Dist),Metric = unlist(vExp),N = unlist(n))
     out[[i]] = data.frame(out[[i]],
-               Comm = unlist(mapply(rep,commNames,each=sapply(vExp,length))))
+               Comm = unlist(mapply(rep,commNames,each=sapply(vExp,length),
+                                       SIMPLIFY=FALSE)))
   }
   return(out)
 }  
@@ -2155,7 +2158,6 @@ plotEmpir = function(results,log="",col=NULL,lwd=NULL){
     }  
   }
 }
-
 
 #####Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS#####
 
