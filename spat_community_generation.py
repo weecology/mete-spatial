@@ -23,8 +23,7 @@ import mete
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
-def comm_filename(S, N, ncomm, bisec, runtype='grid', abu = None,
-                   comm_name = None):
+def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
     """Get filename for simulated community produced by mete.sim_spatial_whole()
     
     Keyword arguments:
@@ -34,7 +33,7 @@ def comm_filename(S, N, ncomm, bisec, runtype='grid', abu = None,
     bisec -- the number of bisections
     transect -- a boolean if False then it is assumed a 2D grid was generated
     abu -- the path to an abundance file else this should be None
-    comm_name -- specific name for the output community
+    comm_name -- name for the output community
     """
                  
     if not comm_name:
@@ -43,6 +42,10 @@ def comm_filename(S, N, ncomm, bisec, runtype='grid', abu = None,
         empir = '_empirSAD'
     else:
         empir = ''
+    if transect:
+        runtype = 'transect'
+    else:
+        runtype = 'grid'
     return './comms/simulated_comms_%s%s_C%s_B%s_%s.txt' % (comm_name,
                                                                 empir, ncomm,
                                                                 bisec, runtype)
