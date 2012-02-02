@@ -21,8 +21,8 @@ import os
 import mete
 import spat
 
-if 'comm' not in os.listdir(os.path.curdir):
-    os.mkdir('comm')
+if 'comms' not in os.listdir(os.path.curdir):
+    os.mkdir('comms')
 
 if(len(sys.argv) > 1):
     S = int(sys.argv[1]) 
