@@ -48,9 +48,7 @@ plotEmpir(empirVarAbuAvg)
 plotEmpir(empirVarAbuAvg,log='xy')
 #dev.off()
 
-
-
-vGridExpAvg = apply(vGridExp,1,mean)
-vGridExpQt = apply(vGridExp,1,function(x)quantile(x,c(.025,.975)))
+#vGridExpAvg = apply(vGridExp,1,mean)
+#vGridExpQt = apply(vGridExp,1,function(x)quantile(x,c(.025,.975)))
 
 
