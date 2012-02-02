@@ -3,7 +3,7 @@ def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
 
 def comm_filename(S, N, ncomm, bisec, transect = False, abu = None,
-                   shrt_name = None):
+                   comm_name = None):
     """Creates the file name of a simulated community produced by the function
     sim_spatial_whole() in the mete.py module
     
