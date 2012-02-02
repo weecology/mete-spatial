@@ -16,9 +16,13 @@ by default.
 import numpy as np
 import csv
 import sys
+import os
 
 import mete
 import spat
+
+if 'comm' not in os.listdir(os.path.curdir):
+    os.mkdir('comm')
 
 if(len(sys.argv) > 1):
     S = int(sys.argv[1]) 
