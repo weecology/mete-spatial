@@ -141,3 +141,13 @@ Rscript spat_analysis.R 0 0 200 9 FALSE abu varWithin NA NA serp TRUE >error_abu
 Rscript spat_analysis.R 0 0 200 9 FALSE binary varWithin NA NA serp_empirSAD TRUE >error_bin_varWithin_serp_empirSAD.log 2>&1 &
 Rscript spat_analysis.R 0 0 200 9 FALSE abu varWithin NA NA serp_empirSAD TRUE >error_abu_varWithin_serp_empirSAD.log 2>&1 &
 
+
+############compute METE SARs
+python spat_mete_sar.py 301 205096 14 bci >error_bci_sar.log 2>&1 &
+python spat_mete_sar.py 136 4411 13 cocoli1 >error_cocoli1_sar.log 2>&1 &
+python spat_mete_sar.py 141 4241 13 cocoli2 >error_cocoli2_sar.log 2>&1 &
+python spat_mete_sar.py 181 7502 13 sherman1 >error_sherman1_sar.log 2>&1 &
+python spat_mete_sar.py 168 7743 13 sherman2 >error_sherman2_sar.log 2>&1 &
+python spat_mete_sar.py 191 6660 13 sherman3 >error_sherman3_sar.log 2>&1 &
+python spat_mete_sar.py 24 37182 9 serp >error_serp_sar.log 2>&1 &
+
