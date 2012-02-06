@@ -24,25 +24,6 @@ census<-function (sim, snap = length(sim$snaps), type = "census")
     return(output)
 }
 
-
-grid.pres<-function(x){
- ##place site by species matrix (x) into an S x sqrt(N) x sqrt(N) array
- ##a multidimensional array that eases computing 
- ##spatial explict SAR
- S<-ncol(x)
- N<-nrow(x)
- Psp<-array(0,dim=c(S,sqrt(N),sqrt(N)))
- icount<-0
- for(col in 1:sqrt(N)){
-  for(row in 1:sqrt(N)){
-   icount<-icount+1
-   for(sp in 1:S){
-    if(x[icount,sp]>0){
-     Psp[sp,row,col]<-1
- }}}}
- Psp
-}
-
 spat.dep<-function(x,g,sp.dep=FALSE){
  ##create spatially autocorrelated comm but still species independent
  ##use Palmer & van der Maarel method for transects (may be applied to quads although strangely)
@@ -1567,38 +1548,70 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   if(box)box()
 }}
 
+'mat2psp' = function(x,N=NULL,M=NULL)
+{
+  ##place site by species matrix (x) into an S x N x M array where N >= M
+  ##a multidimensional array that eases computing 
+  ##replaces the old function 'grid.pres'
+  S = ncol(x)
+  if(is.null(N))
+    N = sqrt(nrow(x))
+  if(is.null(M))
+    M = N
+  psp = array(x,dim=c(N,M,S))
+  psp = aperm(psp,c(3,1,2))
+  return(psp)
+}
+
 ##3.8##
-grid.SAR<-function(psp,grains,single=FALSE){
- ##construct spatially explict SAR based upon a mapped grid of presences
- ##psp is an S x n  x n array of presence absence
- ##grains are the areas for which to compute the SAR
- ##only grains that have integer square roots are considered
- ##single FALSE incidcates that there is more than one species, TRUE means single species
- ##beta FALSE; if TRUE the average jaccard index turnover is also computed
- grains<-grains[sqrt(grains)==round(sqrt(grains))]
- lens<-sqrt(grains)
- ns<-dim(psp)[2]
- sr<-rep(0,length(lens))
- cs<-rep(0,length(lens))
- for(l in 1:length(lens)){
-  if(lens[l]==1){ ##if area=1
-   sr[l]<-sum(psp)/ns^2
-   cs[l]<-1
+'getSAR' = function(psp,grains,single=FALSE)
+{
+  ## Purpose: to construct spatially explict SAR based upon a mapped grid of
+  ## occurances, this function replaces the older function 'grid.SAR'
+  ## Arguments:
+  ## psp: S x N x M pres/absen array where N >= M
+  ## grains: the areas in pixels for which to compute the SAR
+  ##         only grains that have integer log base 2 are considered
+  ## single: FALSE incdicates that there is more than one species
+  if(single){
+    N = dim(psp)[1]
+    M = dim(psp)[2]
   }
   else{
-   for(col in 1:(ns-lens[l]+1)){
-    for(row in 1:(ns-lens[l]+1)){
-     if(single){ ##if only for a single species
-      sr[l]<-sr[l]+sum(sum(psp[row:(row+(lens[l]-1)),col:(col+(lens[l]-1))])>0)
-      cs[l]<-cs[l]+1
-     }
-     else{
-      sr[l]<-sr[l]+sum(apply(psp[,row:(row+(lens[l]-1)),col:(col+(lens[l]-1))],1,sum)>0)
-      cs[l]<-cs[l]+1
- }}}}}
- out<-cbind(grains,sr/cs) ##mean richness
- colnames(out)<-c('grains','richness')
- out
+    N = dim(psp)[2]
+    M = dim(psp)[3]
+  }
+  grains = grains[log2(grains) == round(log2(grains))]
+  grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
+  lenN = rep(sqrt(grainsSqr),each=2)[-1]
+  lenM = rep(sqrt(grainsSqr),each=2)[-length(grainsSqr)*2]
+  sr = rep(0,length(grains))
+  cs = rep(0,length(grains))
+  for(l in seq_along(grains)){
+    if(grains[l] == 1){  ## if area=1
+      sr[l] = sum(psp)/(N*M)
+      cs[l] = 1
+    }
+    else{
+      for(n in 1:(N-lenN[l]+1)){
+        for(m in 1:(M-lenM[l]+1)){
+          if(single){  ## if only for a single species
+            sr[l] = sr[l] + sum(sum(psp[n:(n+(lenN[l]-1)),
+                                        m:(m+(lenM[l]-1))])>0)
+            cs[l] = cs[l] + 1
+          }
+          else{
+            sr[l] = sr[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
+                                           m:(m+(lenM[l]-1))],1,sum)>0)
+            cs[l] = cs[l] + 1
+          }
+        }
+      }
+    }
+  }
+  out = cbind(grains,sr/cs)  ## mean richness
+  colnames(out) = c('grains','richness')
+  out
 }  
 
 ##3.9##
