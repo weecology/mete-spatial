@@ -17,8 +17,8 @@ if 'sar' not in os.listdir(os.path.curdir):
 if(len(sys.argv) > 1):
     S = int(sys.argv[1]) 
     N = int(sys.argv[2]) 
-    bisec = int(sys.argv[4])
-    shrt_name = sys.argv[5]
+    bisec = int(sys.argv[3])
+    shrt_name = sys.argv[4]
 else:
     S = 10
     N = 100
