@@ -50,59 +50,61 @@ def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
                                                                 empir, ncomm,
                                                                 bisec, runtype)
 
-if 'comms' not in os.listdir(os.path.curdir):
-    os.mkdir('comms')
-
-if len(sys.argv) > 1:
-    S = int(sys.argv[1]) 
-    N = int(sys.argv[2]) 
-    ncomm = int(sys.argv[3]) 
-    bisec = int(sys.argv[4])
-    transect = str2bool(sys.argv[5])
-    abu = sys.argv[6]
-    shrt_name = sys.argv[7]
-else:
-    S = 10
-    N = 100
-    ncomm = 1
-    bisec = 9
-    transect = False
-    abu = 'None'
-    shrt_name = None
+def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
     
-if abu != 'None':
-    datafile = open(abu,'r')
-    datareader = csv.reader(datafile)
-    data = []
-    for row in datareader:
-        data.append(row)
-    abu = [int(x) for x in data[0]]
-else:
-    abu = None
- 
-nquad = 2 ** (bisec - 1) # number of quadrats per community 
- 
-comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
+    nquad = 2 ** (bisec - 1) # number of quadrats per community 
+    
+    # Make an array so that the data is easier to output
+    out = np.empty((ncomm, nquad, S + 3)) 
+    for i in range(0,ncomm):
+        for j in range(0, nquad):
+            out[i,j,] = [i + 1] + comms[i][j][0:2] + comms[i][j][2]
 
-# Make an array so that the data is easier to output
-out = np.empty((ncomm, nquad, S + 3)) 
-for i in range(0,ncomm):
-    for j in range(0, nquad):
-        out[i,j,] = [i + 1] + comms[i][j][0:2] + comms[i][j][2]
+    # create a data header
+    header = []
+    for i in range(1, S+1):
+        header.append('sp' + str(i))
 
-# create a data header
-header = []
-for i in range(1, S+1):
-    header.append('sp' + str(i))
+    header = ['comm','x','y'] + header
+    filename = comm_filename(S,N,ncomm,bisec,transect,abu,shrt_name)
+    writer = open(filename,'wb') 
+    datawriter = csv.writer(writer)
+    datawriter.writerow(header)
+    for i in range(0, ncomm):
+        datawriter.writerows(out[i,:,:])
+    writer.close()
 
-header = ['comm','x','y'] + header
-
-filename = comm_filename(S,N,ncomm,bisec,transect,abu,shrt_name)
-
-writer = open(filename,'wb') 
-datawriter = csv.writer(writer)
-datawriter.writerow(header)
-for i in range(0, ncomm):
-    datawriter.writerows(out[i,:,:])
-
-writer.close()
+if __name__ == "__main__":
+    
+    if 'comms' not in os.listdir(os.path.curdir):
+        os.mkdir('comms')
+    
+    if len(sys.argv) > 1:
+        S = int(sys.argv[1]) 
+        N = int(sys.argv[2]) 
+        ncomm = int(sys.argv[3]) 
+        bisec = int(sys.argv[4])
+        transect = str2bool(sys.argv[5])
+        abu = sys.argv[6]
+        shrt_name = sys.argv[7]
+    else:
+        S = 10
+        N = 100
+        ncomm = 1
+        bisec = 9
+        transect = False
+        abu = 'None'
+        shrt_name = None
+        
+    if abu != 'None':
+        datafile = open(abu,'r')
+        datareader = csv.reader(datafile)
+        data = []
+        for row in datareader:
+            data.append(row)
+        abu = [int(x) for x in data[0]]
+    else:
+        abu = None
+     
+    comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
+    output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name)
