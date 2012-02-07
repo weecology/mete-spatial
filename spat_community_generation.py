@@ -21,6 +21,7 @@ import os
 import mete
 
 from itertools import repeat
+from math import exp
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
