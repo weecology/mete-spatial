@@ -17,7 +17,6 @@ import numpy as np
 import csv
 import sys
 import os
-import pp
 
 import mete
 
@@ -82,7 +81,7 @@ def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
 def explore_parameter_space(Svals, Nvals, ncomm, bisec, transect=False):
     for S in Svals:
         for N in Nvals:
-            comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
+            comms = [mete.sim_spatial_whole(S, N, bisec, transect) for i in range(0, ncomm)]
             output_results(comms, S, N, ncomm, bisec, transect, None, None)
             print S, N
 
@@ -90,7 +89,7 @@ if __name__ == "__main__":
         
     if len(sys.argv) > 1:
         S = int(sys.argv[1]) 
-        N = int(sys.argv[2]) 
+        N = int(sys.argv[2])
         ncomm = int(sys.argv[3]) 
         bisec = int(sys.argv[4])
         transect = str2bool(sys.argv[5])
