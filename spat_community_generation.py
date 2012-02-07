@@ -81,7 +81,9 @@ def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
 def explore_parameter_space(Svals, Nvals, ncomm, bisec, transect=False):
     for S in Svals:
         for N in Nvals:
-            comms = [mete.sim_spatial_whole(S, N, bisec, transect) for i in range(0, ncomm)]
+            beta = mete.get_beta(S, N)
+            comms = [mete.sim_spatial_whole(S, N, bisec, transect=transect,
+                                            beta=beta) for i in range(0, ncomm)]
             output_results(comms, S, N, ncomm, bisec, transect, None, None)
             print S, N
 
