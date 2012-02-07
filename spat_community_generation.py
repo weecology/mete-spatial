@@ -53,7 +53,7 @@ def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
 if 'comms' not in os.listdir(os.path.curdir):
     os.mkdir('comms')
 
-if(len(sys.argv) > 1):
+if len(sys.argv) > 1:
     S = int(sys.argv[1]) 
     N = int(sys.argv[2]) 
     ncomm = int(sys.argv[3]) 
@@ -70,7 +70,7 @@ else:
     abu = 'None'
     shrt_name = None
     
-if(abu != 'None'):
+if abu != 'None':
     datafile = open(abu,'r')
     datareader = csv.reader(datafile)
     data = []
@@ -105,5 +105,4 @@ datawriter.writerow(header)
 for i in range(0, ncomm):
     datawriter.writerows(out[i,:,:])
 
-writer.close()  
-
+writer.close()
