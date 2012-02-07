@@ -17,8 +17,11 @@ import numpy as np
 import csv
 import sys
 import os
+import pp
 
 import mete
+
+from itertools import repeat
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
@@ -53,7 +56,9 @@ def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
 def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
     
     nquad = 2 ** (bisec - 1) # number of quadrats per community 
-    
+    if 'comms' not in os.listdir(os.path.curdir):
+            os.mkdir('comms')    
+
     # Make an array so that the data is easier to output
     out = np.empty((ncomm, nquad, S + 3)) 
     for i in range(0,ncomm):
@@ -73,12 +78,16 @@ def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
     for i in range(0, ncomm):
         datawriter.writerows(out[i,:,:])
     writer.close()
+    
+def explore_parameter_space(Svals, Nvals, ncomm, bisec, transect=False):
+    for S in Svals:
+        for N in Nvals:
+            comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
+            output_results(comms, S, N, ncomm, bisec, transect, None, None)
+            print S, N
 
 if __name__ == "__main__":
-    
-    if 'comms' not in os.listdir(os.path.curdir):
-        os.mkdir('comms')
-    
+        
     if len(sys.argv) > 1:
         S = int(sys.argv[1]) 
         N = int(sys.argv[2]) 
