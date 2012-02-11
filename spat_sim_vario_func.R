@@ -1128,6 +1128,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
   r.vals$p.conv2<-0 ##average proportion of species that converged with pixel swaps
  }
  if(npar==1){ ##all permutations option not yet implemented for 1 processor
+  pb <- txtProgressBar(min = 0, max = nperm, style = 3)
   for(i in 1:nperm){
    if(RPargs[[1]]){ ##use the random pattern algo for the spatial null
     out<-RandPatPar(psp=pop,nstrata=RPargs[[2]],mtrials1=RPargs[[3]],mtrials2=RPargs[[4]],alpha=RPargs[[5]],npar=RPargs[[6]])
@@ -1174,8 +1175,12 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
      else
       r.vals$vario[,,i+1] <- as.matrix(rv[,4:5])
    }}
-   print(i)
+   #print(i)
+   Sys.sleep(0.1)
+   # update progress bar
+   setTxtProgressBar(pb, i)
   }
+  close(pb)
  }
  else{ ##computing in parallel
   require(snowfall)
@@ -1560,47 +1565,52 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
     M = N
   psp = array(x,dim=c(N,M,S))
   psp = aperm(psp,c(3,1,2))
+  spSums = apply(psp,1,sum)
+  ## drop species that never occur
+  if(any(spSums %in% 0))
+    psp = psp[spSums > 0,,]
   return(psp)
 }
 
 ##3.8##
-'getSAR' = function(psp,grains,single=FALSE)
+'getSAR' = function(psp,grains,mv.window=FALSE)
 {
-  ## Purpose: to construct spatially explict SAR based upon a mapped grid of
-  ## occurances, this function replaces the older function 'grid.SAR'
+  ## Purpose: to construct spatially explict SAR based upon a
+  ## mapped grid of occurances
+  ## this function replaces the older function 'grid.SAR'
   ## Arguments:
   ## psp: S x N x M pres/absen array where N >= M
   ## grains: the areas in pixels for which to compute the SAR
   ##         only grains that have integer log base 2 are considered
-  ## single: FALSE incdicates that there is more than one species
-  if(single){
-    N = dim(psp)[1]
-    M = dim(psp)[2]
-  }
-  else{
-    N = dim(psp)[2]
-    M = dim(psp)[3]
-  }
+  ## mv.window: FALSE indicates that a non-moving window SAR will be calculated
+  ## Note: This implementation may require that the grain of 
+  N = dim(psp)[2]
+  M = dim(psp)[3]
   grains = grains[log2(grains) == round(log2(grains))]
   grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
-  lenN = rep(sqrt(grainsSqr),each=2)[-1]
-  lenM = rep(sqrt(grainsSqr),each=2)[-length(grainsSqr)*2]
+  ## define the size of sampling units on each side
+  lenN = 2^ceiling(log2(grains)/2)
+  lenM = 2^floor(log2(grains)/2)
+#  lenN = rep(sqrt(grainsSqr),each=2)[-1] 
+#  lenM = rep(sqrt(grainsSqr),each=2)[-length(grainsSqr)*2]
   sr = rep(0,length(grains))
   cs = rep(0,length(grains))
   for(l in seq_along(grains)){
     if(grains[l] == 1){  ## if area=1
-      sr[l] = sum(psp)/(N*M)
-      cs[l] = 1
+      sr[l] = sum(psp)
+      cs[l] = N*M
     }
     else{
-      for(n in 1:(N-lenN[l]+1)){
-        for(m in 1:(M-lenM[l]+1)){
-          if(single){  ## if only for a single species
-            sr[l] = sr[l] + sum(sum(psp[n:(n+(lenN[l]-1)),
-                                        m:(m+(lenM[l]-1))])>0)
-            cs[l] = cs[l] + 1
-          }
-          else{
+      if(mv.window){
+        brksN = 1:(N-lenN[l]+1)
+        brksM = 1:(M-lenM[l]+1)
+      }
+      else{
+        brksN = seq(1,N,lenN[l])
+        brksM = seq(1,M,lenM[l])
+      }  
+      for(n in brksN){
+        for(m in brksM){
             sr[l] = sr[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
                                            m:(m+(lenM[l]-1))],1,sum)>0)
             cs[l] = cs[l] + 1
@@ -1608,10 +1618,9 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
         }
       }
     }
-  }
-  out = cbind(grains,sr/cs)  ## mean richness
-  colnames(out) = c('grains','richness')
-  out
+  out = cbind(grains,sr/cs,cs)  
+  colnames(out) = c('grains','richness','count')
+  return(out)
 }  
 
 ##3.9##
