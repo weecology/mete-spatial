@@ -46,6 +46,10 @@ Rscript spat_serp_analysis.R varWithin abu >error_varWithin_abu_serp.log 2>&1 &
 Rscript spat_serp_analysis.R sorensen binary >error_sorensen_binary_serp.log 2>&1 &
 Rscript spat_serp_analysis.R varWithin binary >error_varWithin_binary_serp.log 2>&1 &
 
+Rscript spat_cross_analysis.R sorensen abu >error_sorensen_abu_cross.log 2>&1 &
+Rscript spat_cross_analysis.R varWithin abu >error_varWithin_abu_cross.log 2>&1 &
+Rscript spat_cross_analysis.R sorensen binary >error_sorensen_binary_cross.log 2>&1 &
+Rscript spat_cross_analysis.R varWithin binary >error_varWithin_binary_cross.log 2>&1 &
 
 
 ## generate empirically based communities WITHOUT fixing the SAD
@@ -149,5 +153,6 @@ python spat_mete_sar.py 141 4241 13 cocoli2 >error_cocoli2_sar.log 2>&1 &
 python spat_mete_sar.py 181 7502 13 sherman1 >error_sherman1_sar.log 2>&1 &
 python spat_mete_sar.py 168 7743 13 sherman2 >error_sherman2_sar.log 2>&1 &
 python spat_mete_sar.py 191 6660 13 sherman3 >error_sherman3_sar.log 2>&1 &
+python spat_mete_sar.py 7 7625 12 cross >error_cross_sar.log 2>&1 &
 python spat_mete_sar.py 24 37182 9 serp >error_serp_sar.log 2>&1 &
 
