@@ -18,11 +18,15 @@ for(i in seq_along(toFix)){
   mete[[toFix[i]]]$area = mete[[toFix[i]]]$area * 2
   mete[[toFix[i]]] = rbind(c(1,NA),mete[[toFix[i]]])
 }
-
+toFix = 'cross'
+toFix = which(names(mete)%in%toFix)
+for(i in seq_along(toFix)){
+  mete[[toFix[i]]]$area = mete[[toFix[i]]]$area * 4
+  mete[[toFix[i]]] = rbind(c(1,NA),c(2,NA),mete[[toFix[i]]])
+}
 
 fileNames = dir('./data')
 commFiles = grep('comms',fileNames)
-commFiles = commFiles[-c(4,9)] ## needed for the time being until we clear out the old comm files
 ## First aggregate community files into a single list
 dat = vector('list',length(commFiles))
 for(i in seq_along(commFiles))
@@ -37,8 +41,8 @@ gc()
 
 ## convert them to multidimensional arrays
 unlist(lapply(dat,nrow))
-Ns = c(rep(128,3),16,rep(128,2),64)
-Ms = c(rep(64,3),16,rep(64,2),64)
+Ns = c(rep(128,3),64,16,rep(128,2),64)
+Ms = c(rep(64,4),16,rep(64,2),64)
 psp = vector('list',length(dat))
 for(i in seq_along(dat))
   psp[[i]] = mat2psp(dat[[i]][,-(1:3)],Ns[i],Ms[i])
@@ -47,6 +51,7 @@ names(psp) = names(dat)
 AminExact = c(1e3/128 * 5e2/64,
               2e2/128 * 1e2/64,
               2e2/128 * 1e2/64,
+              2e2/64 * 2e2/64,
               1,
               2e2/128 * 1e2/64,
               2e2/128 * 1e2/64,
