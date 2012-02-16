@@ -43,8 +43,45 @@ quadLen = shortSide/ nPixels
 quadN = nPixels^2 * (longSide / shortSide)
 ## generate a site x species matrix for each spatial scale
 comms1 = makeCommMat(dat1$spnum,S,cbind(dat1$x,dat1$y),quadLen,quadN,
-                     c(140,240,240,440),'_1')
+                     c(140,240,240,440))
+write.csv(comms1,file='/home/danmcglinn/maxent/spat/data/sherman1_comms.csv')
+## work with dat2 now
 
+shortSide = 100
+longSide = 200
+## for square quadrats the lengths are in meters defined here
+nPixels = wid(c(14,12,10,8,6,4))
+quadLen = shortSide/ nPixels
+quadN = nPixels^2 * (longSide / shortSide)
+## generate a site x species matrix for each spatial scale
+comms2 = makeCommMat(dat2$spnum,S,cbind(dat2$x,dat2$y),quadLen,quadN,
+                     c(140,240,40,240))
+write.csv(comms2,file='/home/danmcglinn/maxent/spat/data/sherman2_comms.csv')
+
+## work with dat3 now
+
+shortSide = 140
+longSide = 140
+## for square quadrats the lengths are in meters defined here
+nPixels = wid(c(14,12,10,8,6,4))
+quadLen = shortSide/ nPixels
+quadN = nPixels^2 * (longSide / shortSide)
+## generate a site x species matrix for each spatial scale
+comms3 = makeCommMat(dat3$spnum,S,cbind(dat3$x,dat3$y),quadLen,quadN,
+                     c(0,140,0,140))
+write.csv(comms3,file='/home/danmcglinn/maxent/spat/data/sherman3_comms.csv')
+
+
+## Below is an alternative way to aggregate the results into just a single file
+shortSide = 100
+longSide = 200
+## for square quadrats the lengths are in meters defined here
+nPixels = wid(c(14,12,10,8,6,4))
+quadLen = shortSide/ nPixels
+quadN = nPixels^2 * (longSide / shortSide)
+## generate a site x species matrix for each spatial scale
+comms1 = makeCommMat(dat1$spnum,S,cbind(dat1$x,dat1$y),quadLen,quadN,
+                     c(140,240,240,440),'_1')
 ## work with dat2 now
 
 shortSide = 100
