@@ -53,7 +53,7 @@ if(name != 'NA'){
                paste(name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
 }
 
-fileName = paste('simulated_comms',fileSuffix,'.txt',sep='')
+fileName = paste('simulated_comms_',fileSuffix,'.txt',sep='')
 
 big = ifelse(big,TRUE,FALSE)
 if(big)
