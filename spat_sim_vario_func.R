@@ -1866,19 +1866,19 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,
     if(writeToFile){      
       ## update result files as loop proceeds
       if(any('varWithin' %in% metricsToCalc)){
-        save(varWithin,file=paste(getwd(),'/varWithin/varWithin',
+        save(varWithin,file=paste(getwd(),'/varWithin/varWithin_',
              fileSuffix,'_',dataType,'.Rdata',sep=''))  
       }
       if(any('varBetween' %in% metricsToCalc)){
-        save(varBetween,file=paste(getwd(),'/varBetween/varBetween',
+        save(varBetween,file=paste(getwd(),'/varBetween/varBetween_',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }
       if(any('jaccard' %in% metricsToCalc)){
-        save(jaccard,file=paste(getwd(),'/jaccard/jaccard',
+        save(jaccard,file=paste(getwd(),'/jaccard/jaccard_',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }
       if(any('sorensen' %in% metricsToCalc)){
-        save(sorensen,file=paste(getwd(),'/sorensen/sorensen',
+        save(sorensen,file=paste(getwd(),'/sorensen/sorensen_',
              fileSuffix,'_',dataType,'.Rdata',sep=''))
       }             
     }

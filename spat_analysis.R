@@ -44,13 +44,13 @@ tolerance = ifelse(tolerance == 'NA',NA,as.numeric(tolerance))
 
 if(name == 'NA'){
   fileSuffix = ifelse(transect,
-               paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
-               paste('_S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+               paste('S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
+               paste('S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
 }
 if(name != 'NA'){
   fileSuffix = ifelse(transect,
-               paste('_',name,'_C',ncomm,'_B',bisec,'_transect',sep=''),
-               paste('_',name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+               paste(name,'_C',ncomm,'_B',bisec,'_transect',sep=''),
+               paste(name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
 }
 
 fileName = paste('simulated_comms',fileSuffix,'.txt',sep='')
