@@ -865,9 +865,9 @@ FixUnSamp2<-function(oarray,rarray){
   if(distance.metric != 'euclidean'){
     if(pos.neg)
       stop("cannot commpute pos-neg covariance using a turnover metric")
+    else
+      require(vegan)
   }
-  else
-    require(vegan)
   ## geoR code from function variog starts here'
   unit.angle = match.arg(unit.angle)
   if (mode(direction) == "numeric") {
