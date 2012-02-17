@@ -10,22 +10,23 @@ library(vegan)
 library(danspkg)
 source('spat_sim_vario_func.R')
 
-clArgs <- commandArgs(TRUE)
+clArgs = commandArgs(trailingOnly=TRUE)
 if( length(clArgs) > 1){
-  metricsToCalc <- clArgs[1]
-  dataType <- clArgs[2]
+  commName = clArgs[1]
+  metricsToCalc = clArgs[2]
+  dataType = clArgs[3]
 }
-if( !exists(as.character(substitute(metricsToCalc))) ){
-  metricsToCalc <- 'all'
-  dataType <- 'abu'
+if( length(clArgs) == 0 ){
+  stop('Must specify commName, metricsToCalc, & dataType at command line')
+  q('no')
 }
 
 ## read in comms file for the 1999 census (i.e., census3) of sherman
-comms = read.csv('./data/sherman_comms.csv',header=TRUE)
+comms = read.csv(paste('./data/',commName,'_comms.csv',sep=''))
 
 ## compute  Dist Decay statistics
 metrics = calcMetrics(comms,metricsToCalc,dataType,writeToFile=TRUE,
-                      fileSuffix='_sherman')
+                      fileSuffix=commName)
 
 
 

@@ -2,7 +2,7 @@
 setwd('/home/danmcglinn/maxent/spat')
 source('spat_sim_vario_func.R')
 
-shrtnames = c('bci','cocoli','sherman','serp')
+shrtnames = c('bci','cocoli','sherman','cross','serp')
 
 empirBin = getResults(shrtnames,'sorensen','binary')
 empirAbu = getResults(shrtnames,'sorensen','abu')
