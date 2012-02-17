@@ -1,6 +1,4 @@
-svn checkout https://weecology.svn.beanstalkapp.com/maxent/trunk /home/danmcglinn/maxent/
-
-git clone https://dmcglinn@github.com/weecology/METE.git /home/danmcglinn/maxent/core/
+svn checkout https://weecology.svn.beanstalkapp.com/maxent/trunk /largefs/dmcglinn/maxent/
 
 In R we can write:
 system("python spat_community_generation.py 100 10000 2 11 False None test")
@@ -141,3 +139,7 @@ bsub -q week -J serp -o error_abu_varWithin_serp.log Rscript spat_analysis.R 0 0
 bsub -q week -J serp -o error_bin_varWithin_serp_empirSAD.log Rscript spat_analysis.R 0 0 200 9 FALSE binary varWithin NA NA serp_empirSAD TRUE
 bsub -q week -J serp -o error_abu_varWithin_serp_empirSAD.log Rscript spat_analysis.R 0 0 200 9 FALSE abu varWithin NA NA serp_empirSAD TRUE
 
+
+### Generation many communities across parameter space:
+
+bsub -q week -J simTest -o error_simtest.log python spat_community_generation.py 100 15000 200 13 False None test
