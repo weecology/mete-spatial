@@ -59,7 +59,9 @@ python spat_community_generation.py 141 4241 200 14 False None cocoli2 &
 python spat_community_generation.py 181 7502 200 14 False None sherman1 &
 python spat_community_generation.py 168 7743 200 14 False None sherman2 &
 python spat_community_generation.py 191 6660 200 13 False None sherman3 &
+python spat_community_generation.py 7 7625 200 13 False None cross &
 python spat_community_generation.py 24 37182 200 9 False None serp &
+
 
 ## generate empircally based communities WITH fixing the SAD
 python spat_community_generation.py 301 205096 200 14 False ./data/bci_sad.csv bci &
