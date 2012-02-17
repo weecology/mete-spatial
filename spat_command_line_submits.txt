@@ -65,11 +65,12 @@ python spat_community_generation.py 24 37182 200 9 False None serp &
 
 ## generate empircally based communities WITH fixing the SAD
 python spat_community_generation.py 301 205096 200 14 False ./data/bci_sad.csv bci &
-python spat_community_generation.py 136 4411 200 14 False ./data/cocoli_sad_1.csv cocoli1 &
-python spat_community_generation.py 141 4241 200 14 False ./data/cocoli_sad_2.csv cocoli2 &
-python spat_community_generation.py 181 7502 200 14 False ./data/sherman_sad_1.csv sherman1 &
-python spat_community_generation.py 168 7743 200 14 False ./data/sherman_sad_2.csv sherman2 &
-python spat_community_generation.py 191 6660 200 13 False ./data/sherman_sad_3.csv sherman3 &
+python spat_community_generation.py 136 4411 200 14 False ./data/cocoli1_sad.csv cocoli1 &
+python spat_community_generation.py 141 4241 200 14 False ./data/cocoli2_sad.csv cocoli2 &
+python spat_community_generation.py 181 7502 200 14 False ./data/sherman1_sad.csv sherman1 &
+python spat_community_generation.py 168 7743 200 14 False ./data/sherman2_sad.csv sherman2 &
+python spat_community_generation.py 191 6660 200 13 False ./data/sherman3_sad.csv sherman3 &
+python spat_community_generation.py 7 7625 200 13 False ./data/cross_sad.csv cross &
 python spat_community_generation.py 24 37182 200 9 False ./data/serpentine_sad.csv serp &
 
 ## analyze omidirectional variograms of simulated empirical datasets
@@ -135,6 +136,17 @@ Rscript spat_analysis.R 0 0 200 13 FALSE binary varWithin NA NA sherman3 TRUE >e
 Rscript spat_analysis.R 0 0 200 13 FALSE abu varWithin NA NA sherman3 TRUE >error_abu_varWithin_sherman3.log 2>&1 &
 Rscript spat_analysis.R 0 0 200 13 FALSE binary varWithin NA NA sherman3_empirSAD TRUE >error_bin_varWithin_sherman3_empirSAD.log 2>&1 &
 Rscript spat_analysis.R 0 0 200 13 FALSE abu varWithin NA NA sherman3_empirSAD TRUE >error_abu_varWithin_sherman3_empirSAD.log 2>&1 &
+
+##cross
+Rscript spat_analysis.R 0 0 200 13 FALSE binary sorensen NA NA cross TRUE >error_bin_sorensen_cross.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE abu sorensen NA NA cross TRUE >error_abu_sorensen_cross.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE binary sorensen NA NA cross_empirSAD TRUE >error_bin_sorensen_cross_empirSAD.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE abu sorensen NA NA cross_empirSAD TRUE >error_abu_sorensen_cross_empirSAD.log 2>&1 &
+
+Rscript spat_analysis.R 0 0 200 13 FALSE binary varWithin NA NA cross TRUE >error_bin_varWithin_cross.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE abu varWithin NA NA cross TRUE >error_abu_varWithin_cross.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE binary varWithin NA NA cross_empirSAD TRUE >error_bin_varWithin_cross_empirSAD.log 2>&1 &
+Rscript spat_analysis.R 0 0 200 13 FALSE abu varWithin NA NA cross_empirSAD TRUE >error_abu_varWithin_cross_empirSAD.log 2>&1 &
 
 ##serp
 Rscript spat_analysis.R 0 0 200 9 FALSE binary sorensen NA NA serp TRUE >error_bin_sorensen_serp.log 2>&1 &
