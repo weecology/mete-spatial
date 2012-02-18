@@ -1579,25 +1579,31 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   ## mapped grid of occurances
   ## this function replaces the older function 'grid.SAR'
   ## Arguments:
-  ## psp: S x N x M pres/absen array where N >= M
+  ## psp: community array (i.e., S x N x M pres/absen array where N >= M)
   ## grains: the areas in pixels for which to compute the SAR
   ##         only grains that have integer log base 2 are considered
   ## mv.window: FALSE indicates that a non-moving window SAR will be calculated
   ## Note: This implementation may require that the grain of 
-  N = dim(psp)[2]
-  M = dim(psp)[3]
+  if(class(psp) != 'array')
+    stop('psp must be a community array (S X N X M)')
   grains = grains[log2(grains) == round(log2(grains))]
   grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
   ## define the size of sampling units on each side
   lenN = 2^ceiling(log2(grains)/2)
   lenM = 2^floor(log2(grains)/2)
-#  lenN = rep(sqrt(grainsSqr),each=2)[-1] 
-#  lenM = rep(sqrt(grainsSqr),each=2)[-length(grainsSqr)*2]
   sr = rep(0,length(grains))
+  ind = rep(0,length(grains))
   cs = rep(0,length(grains))
+  N = dim(psp)[2]
+  M = dim(psp)[3]
+  if(M > N){
+    stop('The first spatial dimension of psp must be larger than or equal to the second 
+         (i.e. psp[S,N,M] where N >= M)')
+  }       
   for(l in seq_along(grains)){
-    if(grains[l] == 1){  ## if area=1
-      sr[l] = sum(psp)
+    if(grains[l] == 1){  # if area=1
+      sr[l] = sum(psp > 0)
+      ind[l] = sum(psp)
       cs[l] = N*M
     }
     else{
@@ -1611,15 +1617,17 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
       }  
       for(n in brksN){
         for(m in brksM){
-            sr[l] = sr[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
-                                           m:(m+(lenM[l]-1))],1,sum)>0)
-            cs[l] = cs[l] + 1
-          }
+          sr[l] = sr[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
+                                        m:(m+(lenM[l]-1))]>0,1,sum)>0)
+          ind[l] = ind[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
+                                        m:(m+(lenM[l]-1))],1,sum))
+          cs[l] = cs[l] + 1
         }
       }
     }
-  out = cbind(grains,sr/cs,cs)  
-  colnames(out) = c('grains','richness','count')
+  }
+  out = cbind(grains,sr/cs,ind/cs,cs)  
+  colnames(out) = c('grains','richness','indiv','count')
   return(out)
 }  
 
