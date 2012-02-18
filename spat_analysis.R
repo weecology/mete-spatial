@@ -73,10 +73,10 @@ RPargs = NULL
 
 dataType = ifelse(dataType=='both',c('binary','abu'),dataType)
 
-sapply(dataType,function(x){
-       calcMetrics(comms=comms,metricsToCalc=metricsToCalc,dataType=x,
+system.time(sapply(dataType,function(x){
+                   calcMetrics(comms=comms,metricsToCalc=metricsToCalc,dataType=x,
                    direction=direction,tolerance=tolerance,nperm=nperm,npar=npar,
-                   RPargs=RPargs,writeToFile=TRUE,fileSuffix=fileSuffix)})
+                   RPargs=RPargs,writeToFile=TRUE,fileSuffix=fileSuffix)}))
 
 
 
