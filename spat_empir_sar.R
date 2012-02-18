@@ -14,15 +14,15 @@ names(mete) = sub('_mete_sar.txt','',fileNames[meteFiles])
 ##b/c the mete prediction fails at scales where there is less than 1 individual
 toFix = c('cocoli1', 'cocoli2', 'sherman1', 'sherman2')
 toFix = which(names(mete)%in%toFix)
-for(i in seq_along(toFix)){
-  mete[[toFix[i]]]$area = mete[[toFix[i]]]$area * 2
-  mete[[toFix[i]]] = rbind(c(1,NA),mete[[toFix[i]]])
+for(i in toFix){
+  mete[[i]]$area = mete[[i]]$area * 2
+  mete[[i]] = rbind(c(1,NA),mete[[i]])
 }
 toFix = 'cross'
 toFix = which(names(mete)%in%toFix)
-for(i in seq_along(toFix)){
-  mete[[toFix[i]]]$area = mete[[toFix[i]]]$area * 4
-  mete[[toFix[i]]] = rbind(c(1,NA),c(2,NA),mete[[toFix[i]]])
+for(i in toFix){
+  mete[[i]]$area = mete[[i]]$area * 4
+  mete[[i]] = rbind(c(1,NA),c(2,NA),mete[[i]])
 }
 
 fileNames = dir('./data')
@@ -30,13 +30,12 @@ commFiles = grep('comms',fileNames)
 ## First aggregate community files into a single list
 dat = vector('list',length(commFiles))
 for(i in seq_along(commFiles))
-  dat[[i]] = read.csv(paste('./data/',fileNames[commFiles[i]],sep=''))
+  dat[[i]] = as.matrix(read.csv(paste('./data/',fileNames[commFiles[i]],sep='')))
 names(dat) = sub('_comms.csv','',fileNames[commFiles])
 
-## drop abundance and data from the community files for grains larger than the minimum grain
-Amin = unlist(lapply(dat,function(x)unique(x$grain)[1]))
+Amin = unlist(lapply(dat,function(x)unique(x[,1])[1]))
 for(i in seq_along(dat))
-  dat[[i]] = (dat[[i]][dat[[i]]$grain == Amin[i],] > 0) * 1
+  dat[[i]] = (dat[[i]][dat[[i]][,1] == Amin[i],])
 gc()
 
 ## convert them to multidimensional arrays
@@ -64,6 +63,16 @@ for(i in seq_along(psp)){
   sar[[i]][,1] = sar[[i]][,1]*AminExact[i]
 }
 names(sar) = names(psp)
+
+## Add last spatial grain to these sar results for all but crosstimbers
+toFix = which(names(sar)!='cross')
+for(i in toFix){
+  nRows = nrow(sar[[i]])
+  A = sar[[i]][nRows,1]*2
+  S = sum(apply(dat[[i]],2,sum)>0)
+  N = sum(dat[[i]])
+  sar[[i]] = rbind(sar[[i]],c(A,S,N,1))
+}
 
 ## export results
 for(i in seq_along(sar)){
