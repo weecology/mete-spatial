@@ -40,20 +40,5 @@ comms1 = makeCommMat(dat1$spnum,S,cbind(dat1$x,dat1$y),quadLen,quadN,
 comms2 = makeCommMat(dat2$spnum,S,cbind(dat2$x,dat2$y),quadLen,quadN,
                      c(0,200,0,100))
 ## output results
-write.csv(comms1,file='/home/danmcglinn/maxent/spat/data/cocoli1_comms.csv')
-write.csv(comms2,file='/home/danmcglinn/maxent/spat/data/cocoli2_comms.csv')
-
-## Below is an alternative way to aggregate the results into just a single file
-## work with dat1 first 
-comms1 = makeCommMat(dat1$spnum,S,cbind(dat1$x,dat1$y),quadLen,quadN,
-                     c(0,100,100,300),'_1')
-
-
-## work with dat2 now
-comms2 = makeCommMat(dat2$spnum,S,cbind(dat2$x,dat2$y),quadLen,quadN,
-                     c(0,200,0,100),'_2')
-
-comms = rbind(comms1,comms2)
-save(comms,file='/home/danmcglinn/CTFSplots/cocoli/cocoli_comms_census3.Rdata')
-
-
+write.csv(comms1,file='/home/danmcglinn/maxent/spat/data/cocoli1_comms.csv',row.names=F)
+write.csv(comms2,file='/home/danmcglinn/maxent/spat/data/cocoli2_comms.csv',row.names=F)
