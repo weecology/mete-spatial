@@ -10,19 +10,13 @@ for(i in seq_along(meteFiles))
   mete[[i]] = read.csv(paste('./sar/',fileNames[meteFiles[i]],sep=''))
 names(mete) = sub('_mete_sar.txt','',fileNames[meteFiles])
 
-##for cocoli1, cocoli2, sherman1, sherman2 we need to adjust the sars
+##for cocoli1, cocoli2, cross, sherman1, sherman2 we need to adjust the sars
 ##b/c the mete prediction fails at scales where there is less than 1 individual
-toFix = c('cocoli1', 'cocoli2', 'sherman1', 'sherman2')
+toFix = c('cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2')
 toFix = which(names(mete)%in%toFix)
 for(i in toFix){
   mete[[i]]$area = mete[[i]]$area * 2
   mete[[i]] = rbind(c(1,NA),mete[[i]])
-}
-toFix = 'cross'
-toFix = which(names(mete)%in%toFix)
-for(i in toFix){
-  mete[[i]]$area = mete[[i]]$area * 4
-  mete[[i]] = rbind(c(1,NA),c(2,NA),mete[[i]])
 }
 
 fileNames = dir('./data')
@@ -63,16 +57,6 @@ for(i in seq_along(psp)){
   sar[[i]][,1] = sar[[i]][,1]*AminExact[i]
 }
 names(sar) = names(psp)
-
-## Add last spatial grain to these sar results for all but crosstimbers
-toFix = which(names(sar)!='cross')
-for(i in toFix){
-  nRows = nrow(sar[[i]])
-  A = sar[[i]][nRows,1]*2
-  S = sum(apply(dat[[i]],2,sum)>0)
-  N = sum(dat[[i]])
-  sar[[i]] = rbind(sar[[i]],c(A,S,N,1))
-}
 
 ## export results
 for(i in seq_along(sar)){
