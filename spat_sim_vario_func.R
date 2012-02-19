@@ -2118,9 +2118,11 @@ wid = function(Nbisect){
     vExp = vector('list',length=length(results[[i]]))
     Dist = vExp
     n = vExp
+    rpExp = vExp 
     for(j in seq_along(results[[i]])){ ## the grain/community
       Dist[[j]] = results[[i]][[j]][[1]]$vario$Dist
       n[[j]] = results[[i]][[j]][[1]]$vario$n
+      rpExp[[j]] = rep(results[[i]][[j]][[3]],length(Dist[[j]]))
       if(any(metric %in% c('sorensen','jaccard')))
         vExp[[j]] = 1 - results[[i]][[j]][[1]]$vario$exp.var
       else
@@ -2130,7 +2132,8 @@ wid = function(Nbisect){
       commNames = 1:length(results[[i]])
     else
       commNames = names(results[[i]])
-    out[[i]] = data.frame(Dist = unlist(Dist),Metric = unlist(vExp),N = unlist(n))
+    out[[i]] = data.frame(Dist = unlist(Dist),Metric = unlist(vExp),
+                          Exp = unlist(rpExp),N = unlist(n))
     out[[i]] = data.frame(out[[i]],
                Comm = unlist(mapply(rep,commNames,each=sapply(vExp,length),
                                        SIMPLIFY=FALSE)))
@@ -2154,12 +2157,20 @@ avgResults = function(results,combine = NULL){
       true = combine[[i]] == unicombine[j]
       Dist = tapply(results[[i]]$Dist[true],round(results[[i]]$Dist[true],3),mean)
       Metric = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),mean)
+      MetricLo = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),quantile,.025)
+      MetricHi = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),quantile,.975)    
+      Exp = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),mean)
+      ExpLo = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),quantile,.025)
+      ExpHi = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),quantile,.975)    
       N = tapply(results[[i]]$N[true],round(results[[i]]$Dist[true],3),sum)
       Comm = rep(unicombine[j],length(Metric))
-      if(j == 1)
-        out[[i]] = data.frame(Dist,Metric,N,Comm)
-      else
-        out[[i]] = rbind(out[[i]],data.frame(Dist,Metric,N,Comm))
+      if(j == 1){
+        out[[i]] = data.frame(Dist,Metric,MetricLo,MetricHi,Exp,ExpLo,ExpHi,N,Comm)
+      }  
+      else{
+        out[[i]] = rbind(out[[i]],data.frame(Dist,Metric,MetricLo,MetricHi,Exp,
+                                             ExpLo,ExpHi,N,Comm))
+      }  
     }  
   }
   return(out)
