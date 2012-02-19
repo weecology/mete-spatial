@@ -30,7 +30,7 @@ for shrt_name in data_names:
 
 writer = open('./sar/sar_slopes.csv','wb') 
 datawriter = csv.writer(writer)
-datawriter.writerow(['comm','area', 'obs z', 'pred z', 'N/S'])
+datawriter.writerow(['comm','area', 'obsZ', 'predZ', 'NS'])
 for i in range(0,len(data_names)):
     for j in range(0,len(slopes[i])):
         slopes[i][j].insert(0,data_names[i])
