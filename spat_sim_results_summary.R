@@ -3,7 +3,7 @@ setwd('/home/danmcglinn/maxent/spat')
 source('spat_sim_vario_func.R')
 
 files = dir('./sorensen')
-shrtnames = c('bci','cocoli','sherman','serp')
+shrtnames = c('bci','cocoli1','cocoli2','cross','serp','sherman1','sherman2','sherman3')
 
 fileNums = sapply(shrtnames,function(x)grep(x,files))
 fileNums = lapply(fileNums,function(x) x[x %in% grep('C200',files)])
@@ -13,6 +13,9 @@ longnames = sub('.Rdata','',longnames)
 longnames = sub('_abu','',longnames)
 longnames = sub('_binary','',longnames)
 longnames = unique(longnames)
+
+## fix problem with no having a crosstimbers logseries fit
+longnames = c(longnames[1:7],longnames[7:15])
 
 simBin = getResults(longnames,'sorensen','binary')
 simAbu = getResults(longnames,'sorensen','abu')
@@ -33,203 +36,142 @@ simSorAbuAvg = avgResults(simSorAbu,combine)
 simVarBinAvg = avgResults(simVarBin,combine)
 simVarAbuAvg = avgResults(simVarAbu,combine)
 
-## now do one more round of averageing for cocoli and sherman
-fixResults = function(results){
-  out = vector('list',length=8)
-  names(out) = names(results)[c(1:4,7:8,13:14)]
-  out[1:2] = results[1:2]  ## bci 
-  out[[3]] = rbind(results[[3]],results[[5]])  ## cocoli
-  out[[4]] = rbind(results[[4]],results[[6]])  ## cocoli
-  out[[5]] = rbind(results[[7]],results[[9]],results[[11]]) ## sherman
-  out[[6]] = rbind(results[[8]],results[[10]],results[[12]]) ## sherman
-  out[7:8] = results[13:14] ## serp
-  return(out)
-}
-
-simSorBin = fixResults(simSorBinAvg)
-simSorAbu = fixResults(simSorAbuAvg)
-simVarBin = fixResults(simVarBinAvg)
-simVarAbu = fixResults(simVarAbuAvg)
-
-## last round of averaging
-combine = vector('list',length=length(simSorBin))
-combine[1:2] = NA
-combine[[3]] = simSorBin[[3]]$Comm
-combine[[4]] = simSorBin[[4]]$Comm
-combine[[5]] = c(rep(1,142),rep(2,nrow(simSorBin[[5]])-142))
-combine[[6]] = c(rep(1,142),rep(2,nrow(simSorBin[[6]])-142))
-combine[7:8] = NA
-
-simSorBinAvg = avgResults(simSorBin,combine)
-simSorAbuAvg = avgResults(simSorAbu,combine)
-simVarBinAvg = avgResults(simVarBin,combine)
-simVarAbuAvg = avgResults(simVarAbu,combine)
-
 ## split results that were generated from log-series and those that were fixed abu
-simSorBinLogSer = simSorBinAvg[c(1,3,5,7,9)]
-simSorBinFixed = simSorBinAvg[c(2,4,6,8,10)]
-simSorAbuLogSer = simSorAbuAvg[c(1,3,5,7,9)]
-simSorAbuFixed = simSorAbuAvg[c(2,4,6,8,10)]
-simVarBinLogSer = simVarBinAvg[c(1,3,5,7,9)]
-simVarBinFixed = simVarBinAvg[c(2,4,6,8,10)]
-simVarAbuLogSer = simVarAbuAvg[c(1,3,5,7,9)]
-simVarAbuFixed = simVarAbuAvg[c(2,4,6,8,10)]
+simSorBinLogSer = simSorBinAvg[c(1,3,5,7,9,11,13,15)]
+simSorBinFixed = simSorBinAvg[c(2,4,6,8,10,12,14,16)]
+simSorAbuLogSer = simSorAbuAvg[c(1,3,5,7,9,11,13,15)]
+simSorAbuFixed = simSorAbuAvg[c(2,4,6,8,10,12,14,16)]
+simVarBinLogSer = simVarBinAvg[c(1,3,5,7,9,11,13,15)]
+simVarBinFixed = simVarBinAvg[c(2,4,6,8,10,12,14,16)]
+simVarAbuLogSer = simVarAbuAvg[c(1,3,5,7,9,11,13,15)]
+simVarAbuFixed = simVarAbuAvg[c(2,4,6,8,10,12,14,16)]
 
 ## Now bring in empirical Results
 source('spat_empir_results_summary.R')
 
 ################ Abu Sorensen
-pdf('empir_sim_arith.pdf')
-par(mfrow=c(2,3))
-results1 = empirSorAbuAvg
+pdf('empir_sim_sor_arith.pdf')
+par(mfrow=c(2,4))
+results1 = empirSorAbu
 results2 = simSorAbuLogSer
 results3 = simSorAbuFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.4),main='bci')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.05),main='cocoli')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.06),main='sherman1')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(.001,.07),main='sherman2')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,.75),main='serp')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
+ylims = rbind(c(0.001,.4),c(.001,.05),c(.001,.05),c(.001,.4),
+              c(.001,.7),c(.001,.05),c(.001,.05),c(.001,.05))
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l',
+       ylim=ylims[i,],main=shrtnames[i])
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
+        lwd=2,type='l')
+}
 
 ################ Binary Sorensen
-par(mfrow=c(2,3))
-results1 = empirSorBinAvg
+par(mfrow=c(2,4))
+results1 = empirSorBin
 results2 = simSorBinLogSer
 results3 = simSorBinFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.4),main='bci')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.06),main='cocoli')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.07),main='sherman1')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(.001,.08),main='sherman2')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,1),main='serp')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-
+ylims = rbind(c(0.001,.4),c(.001,.05),c(.001,.05),c(.001,.6),
+              c(.3,1),c(.001,.05),c(.001,.05),c(.001,.05))
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l',
+       ylim=ylims[i,],main=shrtnames[i])
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
+        lwd=2,type='l')
+}
+dev.off()
 ################ Abu varWithin
-par(mfrow=c(2,3))
-results1 = empirVarAbuAvg
+par(mfrow=c(2,4))
+results1 = empirVarAbu
 results2 = simVarAbuLogSer
 results3 = simVarAbuFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(35,2000),main='bci')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,1),main='cocoli')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,4),main='sherman1')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(.001,4),main='sherman2')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(1e3,6e4),main='serp')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
+ylims = rbind(c(35,2000),c(.001,.05),c(.001,.05),c(.001,.4),
+              c(.3,.7),c(.001,.05),c(.001,.05),c(.001,.05))
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l')
+#       ylim=ylims[i,],main=shrtnames[i])
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
+        lwd=2,type='l')
+}
 
 ################ binary varWithin
-par(mfrow=c(2,3))
-results1 = empirVarBinAvg
+par(mfrow=c(2,4))
+results1 = empirVarBin
 results2 = simVarBinLogSer
 results3 = simVarBinFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(4,13),main='bci')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.35,.55),main='cocoli')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.6,1),main='sherman1')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(1,1.6),main='sherman2')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(0,4),main='serp')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l')
+#       ylim=ylims[i,],main=shrtnames[i])
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
+        lwd=2,type='l')
+}
+
 dev.off()
 ############################################ log -log
 ################ Abu Sorensen
-pdf('empir_sim_loglog.pdf')
-par(mfrow=c(2,3))
-results1 = empirSorAbuAvg
+pdf('empir_sim_sor_loglog.pdf')
+par(mfrow=c(2,4))
+results1 = empirSorAbu
 results2 = simSorAbuLogSer
 results3 = simSorAbuFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.4),main='bci',log='xy')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.05),main='cocoli',log='xy')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.06),main='sherman1',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(.001,.07),main='sherman2',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,.75),main='serp',log='xy')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
+ylims = rbind(c(0.01,1),c(.001,1),c(.001,1),c(.001,.4),
+              c(.01,1),c(.003,1),c(.003,1),c(.003,1))
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
+       ylim=ylims[i,],main=shrtnames[i],log='xy')
+  tmp = results2[[i]]
+  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
+          col='palegreen')
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='green3',lwd=2,
+        type='l')
+  tmp = results3[[i]]
+  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
+          col='dodgerblue')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='blue',
+        lwd=2,type='l')
+  lines(Exp ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  points(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,pch=19)
+}
 
 ################ Binary Sorensen
-par(mfrow=c(2,3))
-results1 = empirSorBinAvg
+par(mfrow=c(2,4))
+results1 = empirSorBin
 results2 = simSorBinLogSer
 results3 = simSorBinFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.4),main='bci',log='xy')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.06),main='cocoli',log='xy')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.001,.07),main='sherman1',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(.001,.08),main='sherman2',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,1),main='serp',log='xy')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
+ylims = rbind(c(0.01,1),c(.001,1),c(.001,1),c(.001,.4),
+              c(.01,1),c(.003,1),c(.003,1),c(.003,1))
+for(i in seq_along(shrtnames)){
+  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
+       ylim=ylims[i,],main=shrtnames[i],log='xy')
+  tmp = results2[[i]]
+  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
+          col='palegreen')
+  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='green3',lwd=2,
+        type='l')
+  tmp = results3[[i]]
+  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
+          col='dodgerblue')
+  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='blue',
+        lwd=2,type='l')
+  lines(Exp ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
+        type='l')
+  points(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,pch=19)
+}
+dev.off()
+
+par(mfrow=c(1,1))
+plot(1:10,1:10,frame.plot=F,axes=F,xlab='',ylab='',type='n')
+legend('center',c('Empirical','METE','METE fixed abu','RP'),col=c('black','green3',
+       'blue','red'),cex=2,pch=c(19,rep(NA,3)),lty=c(NA,rep(1,3)),lwd=c(NA,rep(2,4)),bty='n')
+
+
 
 ################ Abu varWithin
 par(mfrow=c(2,3))
