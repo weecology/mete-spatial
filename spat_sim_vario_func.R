@@ -2115,11 +2115,15 @@ wid = function(Nbisect){
   out= vector('list',length=length(results))
   names(out) = names(results)
   for(i in seq_along(results)){ ## the datset
+    if(is.null(results[[i]]))
+      next
     vExp = vector('list',length=length(results[[i]]))
     Dist = vExp
     n = vExp
     rpExp = vExp 
     for(j in seq_along(results[[i]])){ ## the grain/community
+      if(is.null(results[[i]][[j]]))
+        next
       Dist[[j]] = results[[i]][[j]][[1]]$vario$Dist
       n[[j]] = results[[i]][[j]][[1]]$vario$n
       rpExp[[j]] = rep(results[[i]][[j]][[3]],length(Dist[[j]]))
@@ -2150,6 +2154,8 @@ avgResults = function(results,combine = NULL){
   out = vector('list',length(results))
   names(out) = names(results)
   for(i in seq_along(results)){
+    if(is.null(results[[i]]))
+      next
     if(is.na(combine[[i]][1]))
       combine[[i]] = results[[i]]$Comm
     unicombine = unique(combine[[i]])
