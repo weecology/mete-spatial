@@ -120,8 +120,8 @@ par(mfrow=c(2,4))
 results1 = empirSorAbu
 results2 = simSorAbuLogSer
 results3 = simSorAbuFixed
-ylims = rbind(c(0.01,1),c(.001,1),c(.001,1),c(.001,.4),
-              c(.01,1),c(.003,1),c(.003,1),c(.003,1))
+ylims = rbind(c(0.02,1),c(.001,1),c(.001,1),c(.02,.4),
+              c(.1,1),c(.003,1),c(.003,1),c(.003,1))
 for(i in seq_along(shrtnames)){
   plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
        ylim=ylims[i,],main=shrtnames[i],log='xy')
@@ -145,8 +145,8 @@ par(mfrow=c(2,4))
 results1 = empirSorBin
 results2 = simSorBinLogSer
 results3 = simSorBinFixed
-ylims = rbind(c(0.01,1),c(.001,1),c(.001,1),c(.001,.4),
-              c(.01,1),c(.003,1),c(.003,1),c(.003,1))
+ylims = rbind(c(0.05,1),c(.001,1),c(.001,1),c(.03,.8),
+              c(.2,1),c(.003,1),c(.003,1),c(.003,1))
 for(i in seq_along(shrtnames)){
   plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
        ylim=ylims[i,],main=shrtnames[i],log='xy')
