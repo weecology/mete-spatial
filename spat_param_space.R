@@ -33,30 +33,48 @@ for(i in seq_along(combine)){
 simSorAbuAvg = avgResults(simSorAbu,combine)
 
 results = simSorAbuAvg
-stats = array(NA,dim=c(3,length(S),length(N)))
-dimnames(stats)[[1]] = c('b0','b1','r2')
-dimnames(stats)[[2]] = S
-dimnames(stats)[[3]] = N
+stats = array(NA,dim=c(2,3,length(S),length(N)))
+dimnames(stats)[[1]] = c('exp','pwr')
+dimnames(stats)[[2]] = c('b0','b1','r2')
+dimnames(stats)[[3]] = S
+dimnames(stats)[[4]] = N
 i = 0
 for(s in seq_along(S)){
   for(n in seq_along(N)){
     i = i + 1
     if(is.null(results[[i]]))
       next
-    mod = lm(log10(Metric) ~ log10(Dist),data = results[[i]])
-    stats[1:2,s,n] = coef(mod)
-    stats[3,s,n] = summary(mod)$r.squ
+    logmod = lm(Metric ~ log10(Dist),data=results[[i]])
+    pwrmod = lm(log10(Metric) ~ log10(Dist),data = results[[i]])
+    stats[1,1:2,s,n] = coef(logmod)
+    stats[1,3,s,n] = summary(logmod)$r.squ
+    stats[2,1:2,s,n] = coef(pwrmod)
+    stats[2,3,s,n] = summary(pwrmod)$r.squ
   }
 }
 
-par(mfrow=c(1,3))
-image(log10(S),log10(N[1:11]),stats[1,,1:11],xlab='',ylab='',bg='red')
-image(log10(S),log10(N[1:11]),stats[2,,1:11],xlab='',ylab='')
-image(log10(S),log10(N[1:11]),stats[3,,1:11],xlab='',ylab='')
+lims = range(as.vector(stats[,3,,]),na.rm=TRUE)
+nbrks = 12
+brks = seq(lims[1],lims[2],length.out=nbrks)
+par(mfrow=c(1,1))
+hist(stats[1,3,,],breaks = brks,ylim=c(0,200),main='',col='red',
+     xlab=expression(R^2*' of model'))
+hist(stats[2,3,,],breaks = brks,ylim=c(0,200),main='Power Model',add=TRUE,col='blue')
+legend('topleft',c('Exponential Model','Power Model'),col=c('red','blue'),lwd=8,
+       cex=2,bty='n')
 
+pwrStats = drop(stats[2,,,])
+
+## plot intercept,slope,and R2 for pwr model of DD
 par(mfrow=c(1,3))
 for(i in 1:3){
-  tmp = as.vector(stats[i,,1:11])
+  image(pwrStats[i,,1:11])
+}
+
+##create legend figure
+par(mfrow=c(1,3))
+for(i in 1:3){
+  tmp = as.vector(pwrStats[i,,1:11])
   x = round(seq(min(tmp,na.rm=T),max(tmp,na.rm=T),length.out=7),3)
   image(matrix(x),axes=F)
   axis(side=1,at=seq(0,1,length.out=7),labels=x,tick=F,cex.axis=2)
@@ -67,44 +85,44 @@ nvals = rep(N,length(S))
 ratio = log10(nvals/svals)
 ratio = array(ratio,dim=c(length(S),length(N)))
 
-pdf('dd_coef_n_over_s.pdf')
+#pdf('dd_coef_n_over_s.pdf')
 lwd = 3
 par(mfrow=c(2,3))
 xlab = 'log10(N/S)'
-plot(ratio,stats[1,,],xlab=xlab,ylab='Intercept',pch=19)
-plot(ratio,stats[1,,],xlab=xlab,ylab='Intercept',type='n')
+plot(ratio,pwrStats[1,,],xlab=xlab,ylab='Intercept',pch=19)
+plot(ratio,pwrStats[1,,],xlab=xlab,ylab='Intercept',type='n')
 for(s in seq_along(S))
-  lines(ratio[s,],stats[1,s,],col='palevioletred',lwd=lwd)
-plot(ratio,stats[1,,],xlab=xlab,ylab='Intercept',type='n')
+  lines(ratio[s,],pwrStats[1,s,],col='palevioletred',lwd=lwd)
+plot(ratio,pwrStats[1,,],xlab=xlab,ylab='Intercept',type='n')
 for(n in seq_along(N))
-  lines(ratio[,n],stats[1,,n],col='dodgerblue',lwd=lwd)
+  lines(ratio[,n],pwrStats[1,,n],col='dodgerblue',lwd=lwd)
 ##
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',pch=19)
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',type='n')
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',pch=19)
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',type='n')
 for(s in seq_along(S))
-  lines(ratio[s,],stats[2,s,],col='palevioletred',lwd=lwd)
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',type='n')
+  lines(ratio[s,],pwrStats[2,s,],col='palevioletred',lwd=lwd)
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',type='n')
 for(n in seq_along(N))
-  lines(ratio[,n],stats[2,,n],col='dodgerblue',lwd=lwd)
-dev.off()
+  lines(ratio[,n],pwrStats[2,,n],col='dodgerblue',lwd=lwd)
+#dev.off()
 #### same as above but for presentation
 lwd = 3
 par(mfrow=c(2,3))
-plot(ratio,stats[1,,],xlab='',ylab='',pch=19)
-plot(ratio,stats[1,,],xlab='',ylab='',type='n')
+plot(ratio,pwrStats[1,,],xlab='',ylab='',pch=19)
+plot(ratio,pwrStats[1,,],xlab='',ylab='',type='n')
 for(s in seq_along(S))
-  lines(ratio[s,],stats[1,s,],col='palevioletred',lwd=lwd)
-plot(ratio,stats[1,,],xlab='',ylab='',type='n')
+  lines(ratio[s,],pwrStats[1,s,],col='palevioletred',lwd=lwd)
+plot(ratio,pwrStats[1,,],xlab='',ylab='',type='n')
 for(n in seq_along(N))
-  lines(ratio[,n],stats[1,,n],col='dodgerblue',lwd=lwd)
+  lines(ratio[,n],pwrStats[1,,n],col='dodgerblue',lwd=lwd)
 ##
-plot(ratio,stats[2,,],xlab='',ylab='',pch=19)
-plot(ratio,stats[2,,],xlab='',ylab='',type='n')
+plot(ratio,pwrStats[2,,],xlab='',ylab='',pch=19)
+plot(ratio,pwrStats[2,,],xlab='',ylab='',type='n')
 for(s in seq_along(S))
-  lines(ratio[s,],stats[2,s,],col='palevioletred',lwd=lwd)
-plot(ratio,stats[2,,],xlab='',ylab='',type='n')
+  lines(ratio[s,],pwrStats[2,s,],col='palevioletred',lwd=lwd)
+plot(ratio,pwrStats[2,,],xlab='',ylab='',type='n')
 for(n in seq_along(N))
-  lines(ratio[,n],stats[2,,n],col='dodgerblue',lwd=lwd)
+  lines(ratio[,n],pwrStats[2,,n],col='dodgerblue',lwd=lwd)
 
 
 ###Scale collapse attempt
@@ -112,13 +130,13 @@ ratio = log10(nvals/svals) - (svals *log10(svals))
 ratio = array(ratio,dim=c(length(S),length(N)))
 xlab = 'log10(N/S) - (S * log10(S))'
 par(mfrow=c(1,3))
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',pch=19,xlim=c(-60,0))
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',type='n',xlim=c(-60,0))
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',pch=19,xlim=c(-60,0))
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',type='n',xlim=c(-60,0))
 for(s in seq_along(S))
-  lines(ratio[s,],stats[2,s,],col='palevioletred',lwd=lwd)
-plot(ratio,stats[2,,],xlab=xlab,ylab='Slope',type='n',xlim=c(-60,0))
+  lines(ratio[s,],pwrStats[2,s,],col='palevioletred',lwd=lwd)
+plot(ratio,pwrStats[2,,],xlab=xlab,ylab='Slope',type='n',xlim=c(-60,0))
 for(n in seq_along(N))
-  lines(ratio[,n],stats[2,,n],col='dodgerblue',lwd=lwd)
+  lines(ratio[,n],pwrStats[2,,n],col='dodgerblue',lwd=lwd)
 
 
 
