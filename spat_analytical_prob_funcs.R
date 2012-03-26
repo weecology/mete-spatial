@@ -69,8 +69,8 @@ piHEAPfast = function(n,A,no,Ao,OS='linux'){
       dyn.load('heap.dll')
   }  
   out = sapply(n,function(x){
-        .C("HEAP",n=as.integer(x),A=as.integer(A),no=as.integer(no),
-           Ao=as.integer(Ao),prob=as.double(0))$prob})
+        .C("HEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
+           Ao=as.double(Ao),prob=as.double(0))$prob})
   return(out)
 }
 
@@ -79,4 +79,67 @@ piNegBi = function(n,A,no,Ao,k=1){
   nbar = no*A/Ao
   (factorial(n + k - 1) / (factorial(n)*factorial(k-1))) * (nbar / (k + nbar))^n * (k / (k+nbar))^k
 }
+
+
+D = function(j,L=1){
+  ## Distance calculation for a golden rectangle, L x L(2^.5)
+  ## From Ostling et al. (2004) pg. 130
+  ## j: seperation order
+  ## L: width of rectangle of area Ao  
+  d = L/2^((j:1)/2)
+  return(d)
+}
+
+lambda = function(i,no){ 
+  ## Scaling Biodiveristy Chp. Eq. 6.4, pg.106 
+  ## i: number of bisections
+  if (i == 0)
+    lambda = 1
+  if (i != 0){
+    A = 1/2^i
+    lambda = 1 - piHEAPfast(0,A,no,1)
+  }
+  return(lambda)
+}
+
+chiHEAP = function(i,no){
+  ## calculates the commonality function for a given spatial grain (i) at all
+  ## possible distances
+  ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
+  ## i: number of bisections
+  if(no == 1){
+    out = 0
+  }
+  else{
+    d = rev(D(i))[1]
+    if(length(D(i)) == 1){
+      out = (no + 1)^-1 *
+            sum(sapply(1:(no-1),function(m) lambda(i-1,m) * lambda(i-1,no-m)))
+    }  
+    else{
+      i = i-1
+      out = (no + 1)^-1 * sum(sapply(2:no,function(m) chiHEAP(i,m)))
+    }
+  }  
+  return(out)
+}
+
+sorHEAP = function(A,no,Ao){
+  ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
+  maxBisec = log2(Ao/A)
+  d = D(log2(Ao/A))
+  chi = matrix(NA,nrow=length(no),ncol=length(d))
+  lambda = chi
+  for(s in seq_along(no)){
+    chi[s,] = sapply(1:maxBisec, function(i) chiHEAP(i,no[s]))
+    lambda[s,] = sapply(1:maxBisec, function(i) lambda(i,no[s]))
+  }
+  sor = apply(chi,2,sum)/apply(lambda,2,sum)
+  out = data.frame(Dist = d, Sor = sor)
+  return(out)
+}
+
+
+
+
 
