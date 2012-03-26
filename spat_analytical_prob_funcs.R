@@ -111,8 +111,7 @@ chiHEAP = function(i,no){
     out = 0
   }
   else{
-    d = rev(D(i))[1]
-    if(length(D(i)) == 1){
+    if(i == 1){
       out = (no + 1)^-1 *
             sum(sapply(1:(no-1),function(m) lambda(i-1,m) * lambda(i-1,no-m)))
     }  
