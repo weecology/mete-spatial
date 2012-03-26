@@ -12,12 +12,12 @@ prob -- the probability of observing n individuals (what we want back)
 #include <R.h>
 #include <math.h> 
 
-void HEAP(int *n, int *A, int *no, int *Ao, double *prob){
-    double rHEAP(int n, int A, int no, int Ao) ;
+void HEAP(int *n, double *A, int *no, double *Ao, double *prob){
+    double rHEAP(int n, double A, int no, double Ao) ;
     *prob = rHEAP(*n,*A,*no,*Ao) ;
 } 
 
-double rHEAP(int n, int A, int no, int Ao){
+double rHEAP(int n, double A, int no, double Ao){
     int i, q ;  
     double total = 0;
     i = log2(Ao / A) ; 
