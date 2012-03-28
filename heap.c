@@ -58,6 +58,9 @@ double lambda(int i, int no){
     if(no == 0){
         lamb = 1 ;
     }
+    else if(i == 0) {
+        lamb = 1 ; 
+    }
     else{
         A = 1/pow(2,i) ;
         lamb = 1 - PiRecur(0,A,no,1) ;
