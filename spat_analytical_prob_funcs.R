@@ -43,34 +43,31 @@ piLap = function(n,A,no,Ao){
  sapply(n,function(x)g(no - x,Mo - 1) / g(no,Mo))
 }
 
-piHEAP = function(n,A,no,Ao){
-  ##HEAP model
-  ##Harte book Eq. 4.16 pg. 93
-  i = log2(Ao/A)
-  if(i == 1)
-    out = 1/(no+1)
-  else{
-    A = A*2 
-    out = sum(sapply(n:no,function(q) piHEAP(q,A,no,Ao) / (q + 1)))
-  }
-  return(out)
-}
-
-piHEAPfast = function(n,A,no,Ao,OS='linux'){
+piHEAP = function(n,A,no,Ao,fast=TRUE){
   ##HEAP model 
   ##Harte book Eq. 4.16 pg. 93
   ##The source code is in the file heap.c
-  if(OS == 'linux'){
-    if(!is.loaded('heap.so'))
-      dyn.load('heap.so')
-  }  
+  if(fast){
+    if(!is.loaded("piHEAP")){
+      OS = Sys.info()['sysname']
+      if(OS == 'Linux')
+        dyn.load('heap.so')
+      else
+        dyn.load('heap.dll')
+    }
+    out = sapply(n,function(x){
+          .C("piHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
+             Ao=as.double(Ao),prob=as.double(0))$prob})
+  }
   else{
-    if(!is.loaded('heap.dll'))
-      dyn.load('heap.dll')
-  }  
-  out = sapply(n,function(x){
-        .C("PiHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
-           Ao=as.double(Ao),prob=as.double(0))$prob})
+    i = log2(Ao/A)
+    if(i == 1)
+      out = 1/(no+1)
+    else{
+      A = A*2 
+      out = sum(sapply(n:no,function(q) piHEAP(q,A,no,Ao) / (q + 1)))
+    }
+  }
   return(out)
 }
 
@@ -97,7 +94,7 @@ lambda = function(i,no){
     lambda = 1
   if (i != 0){
     A = 1/2^i
-    lambda = 1 - piHEAPfast(0,A,no,1)
+    lambda = 1 - piHEAP(0,A,no,1)
   }
   return(lambda)
 }
@@ -148,41 +145,22 @@ chiHEAP = function(i,j,no){
   return(out)
 }
 
-piHEAPfast = function(n,A,no,Ao,OS='linux'){
-  ##HEAP model 
-  ##Harte book Eq. 4.16 pg. 93
-  ##The source code is in the file HEAP.c
-  if(OS == 'linux'){
-    if(!is.loaded('heap.so'))
-      dyn.load('heap.so')
-  }  
-  else{
-    if(!is.loaded('heap.dll'))
-      dyn.load('heap.dll')
-  }  
-  out = sapply(n,function(x){
-        .C("PiHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
-           Ao=as.double(Ao),prob=as.double(0))$prob})
-  return(out)
-}
-
-sorHEAP = function(A,no,Ao,fast=TRUE,OS='linux'){
+sorHEAP = function(A,no,Ao,fast=TRUE){
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## source code in the file heap.c
-  if(OS == 'linux'){
-    if(!is.loaded('heap.so'))
-      dyn.load('heap.so')
-  }  
-  else{
-    if(!is.loaded('heap.dll'))
-      dyn.load('heap.dll')
-  }  
   i = log2(Ao/A)
   d = D(log2(Ao/A))
   chi = matrix(NA,nrow=length(no),ncol=length(d))
   lambda = chi
   for(s in seq_along(no)){
     if(fast){
+      if(!is.loaded("chiHEAP")){
+        OS = Sys.info()['sysname']
+        if(OS == 'Linux')
+          dyn.load('heap.so')
+        else
+          dyn.load('heap.dll') 
+      }
       chi[s,] = sapply(1:i, function(j){
                 .C("chiHEAP",i=as.integer(i),j=as.integer(j),
                    no=as.integer(no[s]),prob=as.double(0))$prob })
