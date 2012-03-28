@@ -59,7 +59,7 @@ piHEAP = function(n,A,no,Ao){
 piHEAPfast = function(n,A,no,Ao,OS='linux'){
   ##HEAP model 
   ##Harte book Eq. 4.16 pg. 93
-  ##The source code is in the file HEAP.c
+  ##The source code is in the file heap.c
   if(OS == 'linux'){
     if(!is.loaded('heap.so'))
       dyn.load('heap.so')
@@ -69,7 +69,7 @@ piHEAPfast = function(n,A,no,Ao,OS='linux'){
       dyn.load('heap.dll')
   }  
   out = sapply(n,function(x){
-        .C("HEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
+        .C("PiHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
            Ao=as.double(Ao),prob=as.double(0))$prob})
   return(out)
 }
@@ -102,42 +102,100 @@ lambda = function(i,no){
   return(lambda)
 }
 
-chiHEAP = function(i,no){
+chiHEAP = function(i,j,no){
   ## calculates the commonality function for a given spatial grain (i) at all
   ## possible distances
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## i: number of bisections
+  ## j: order of seperation
   if(no == 1){
     out = 0
   }
   else{
-    if(i == 1){
+    if(j == 1){
       out = (no + 1)^-1 *
             sum(sapply(1:(no-1),function(m) lambda(i-1,m) * lambda(i-1,no-m)))
     }  
     else{
       i = i-1
-      out = (no + 1)^-1 * sum(sapply(2:no,function(m) chiHEAP(i,m)))
+      j = j-1
+      out = (no + 1)^-1 * sum(sapply(2:no,function(m) chiHEAP(i,j,m)))
     }
   }  
   return(out)
 }
 
-sorHEAP = function(A,no,Ao){
+chiHEAP = function(i,j,no){
+  ## calculates the commonality function for a given spatial grain (i) at all
+  ## possible distances
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
-  maxBisec = log2(Ao/A)
+  ## i: number of bisections
+  ## j: order of seperation
+  if(no == 1){
+    out = 0
+  }
+  else{
+    if(j == 1){
+      out = (no + 1)^-1 *
+            sum(sapply(1:(no-1),function(m) lambda(i-1,m) * lambda(i-1,no-m)))
+    }  
+    else{
+      i = i-1
+      j = j-1
+      out = (no + 1)^-1 * sum(sapply(2:no,function(m) chiHEAP(i,j,m)))
+    }
+  }  
+  return(out)
+}
+
+piHEAPfast = function(n,A,no,Ao,OS='linux'){
+  ##HEAP model 
+  ##Harte book Eq. 4.16 pg. 93
+  ##The source code is in the file HEAP.c
+  if(OS == 'linux'){
+    if(!is.loaded('heap.so'))
+      dyn.load('heap.so')
+  }  
+  else{
+    if(!is.loaded('heap.dll'))
+      dyn.load('heap.dll')
+  }  
+  out = sapply(n,function(x){
+        .C("PiHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
+           Ao=as.double(Ao),prob=as.double(0))$prob})
+  return(out)
+}
+
+sorHEAP = function(A,no,Ao,fast=TRUE,OS='linux'){
+  ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
+  ## source code in the file heap.c
+  if(OS == 'linux'){
+    if(!is.loaded('heap.so'))
+      dyn.load('heap.so')
+  }  
+  else{
+    if(!is.loaded('heap.dll'))
+      dyn.load('heap.dll')
+  }  
+  i = log2(Ao/A)
   d = D(log2(Ao/A))
   chi = matrix(NA,nrow=length(no),ncol=length(d))
   lambda = chi
   for(s in seq_along(no)){
-    chi[s,] = sapply(1:maxBisec, function(i) chiHEAP(i,no[s]))
-    lambda[s,] = sapply(1:maxBisec, function(i) lambda(i,no[s]))
+    if(fast){
+      chi[s,] = sapply(1:i, function(j){
+                .C("chiHEAP",i=as.integer(i),j=as.integer(j),
+                   no=as.integer(no[s]),prob=as.double(0))$prob })
+    }                   
+    else{
+      chi[s,] = sapply(1:i, function(j) chiHEAP(i,j,no[s]))
+    }  
+    lambda[s,] = sapply(1:i, function(j) lambda(i,no[s]))
   }
   sor = apply(chi,2,sum)/apply(lambda,2,sum)
   out = data.frame(Dist = d, Sor = sor)
   return(out)
 }
-
 
 
 
