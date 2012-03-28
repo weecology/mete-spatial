@@ -1,7 +1,5 @@
 /*
 Purpose: To compute probabilities related to Harte's HEAP model.
-The first set of functions (PiHEAP & PiRecur) carry out computation
-of the probability of observing n in
 
 Arguments:
 n -- the number of individuals
@@ -23,16 +21,16 @@ Harte, J. 2011. Maximum Entropy and Ecology.
 #include <R.h>
 #include <math.h> 
 
-void PiHEAP(int *n, double *A, int *no, double *Ao, double *prob){
+void piHEAP(int *n, double *A, int *no, double *Ao, double *prob){
     /*
     Computes the probability of observing n individuals in a cell 
     of area A
     */
-    double PiRecur(int n, double A, int no, double Ao) ;
-    *prob = PiRecur(*n,*A,*no,*Ao) ;
+    double piRecur(int n, double A, int no, double Ao) ;
+    *prob = piRecur(*n,*A,*no,*Ao) ;
 } 
 
-double PiRecur(int n, double A, int no, double Ao){
+double piRecur(int n, double A, int no, double Ao){
     /*
     Eq. 4.15 in Harte (2011)
     */
@@ -45,7 +43,7 @@ double PiRecur(int n, double A, int no, double Ao){
     else{
         A = A * 2 ;
         for(q = n ; q < (no + 1) ; q++){
-            total += PiRecur(q,A,no,Ao) / (q + 1) ;
+            total += piRecur(q,A,no,Ao) / (q + 1) ;
         }
         return total ; 
     }
@@ -53,7 +51,7 @@ double PiRecur(int n, double A, int no, double Ao){
 
 double lambda(int i, int no){ 
     /* Eq. 6.4 in Harte (2007) */
-    double PiRecur(int n, double A, int no, double Ao) ; 
+    double piRecur(int n, double A, int no, double Ao) ; 
     double A, lamb ;
     if(no == 0){
         lamb = 1 ;
@@ -63,7 +61,7 @@ double lambda(int i, int no){
     }
     else{
         A = 1/pow(2,i) ;
-        lamb = 1 - PiRecur(0,A,no,1) ;
+        lamb = 1 - piRecur(0,A,no,1) ;
     }   
     return(lamb) ; 
 }
