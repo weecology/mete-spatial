@@ -100,8 +100,8 @@ lambda = function(i,no){
 }
 
 chiHEAP = function(i,j,no){
-  ## calculates the commonality function for a given spatial grain (i) at all
-  ## possible distances
+  ## calculates the commonality function for a given degree of bisection (i) at 
+  ## orders of seperation (j)
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## i: number of bisections
   ## j: order of seperation
@@ -123,6 +123,8 @@ chiHEAP = function(i,j,no){
 }
 
 sorHEAP = function(A,no,Ao,fast=TRUE){
+  ## Computes sorensen's index for a given spatial grain (A) at 
+  ## all possible seperation distances 
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## source code in the file heap.c
   i = log2(Ao/A)
