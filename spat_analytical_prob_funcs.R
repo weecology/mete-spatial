@@ -122,29 +122,6 @@ chiHEAP = function(i,j,no){
   return(out)
 }
 
-chiHEAP = function(i,j,no){
-  ## calculates the commonality function for a given spatial grain (i) at all
-  ## possible distances
-  ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
-  ## i: number of bisections
-  ## j: order of seperation
-  if(no == 1){
-    out = 0
-  }
-  else{
-    if(j == 1){
-      out = (no + 1)^-1 *
-            sum(sapply(1:(no-1),function(m) lambda(i-1,m) * lambda(i-1,no-m)))
-    }  
-    else{
-      i = i-1
-      j = j-1
-      out = (no + 1)^-1 * sum(sapply(2:no,function(m) chiHEAP(i,j,m)))
-    }
-  }  
-  return(out)
-}
-
 sorHEAP = function(A,no,Ao,fast=TRUE){
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## source code in the file heap.c
