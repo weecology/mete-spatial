@@ -17,7 +17,6 @@ Conlisk et al. 2007. A new class of models of spatial distribution.
 
 */
 
-#include <R.h>
 #include <math.h> 
 
 void piBisect(int *n, double *A, int *no, double *Ao, double *psi, double *prob){
