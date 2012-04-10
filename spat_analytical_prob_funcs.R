@@ -43,6 +43,50 @@ piLap = function(n,A,no,Ao){
  sapply(n,function(x)g(no - x,Mo - 1) / g(no,Mo))
 }
 
+getF = function(a,n){
+  ## Conlisk et al. (2007)
+  ## Eq. 7
+  ## this is a computationaly efficient way to compute 
+  ## gamma(a+n) / (gamma(a)*gamma(n+1))
+  if(n == 0)
+    out = 1
+  else
+    out = prod(sapply(1:n,function(i) (a+i-1)/i ))
+  return(out)
+}  
+  
+piBisec = function(n,A,no,Ao,psi,fast=TRUE){
+  ## Bisection model
+  ## Conlisk et al. (2007)
+  ## Theorem 2.3
+  ## psi is an aggregation parameter {0,1}
+  ## Note that when psi = 0.5 that the Bisection Model = HEAP Model
+  if(fast){
+    if(!is.loaded("piBisec")){
+      OS = Sys.info()['sysname']
+      if(OS == 'Linux')
+        dyn.load('bisec.so')
+      else
+        dyn.load('bisec.dll')
+    }
+    out = sapply(n,function(x){
+          .C("piBisec",n=as.integer(x),A=as.double(A),no=as.integer(no),
+             Ao=as.double(Ao),psi=as.double(psi),prob=as.double(0))$prob})
+  }
+  else{
+    i = log2(Ao/A)
+    a = (1 - psi) / psi
+    if(i == 1)
+      out = (getF(a,n) * getF(a,no-n)) / getF(2*a,no)
+    else{
+      A = A*2 
+      out = sum(sapply(n:no,function(q)
+                piBisec(q,A,no,Ao,psi,fast) * ((getF(a,n) * getF(a,q-n)) / getF(2*a,q)) ))
+    }
+  }
+  return(out)
+}
+
 piHEAP = function(n,A,no,Ao,fast=TRUE){
   ##HEAP model 
   ##Harte book Eq. 4.16 pg. 93
@@ -65,9 +109,30 @@ piHEAP = function(n,A,no,Ao,fast=TRUE){
       out = 1/(no+1)
     else{
       A = A*2 
-      out = sum(sapply(n:no,function(q) piHEAP(q,A,no,Ao) / (q + 1)))
+      out = sum(sapply(n:no,function(q) piHEAP(q,A,no,Ao,fast) / (q + 1)))
     }
   }
+  return(out)
+}
+
+piHEAP2 = function(n,A,no,Ao){
+  ## Eq.30 in Harte et al. (2005)
+  ## this equation works only when the term 'no' is relatively small,
+  ## when 'no' is a large number then rounding problems with computing the 
+  ## number of combinations break the equation
+  i = log2(Ao/A)
+  out = sum(sapply(n:no, function(q)((-1)^(n+q))*((q+1)^-i)*
+                                    exp(lchoose(no,q)+lchoose(q,n))))
+  return(out)
+}
+
+piHEAP3 = function(n,A,no,Ao){
+  ## Eq.30 in Harte et al. (2005)
+  ## this equation works only when the term 'no' is relatively small,
+  ## when 'no' is a large number then rounding problems with computing the 
+  ## number of combinations break the equation
+  i = log2(Ao/A)
+  out = sapply(n:no, function(q) lchoose(no,q) + lchoose(q,n) - i*log((q+1)) ) 
   return(out)
 }
 
