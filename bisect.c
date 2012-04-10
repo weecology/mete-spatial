@@ -43,6 +43,25 @@ double getF(double a, int n){
      return out ; 
 }
 
+double piSingle(int n, double A, int no, double Ao, double psi){
+    double a ; 
+    a = (1 - psi) / psi ; 
+    return (getF(a,n) * getF(a,no-n)) / getF(2*a,no) ;
+}
+
+void cdfSingle(double *A, int *no, double *Ao, double *psi, double *cdf){
+    int n ; 
+    for(n = 0 ; n < (*no + 1) ; n++){
+        if(n == 0){
+            cdf[n] = piSingle(n,*A,*no,*Ao,*psi) ;
+        }
+        else{
+            cdf[n] = cdf[n-1] + piSingle(n,*A,*no,*Ao,*psi) ;
+        }
+    }
+}
+
+
 double piBisectRecur(int n, double A, int no, double Ao, double psi){
     /*
     Theorem 2.3 in Conlisk et al. (2007)
@@ -53,12 +72,12 @@ double piBisectRecur(int n, double A, int no, double Ao, double psi){
     i = log2(Ao / A) ; 
     a = (1 - psi) / psi ; 
     if(i == 1){
-        return (getF(a,n) * getF(a,no-n)) / getF(2*a,no) ; 
+        return piSingle(n,A,no,Ao,psi) ; 
     }
     else{
         A = A * 2 ;
         for(q = n ; q < (no + 1) ; q++){
-            total += piBisectRecur(q,A,no,Ao,psi) * ((getF(a,n)*getF(a,q-n)) / getF(2*a,q)) ;
+            total += piBisectRecur(q,A,no,Ao,psi) * piSingle(n,A,q,Ao,psi) ;
         }
         return total ; 
     }
