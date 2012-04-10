@@ -18,7 +18,6 @@ Harte, J. 2011. Maximum Entropy and Ecology.
 
 */
 
-#include <R.h>
 #include <math.h> 
 
 void piHEAP(int *n, double *A, int *no, double *Ao, double *prob){
