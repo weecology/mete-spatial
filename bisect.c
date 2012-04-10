@@ -20,13 +20,13 @@ Conlisk et al. 2007. A new class of models of spatial distribution.
 #include <R.h>
 #include <math.h> 
 
-void piBisec(int *n, double *A, int *no, double *Ao, double *psi, double *prob){
+void piBisect(int *n, double *A, int *no, double *Ao, double *psi, double *prob){
     /*
     Computes the probability of observing n individuals in a cell 
     of area A
     */
-    double piBisecRecur(int n, double A, int no, double Ao, double psi) ;
-    *prob = piBisecRecur(*n,*A,*no,*Ao,*psi) ;
+    double piBisectRecur(int n, double A, int no, double Ao, double psi) ;
+    *prob = piBisectRecur(*n,*A,*no,*Ao,*psi) ;
 } 
 
 double getF(double a, int n){
@@ -43,7 +43,7 @@ double getF(double a, int n){
      return out ; 
 }
 
-double piBisecRecur(int n, double A, int no, double Ao, double psi){
+double piBisectRecur(int n, double A, int no, double Ao, double psi){
     /*
     Theorem 2.3 in Conlisk et al. (2007)
     */
@@ -58,7 +58,7 @@ double piBisecRecur(int n, double A, int no, double Ao, double psi){
     else{
         A = A * 2 ;
         for(q = n ; q < (no + 1) ; q++){
-            total += piBisecRecur(q,A,no,Ao,psi) * ((getF(a,n)*getF(a,q-n)) / getF(2*a,q)) ;
+            total += piBisectRecur(q,A,no,Ao,psi) * ((getF(a,n)*getF(a,q-n)) / getF(2*a,q)) ;
         }
         return total ; 
     }
