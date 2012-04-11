@@ -43,6 +43,16 @@ piLap = function(n,A,no,Ao){
  sapply(n,function(x)g(no - x,Mo - 1) / g(no,Mo))
 }
 
+loadBisect = function(...){
+  if(!is.loaded("piBisect")){
+    OS = Sys.info()['sysname']
+    if(OS == 'Linux')
+      dyn.load('bisect.so')
+    else
+      dyn.load('bisect.dll')
+  } 
+}
+
 getF = function(a,n){
   ## Conlisk et al. (2007)
   ## Eq. 7
@@ -54,37 +64,79 @@ getF = function(a,n){
     out = prod(sapply(1:n,function(i) (a+i-1)/i ))
   return(out)
 }  
-  
-piBisec = function(n,A,no,Ao,psi,fast=TRUE){
+
+piSingle = function(n,A,no,Ao,psi,c=2){
+  ## Single division model
+  ## Conclisk et al. (2007)
+  ## Theorem 1.3
+  a = (1 - psi) / psi
+  out = (getF(a,n) * getF((c-1)*a,no-n)) / getF(c*a,no) 
+  return(out)
+}
+
+cdfSingle = function(A,no,Ao,psi,fast=TRUE){
+  if(fast){
+    loadBisect()
+    out = .C("cdfSingle",A=as.double(A),no=as.integer(no),Ao=as.double(Ao),
+             psi=as.double(psi),cdf=as.double(rep(0,no+1)))$cdf
+  }  
+  else{
+    out = rep(0,no+1)
+    for(n in 0:no){
+     if(n == 0)
+         out[n+1] = piSingle(n,A,no,Ao,psi)
+      else
+        out[n+1] = out[n] + piSingle(n,A,no,Ao,psi)
+    }
+  }  
+  return(out)             
+}
+
+randSingle = function(no,psi,size=1){
+  rands = runif(size)
+  cdf = cdfSingle(1,no,2,psi)
+  xvals = sapply(rands, function(u) which(order(c(cdf,u)) == (no + 2)) - 1)
+  return(xvals)
+}
+
+piBisect = function(n,A,no,Ao,psi,fast=TRUE){
   ## Bisection model
   ## Conlisk et al. (2007)
   ## Theorem 2.3
   ## psi is an aggregation parameter {0,1}
   ## Note that when psi = 0.5 that the Bisection Model = HEAP Model
-  if(fast){
-    if(!is.loaded("piBisec")){
-      OS = Sys.info()['sysname']
-      if(OS == 'Linux')
-        dyn.load('bisec.so')
-      else
-        dyn.load('bisec.dll')
-    }
-    out = sapply(n,function(x){
-          .C("piBisec",n=as.integer(x),A=as.double(A),no=as.integer(no),
-             Ao=as.double(Ao),psi=as.double(psi),prob=as.double(0))$prob})
+  if(psi < 0 | psi > 1){  
+    out = 0
   }
   else{
-    i = log2(Ao/A)
-    a = (1 - psi) / psi
-    if(i == 1)
-      out = (getF(a,n) * getF(a,no-n)) / getF(2*a,no)
-    else{
-      A = A*2 
-      out = sum(sapply(n:no,function(q)
-                piBisec(q,A,no,Ao,psi,fast) * ((getF(a,n) * getF(a,q-n)) / getF(2*a,q)) ))
+    if(fast){
+      loadBisect()
+      out = sapply(n,function(x){
+           .C("piBisect",n=as.integer(x),A=as.double(A),no=as.integer(no),
+              Ao=as.double(Ao),psi=as.double(psi),prob=as.double(0))$prob})
     }
-  }
+    else{
+      i = log2(Ao/A)
+      if(i == 1)
+        out = piSingle(n,A,no,Ao,psi)
+      else{
+        A = A*2 
+        out = sum(sapply(n:no,function(q)
+                  piBisect(q,A,no,Ao,psi,fast) * piSingle(n,A,q,Ao,psi) ))
+      }
+    }
+  }  
   return(out)
+}
+
+loadHEAP = function(...){
+  if(!is.loaded("piHEAP")){
+    OS = Sys.info()['sysname']
+    if(OS == 'Linux')
+      dyn.load('heap.so')
+    else
+      dyn.load('heap.dll')
+  }
 }
 
 piHEAP = function(n,A,no,Ao,fast=TRUE){
@@ -92,13 +144,7 @@ piHEAP = function(n,A,no,Ao,fast=TRUE){
   ##Harte book Eq. 4.16 pg. 93
   ##The source code is in the file heap.c
   if(fast){
-    if(!is.loaded("piHEAP")){
-      OS = Sys.info()['sysname']
-      if(OS == 'Linux')
-        dyn.load('heap.so')
-      else
-        dyn.load('heap.dll')
-    }
+    loadHEAP()
     out = sapply(n,function(x){
           .C("piHEAP",n=as.integer(x),A=as.double(A),no=as.integer(no),
              Ao=as.double(Ao),prob=as.double(0))$prob})
