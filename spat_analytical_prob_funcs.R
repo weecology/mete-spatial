@@ -3,7 +3,7 @@
 ## related to the following models: HEAP, bisection model, and METE. These
 ## probabilities primarily are related to the spatial abundance distribution, but
 ## not exclusively.  
-## $Id $ 
+## $Id$ 
 
 piBin = function(n,A,no,Ao){
   p = A/Ao
