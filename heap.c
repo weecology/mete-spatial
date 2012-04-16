@@ -1,4 +1,5 @@
 /*
+$Id$
 Purpose: To compute probabilities related to Harte's HEAP model.
 
 Arguments:

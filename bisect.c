@@ -1,4 +1,5 @@
 /*
+$Id$
 Purpose: To compute probabilities related to Conlisk et al.'s 
 Bisection model
 
@@ -13,7 +14,7 @@ i -- the number of bisections = log2(Ao/A)
 
 References:
 Conlisk et al. 2007. A new class of models of spatial distribution.
-  Ecological Monographs 77:269–284. 
+  Ecological Monographs 77:269?284. 
 
 */
 
