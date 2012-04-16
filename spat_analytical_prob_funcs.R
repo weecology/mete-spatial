@@ -1,3 +1,9 @@
+## Author: Dan Mcglinn
+## Description: This script contains functions for the computing probabilities 
+## related to the following models: HEAP, bisection model, and METE. These
+## probabilities primarily are related to the spatial abundance distribution, but
+## not exclusively.  
+## $Id $ 
 
 piBin = function(n,A,no,Ao){
   p = A/Ao
@@ -69,25 +75,35 @@ piSingle = function(n,A,no,Ao,psi,c=2){
   ## Single division model
   ## Conclisk et al. (2007)
   ## Theorem 1.3
-  a = (1 - psi) / psi
-  out = (getF(a,n) * getF((c-1)*a,no-n)) / getF(c*a,no) 
+  if(psi <= 0 | psi >= 1){
+    out = 0
+  }
+  else{
+    a = (1 - psi) / psi
+    out = (getF(a,n) * getF((c-1)*a,no-n)) / getF(c*a,no) 
+  }  
   return(out)
 }
 
 cdfSingle = function(A,no,Ao,psi,fast=TRUE){
-  if(fast){
-    loadBisect()
-    out = .C("cdfSingle",A=as.double(A),no=as.integer(no),Ao=as.double(Ao),
-             psi=as.double(psi),cdf=as.double(rep(0,no+1)))$cdf
-  }  
-  else{
+  if(psi <= 0 | psi >= 1){  
     out = rep(0,no+1)
-    for(n in 0:no){
-     if(n == 0)
-         out[n+1] = piSingle(n,A,no,Ao,psi)
-      else
-        out[n+1] = out[n] + piSingle(n,A,no,Ao,psi)
-    }
+  }
+  else{
+    if(fast){
+      loadBisect()
+      out = .C("cdfSingle",A=as.double(A),no=as.integer(no),Ao=as.double(Ao),
+               psi=as.double(psi),cdf=as.double(rep(0,no+1)))$cdf
+    }  
+    else{
+      out = rep(0,no+1)
+      for(n in 0:no){
+       if(n == 0)
+           out[n+1] = piSingle(n,A,no,Ao,psi)
+        else
+          out[n+1] = out[n] + piSingle(n,A,no,Ao,psi)
+      }
+    }  
   }  
   return(out)             
 }
@@ -105,7 +121,7 @@ piBisect = function(n,A,no,Ao,psi,fast=TRUE){
   ## Theorem 2.3
   ## psi is an aggregation parameter {0,1}
   ## Note that when psi = 0.5 that the Bisection Model = HEAP Model
-  if(psi < 0 | psi > 1){  
+  if(psi <= 0 | psi >= 1){  
     out = 0
   }
   else{
@@ -265,6 +281,52 @@ sorHEAP = function(A,no,Ao,fast=TRUE){
   return(out)
 }
 
+negllBisectVector = function(psi){
+  ## single species neg log likelihood function
+  ## Global variable:
+  ##   dat: vector of abundance for each quadrat
+  ## Local variable:
+  ##   psi: aggregation parameter to be estimated
+  tab = table(dat)
+  n = as.numeric(names(tab))
+  no = sum(dat)
+  if(no == 1){
+    warning('It is not appropriate to attempt to estimate psi when no = 1,
+    because all psi values are equally likely')
+  }  
+  A = 1
+  Ao = length(dat)
+  freq = as.numeric(tab)
+  negll = -sum(sapply(1:length(n),function(k) freq[k] * 
+                      log(piBisect(n[k],A,no,Ao,psi))))
+  return(negll)
+}
+
+negllBisectMatrix = function(psi){
+  ## Multiple species neg log likelihood function
+  ## Global variable:
+  ##   dat: site x species matrix of abundance
+  ## Local variable:
+  ##   psi: aggregation parameter to be estimated
+  noAll = colSums(dat)
+  noTab = table(noAll)
+  noUni = as.numeric(names(noTab))
+  noFreq = as.numeric(noTab)
+  negll = 0
+  A = 1
+  Ao = nrow(dat)
+  for(i in seq_along(noUni)){
+    no = noUni[i]
+    sp = which(noAll == no)
+    x = as.vector(dat[,sp])
+    tab = table(x)
+    n = as.numeric(names(tab))
+    freq = as.numeric(tab)
+    negll = negll - (noFreq[i] * sum(sapply(1:length(n),function(k) freq[k] *
+                                            log(piBisect(n[k],A,no,Ao,psi)))))
+  }  
+  return(negll)
+}
 
 
 
