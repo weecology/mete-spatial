@@ -5,6 +5,8 @@
 ## probabilities primarily are related to the spatial abundance distribution, but
 ## not exclusively.  
 
+library(hash)
+
 piBin = function(n,A,no,Ao){
   p = A/Ao
   (factorial(no)/(factorial(n)*factorial(no-n))) * p^n * (1 - p)^(no - n)
@@ -145,6 +147,30 @@ piBisect = function(n,A,no,Ao,psi,fast=TRUE){
   return(out)
 }
 
+piBisect2 = function(n,A,no,Ao,psi,factHash=NULL){
+  ## Bisection model
+  ## Conlisk et al. (2007)
+  ## Theorem 2.4
+  ## psi is an aggregation parameter {0,1}
+  ## Note that when psi = 0.5 that the Bisection Model = HEAP Model
+  if(psi <= 0 | psi >= 1){  
+    out = 0
+  }
+  i = log2(Ao/A)
+  a = (1-psi)/psi
+  if(is.null(factHash)){
+    outSum = sum(sapply(n:no, function(q) (-1)^(n+q) * choose(no-n,q-n) *
+                             (getF(a,q)/getF(2*a,q))^i ))
+    out = choose(no,n) * outSum
+  }
+  else{
+    outSum = sum(sapply(n:no, function(q) (-1)^(n+q) * exp(getBigBin(no-n,q-n,factHash)) *
+                             (getF(a,q)/getF(2*a,q))^i ))
+    out = exp(getBigBin(no,n,factHash)) * outSum
+  }  
+  return(out)
+}
+
 loadHEAP = function(...){
   if(!is.loaded("piHEAP")){
     OS = Sys.info()['sysname']
@@ -177,26 +203,78 @@ piHEAP = function(n,A,no,Ao,fast=TRUE){
   return(out)
 }
 
-piHEAP2 = function(n,A,no,Ao){
+piHEAP2 = function(n,A,no,Ao,h=hash()){
+  ##HEAP model 
+  ##Harte book Eq. 4.16 pg. 93
+  i = log2(Ao/A)
+  key = paste(n,no,i,sep=',')
+  if(!(has.key(key,h))){ 
+    if(i == 1)
+      h[key] = 1/(no+1)
+    else{
+      A = A*2 
+      h[key] = sum(sapply(n:no,function(q) piHEAP2(q,A,no,Ao,h) / (q + 1)))
+    }
+  }  
+  return(h[[key]])
+}
+
+
+getBigBin = function(n,k,factHash){
+  ## returns the natural log of the
+  ## binomial coefficent n choose k
+  if(n > 0 & k > 0){
+    nFact = factHash[[paste(n)]]
+    kFact = factHash[[paste(k)]]
+    nkFact = factHash[[paste(n-k)]]
+    return(nFact - kFact - nkFact)
+  }
+  else
+    return(0)
+}
+
+piHEAP3 = function(n,A,no,Ao,factHash=NULL){
   ## Eq.30 in Harte et al. (2005)
   ## this equation works only when the term 'no' is relatively small,
   ## when 'no' is a large number then rounding problems with computing the 
   ## number of combinations break the equation
   i = log2(Ao/A)
-  out = sum(sapply(n:no, function(q)((-1)^(n+q))*((q+1)^-i)*
-                                    exp(lchoose(no,q)+lchoose(q,n))))
+  if(is.null(factHash)){
+    out =(sapply(n:no, function(q)((-1)^(n+q))*((q+1)^-i)*
+                                      exp(lchoose(no,q)+lchoose(q,n))))
+  }
+  else{
+    out = (sapply(n:no, function(q)((-1)^(n+q))*((q+1)^-i)*
+                                      exp(getBigBin(no,q,factHash)+
+                                          getBigBin(q,n,factHash))))
+  }
   return(out)
 }
 
-piHEAP3 = function(n,A,no,Ao){
+piHEAP4 = function(n,A,no,Ao,factHash=NULL){
   ## Eq.30 in Harte et al. (2005)
   ## this equation works only when the term 'no' is relatively small,
   ## when 'no' is a large number then rounding problems with computing the 
   ## number of combinations break the equation
   i = log2(Ao/A)
-  out = sapply(n:no, function(q) lchoose(no,q) + lchoose(q,n) - i*log((q+1)) ) 
+  if(is.null(factHash)){
+    out = sapply(n:no, function(q) lchoose(no,q) + lchoose(q,n) - i*log((q+1)) ) 
+  }
+  else{
+    out = sapply(n:no, function(q) getBigBin(no,q,factHash) +
+                                   getBigBin(q,n,factHash) - i*log((q+1)) )
+  }
+  ## convert to 64-bit integer to avoid rounding problems
+  out = as.int64(round(exp(out)*1e10))
+  if( (n+n) %% 2 == 0)
+    multiplier = (-1)^(2:(length(out)+1))
+  else
+    multiplier = (-1)^(1:length(out))
+  out = as.integer(as.character(sum(multiplier * out))) / 1e10
   return(out)
 }
+
+
 
 piNegBi = function(n,A,no,Ao,k=1){
   ## Harte book Eq. 4.16 pg. 95
