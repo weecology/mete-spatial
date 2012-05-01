@@ -111,6 +111,11 @@ cdfSingle = function(A,no,Ao,psi,fast=TRUE){
 }
 
 randSingle = function(no,psi,size=1){
+  ## uses Inverse transform sampling method to generate random variates
+  ## http://en.wikipedia.org/wiki/Inverse_transform_sampling
+  ## The basic idea is to uniformly sample a number u between 0 and 1, 
+  ## interpreted as a probability, and then return the largest number x 
+  ## from the domain of the distribution
   rands = runif(size)
   cdf = cdfSingle(1,no,2,psi)
   xvals = sapply(rands, function(u) which(order(c(cdf,u)) == (no + 2)) - 1)
@@ -147,7 +152,47 @@ piBisect = function(n,A,no,Ao,psi,fast=TRUE){
   return(out)
 }
 
-piBisect2 = function(n,A,no,Ao,psi,factHash=NULL){
+piBisect2 = function(n,A,no,Ao,psi,h=hash()){
+  ## Bisection model
+  ## Conlisk et al. (2007)
+  ## Theorem 2.3
+  ## psi is an aggregation parameter {0,1}
+  ## Note that when psi = 0.5 that the Bisection Model = HEAP Model
+  if(psi <= 0 | psi >= 1){  
+    out = 0
+  }
+  i = log2(Ao/A)
+  key = paste(n,no,i,sep=',')
+  if(!(has.key(key,h))){
+    if(i == 1)
+      h[key] = piSingle(n,A,no,Ao,psi)
+    else{
+      A = A*2
+      h[key] = sum(sapply(n:no, function(q) 
+                   piBisect2(q,A,no,Ao,psi,h) * piSingle(n,A,q,Ao,psi) ))
+    }  
+  }
+  return(h[[key]])
+}
+
+piHEAP2 = function(n,A,no,Ao,h=hash()){
+  ##HEAP model 
+  ##Harte book Eq. 4.16 pg. 93
+  i = log2(Ao/A)
+  key = paste(n,no,i,sep=',')
+  if(!(has.key(key,h))){ 
+    if(i == 1)
+      h[key] = 1/(no+1)
+    else{
+      A = A*2 
+      h[key] = sum(sapply(n:no,function(q) piHEAP2(q,A,no,Ao,h) / (q + 1)))
+    }
+  }  
+  return(h[[key]])
+}
+
+
+piBisect3 = function(n,A,no,Ao,psi,factHash=NULL){
   ## Bisection model
   ## Conlisk et al. (2007)
   ## Theorem 2.4
@@ -376,7 +421,7 @@ negllBisectVector = function(psi){
   Ao = length(dat)
   freq = as.numeric(tab)
   negll = -sum(sapply(1:length(n),function(k) freq[k] * 
-                      log(piBisect(n[k],A,no,Ao,psi))))
+                    log(piBisect(n[k],A,no,Ao,psi))))
   return(negll)
 }
 
