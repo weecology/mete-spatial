@@ -61,7 +61,8 @@ double lambda(int i, int n0){
     n0 -- the total number of individuals
     */
     double heap_recur(int n, int A, int n0, int A0) ; 
-    int A, lamb ;
+    double lamb ;
+    int A0 ; 
     if(n0 == 0){
         lamb = 1 ;
     }
@@ -69,8 +70,8 @@ double lambda(int i, int n0){
         lamb = 1 ; 
     }
     else{
-        A = 1 / pow(2, i) ;
-        lamb = 1 - heap_recur(0, A, n0, 1) ;
+        A0 = pow(2, i) ;
+        lamb = 1 - heap_recur(0, 1, n0, A0) ;
     }   
     return(lamb) ; 
 }
@@ -94,7 +95,7 @@ double chi_recur(int i, int j, int n0){
     else{
         if(j == 1){
             for(m = 1 ; m < n0 ; m++){
-                total += lambda(i - 1,m) * lambda(i - 1, n0 - m) / (n0 + 1) ;
+                total += lambda(i - 1, m) * lambda(i - 1, n0 - m) / (n0 + 1) ;
             }
          }  
          else{
@@ -111,7 +112,7 @@ double chi_recur(int i, int j, int n0){
 
 /* functions for Conlisk et al. (2007)'s bisection model begin here */
 
-double getF(double a, int n){
+double calc_F(double a, int n){
      /*
      Eq. 7 in Conlisk et al. (2007)
      */
@@ -129,7 +130,7 @@ double single_prob(int n, int A, int n0, int A0, double psi){
     /* Single division model of Conlisk et al. (2007) Theorem 1.3 */
     double a ; 
     a = (1 - psi) / psi ; 
-    return (getF(a, n) * getF(a, n0 - n)) / getF(2 * a, n0) ;
+    return (calc_F(a, n) * calc_F(a, n0 - n)) / calc_F(2 * a, n0) ;
 }
 
 void single_cdf(int *A, int *n0, int *A0, double *psi, double *cdf){
