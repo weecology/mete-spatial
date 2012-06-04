@@ -1,3 +1,4 @@
+## $Id: $
 ###################################################
 ##Author: Dan McGlinn
 ##Date: 10/25/10
@@ -1573,7 +1574,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
 }
 
 ##3.8##
-'getSAR' = function(psp,grains,mv.window=FALSE)
+'getSAR' = function(psp, grains, mv_window=FALSE)
 {
   ## Purpose: to construct spatially explict SAR based upon a
   ## mapped grid of occurances
@@ -1582,57 +1583,58 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   ## psp: community array (i.e., S x N x M pres/absen array where N >= M)
   ## grains: the areas in pixels for which to compute the SAR
   ##         only grains that have integer log base 2 are considered
-  ## mv.window: FALSE indicates that a non-moving window SAR will be calculated
+  ## mv_window: FALSE indicates that a non-moving window SAR will be calculated
   ## Note: This implementation may require that the grain of 
-  if(class(psp) != 'array')
+  if (class(psp) != 'array')
     stop('psp must be a community array (S X N X M)')
   grains = grains[log2(grains) == round(log2(grains))]
   grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
   ## define the size of sampling units on each side
-  lenN = 2^ceiling(log2(grains)/2)
-  lenM = 2^floor(log2(grains)/2)
-  sr = rep(0,length(grains))
-  ind = rep(0,length(grains))
-  cs = rep(0,length(grains))
+  lenN = 2^ceiling(log2(grains) / 2)
+  lenM = 2^floor(log2(grains) / 2)
+  sr = rep(0, length(grains))
+  ind = rep(0, length(grains))
+  cs = rep(0, length(grains))
   N = dim(psp)[2]
   M = dim(psp)[3]
-  if(M > N){
+  if (M > N) {
     stop('The first spatial dimension of psp must be larger than or equal to the second 
          (i.e. psp[S,N,M] where N >= M)')
   }       
-  for(l in seq_along(grains)){
-    if(grains[l] == 1){  # if area=1
+  for (l in seq_along(grains)) {
+    if (grains[l] == 1) {  # if area=1
       sr[l] = sum(psp > 0)
       ind[l] = sum(psp)
-      cs[l] = N*M
+      cs[l] = N * M
     }
     else{
-      if(mv.window){
-        brksN = 1:(N-lenN[l]+1)
-        brksM = 1:(M-lenM[l]+1)
+      if (mv_window) {
+        brksN = 1:(N - lenN[l] + 1)
+        brksM = 1:(M - lenM[l] + 1)
       }
       else{
-        brksN = seq(1,N,lenN[l])
-        brksM = seq(1,M,lenM[l])
+        brksN = seq(1, N, lenN[l])
+        brksM = seq(1, M, lenM[l])
       }  
-      for(n in brksN){
-        for(m in brksM){
-          sr[l] = sr[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
-                                        m:(m+(lenM[l]-1))]>0,1,sum)>0)
-          ind[l] = ind[l] + sum(apply(psp[,n:(n+(lenN[l]-1)),
-                                        m:(m+(lenM[l]-1))],1,sum))
+      for (n in brksN) {
+        for (m in brksM) {
+          sr[l] = sr[l] + sum(apply(psp[, n:(n + (lenN[l] - 1)),
+                                          m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0)
+          ind[l] = ind[l] + sum(apply(psp[, n:(n + (lenN[l] - 1)),
+                                            m:(m + (lenM[l] - 1))], 1, sum))
           cs[l] = cs[l] + 1
         }
       }
     }
   }
-  out = cbind(grains,sr/cs,ind/cs,cs)  
-  colnames(out) = c('grains','richness','indiv','count')
+  out = cbind(grains, sr / cs, ind / cs, cs)  
+  colnames(out) = c('grains', 'richness', 'indiv', 'count')
   return(out)
 }  
 
+
 ##3.9##
-quadAggregator = function(mat, coords, grains, binary=FALSE){
+'quadAggregator' = function(mat, coords, grains, binary=FALSE){
   ## Purpose: This function generates aggregated community matrices for each
   ## spatial grain that is specified. This function is only approrpriate for 
   ## data from a regular square spatial grid.  If coordinates are not supplied
@@ -1640,42 +1642,45 @@ quadAggregator = function(mat, coords, grains, binary=FALSE){
   ## Inputs:
   ## mat: site x species matrix assumed to be sampled from a square grid
   ## coords: two column spatial x and y coordinates
-  ## grains: spatial grains to aggregate community at
+  ## grains: spatial grains to aggregate community at, thse  must represent 
+  ##         quadrasections (i.e. aggregations of groups of 4 quadrats)
   ## binary: boolean, if TRUE binary pres/abse matrix returned
   ## Note: assumes that spatially defined square was sampled.
-  nx = sqrt(nrow(mat))
-  if(missing(coords)){
-    coords = expand.grid(1:nx,1:nx)
+  ## ToDo: 1) Allow rectrangular quadrats, 2) allow bisection aggregation
+  side_length = sqrt(nrow(mat)) 
+  if (missing(coords)) {
+    coords = expand.grid(1:side_length, 1:side_length)
   }
-  if(missing(grains)){
-    grains = (2^(0:(log2(nx)-1)))^2
+  if (missing(grains)) {
+    grains = (2^(0:(log2(side_length) - 1)))^2
   }
-  grains = grains[sqrt(grains)==round(sqrt(grains))]
-  lens = sqrt(grains)
-  nRows = sum((nx/lens)^2)
+  grains = grains[sqrt(grains) == round(sqrt(grains))]
+  lens = sqrt(grains) 
+  nRows = sum((side_length / lens)^2)
   irow = 1
-  out = matrix(NA,ncol=ncol(mat)+3,nrow=nRows)
-  for(i in seq_along(grains)){
-    if(lens[i] == 1){  # if area == 1
-      out[1:nrow(mat),] = as.matrix(cbind(grains[i],coords,mat))
-      irow = nrow(mat)+1
+  out = matrix(NA, ncol=ncol(mat) + 3, nrow=nRows)
+  for (i in seq_along(grains)) {
+    if (lens[i] == 1) {  # if area == 1
+      out[1:nrow(mat),] = as.matrix(cbind(grains[i], coords, mat))
+      irow = nrow(mat) + 1
     }
     else{
-      breaks = seq(1,nx,lens[i])
+      breaks = seq(1, side_length, lens[i])
       for(x in breaks){
         for(y in breaks){
-          true = coords[,1] >= x & coords[,1] < (x+lens[i]) &
-                 coords[,2] >= y & coords[,2] < (y+lens[i])
-          out[irow, ] = c(grains[i], apply(coords[true,],2,mean), 
-                          apply(mat[true,],2,sum))
+          true = coords[,1] >= x & coords[,1] < (x + lens[i]) &
+                 coords[,2] >= y & coords[,2] < (y + lens[i])
+          out[irow, ] = c(grains[i], 
+                          apply(coords[true,], 2, mean), 
+                          apply(mat[true,], 2, sum))
           irow = irow +1
         }
       }
     }
   }  
-  colnames(out) = c('grain','x','y',colnames(mat))
-  if(binary){
-    out[,-(1:3)] = (out[,-(1:3)] > 0)*1
+  colnames(out) = c('grain', 'x', 'y', colnames(mat))
+  if (binary) {
+    out[,-(1:3)] = as.numeric(out[,-(1:3)] > 0)
   }
   return(out)
 }  
@@ -2041,54 +2046,114 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
 }
 
 
-len = function(Nbisect){
-  2^floor(Nbisect/2) 
+n_pixels_long = function(i_bisections){
+  ## returns the number of pixels on the side of a grid with more or equal pixels
+  ## after i bisection events
+  ## old function name: len
+  2^floor((i_bisections + 1) / 2) 
 }
 
-wid = function(Nbisect){
-  sapply(Nbisect,function(Nbisect){
-  if(Nbisect %% 2 == 0)
-   len(Nbisect)/2
-  else
-   len(Nbisect)
-  })
-}
+n_pixels_wide = function(i_bisections){
+  ## returns the number of pixels on the side of a grid with less or equal pixels
+  ## after i bisection events
+  ## old function name: wid
+  2^floor(i_bisections / 2) 
+} 
 
 ##3.19 ##
-'makeCommMat' = function(spnum,S,coords,quadLen,quadN,domain,grainSuffix=NULL)
+'make_comm_matrix' = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
+                              grainSuffix=NULL)
 { 
   ## Output: 
   ## A community matrix where each row is a differnet pixel on a grid.  
   ## Arguments:
-  ## spnum : an integer specifying species id
+  ## spnum : an integer specifying species identities
   ## S : the size of the species pool may be larger than the number of unique 
   ##     spnum
   ## coords : two column matrix (x,y) specifying the spatial coordinates
-  ## quadLen : the length on one edge of the square quadrat size for each grain
-  ## quadN : the number of quadrats at each spatial grain
+  ## n_quadrats : the number of quadrats at each spatial grain
   ## domain : specifies the spatial domain of the area:  (xmin, xmax, ymin, ymax)
-  ## grainSuffix : if supplied the grain colmn will have this appended to it
+  ## abu: abundance associated with each record, if NULL then it is set to 1
+  ##      individual per record
+  ## grainSuffix : if supplied the grain column will have this appended to it
   ##               so that it is clear what community this cooresponds with
-  comms = matrix(NA,nrow=sum(quadN),ncol=S+3)
-  colnames(comms) = c('grain','x','y',paste('sp',1:S,sep=''))
+  xdiff = abs(domain[2] - domain[1])
+  ydiff = abs(domain[4] - domain[3])
+  if (xdiff >= ydiff) {
+    xlengths = xdiff / n_pixels_long(log2(n_quadrats))
+    ylengths = ydiff / n_pixels_wide(log2(n_quadrats))
+  }  
+  else{
+    xlengths = xdiff / n_pixels_wide(log2(n_quadrats))
+    ylengths = ydiff / n_pixels_long(log2(n_quadrats))
+  }
+  comms = matrix(NA, nrow=sum(n_quadrats), ncol=S + 3)
+  colnames(comms) = c('grain', 'x', 'y', paste('sp', 1:S, sep=''))
   irow = 1
-  for(A in seq_along(quadLen)){
-    xbreaks = seq(domain[1],domain[2],quadLen[A])
-    ybreaks = seq(domain[3],domain[4],quadLen[A]) 
-    for (x in 1:(length(xbreaks)-1)) {
-      for (y in 1:(length(ybreaks)-1)) {
-        inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x+1] & 
-                  ybreaks[y] <=  coords[,2] &  coords[,2] < ybreaks[y+1]   
-        if(!is.null(grainSuffix))
-          comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),grainSuffix,sep=''),x,y)
-        else
-          comms[irow, c(1:3)] = c(paste(round(quadLen[A]^2),sep=''),x,y)
-        comms[irow, -c(1:3)] = as.integer(table(c(spnum[inQuad],1:S)) - 1)
+  for (i in seq_along(n_quadrats)) {
+    xbreaks = seq(domain[1], domain[2], xlengths[i])
+    ybreaks = seq(domain[3], domain[4], ylengths[i]) 
+    for (x in 1:(length(xbreaks) - 1)) {
+      for (y in 1:(length(ybreaks) - 1)) {
+        inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x + 1] & 
+                  ybreaks[y] <= coords[,2] & coords[,2] < ybreaks[y + 1]
+        if (!is.null(grainSuffix)) {
+          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2),
+                                        grainSuffix, sep=''), x, y)
+        }  
+        else {
+          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2),sep=''),
+                                  x, y)
+        }
+        if (is.null(abu) ){
+          comms[irow, -c(1:3)] = as.integer(table(c(spnum[inQuad],1:S)) - 1)
+        }
+        else {
+          comms[irow, -c(1:3)] =  as.integer(table(c(unlist(mapply(
+                                     rep, spnum[inQuad], abu[inQuad])), 1:S)) - 1)
+        }  
         irow = irow + 1 
       }
     }
   }
   return(comms)
+}
+
+'get_bisection_history' = function(grains, abu) {
+  ## retrives the record of how a species' abunance was bisected in a particular
+  ## landscape the input into this function can be generated by the function 
+  ## 'make_comm_matrix'
+  ## arguments:
+  ## grains: a vector of spatial grains that is associated with each abundance
+  ## abu: a vector of abundances across the spatial scales of interest
+  abu = as.numeric(abu)
+  grains = as.numeric(grains)
+  grains_table = table(grains)
+  grains_unique = as.integer(names(grains_table))
+  i_bisections = log2(as.integer(grains_table))
+  out = data.frame(n1 = NULL, n2 = NULL)
+  for (i in seq_along(grains_unique)) {
+    abu_tmp = abu[grains == grains_unique[i]]
+    if (i_bisections[i] == 1) {
+      n1 = abu_tmp[1] 
+      n2 = abu_tmp[2]
+    }  
+    else {
+      if (i_bisections[i]%%2 == 0) {
+        true = 1:length(abu_tmp)%%2 == 1
+        n1 = abu_tmp[true]
+        n2 = abu_tmp[!true]          
+      }
+      else {
+        block_size = 2^(i_bisections[i] - ceiling(i_bisections[i] / 2))
+        true = rep(rep(c(T,F), each=block_size), times=block_size)
+        n1 = abu_tmp[true]
+        n2 = abu_tmp[!true]
+      }
+    }
+    out = rbind(out,data.frame(n1 = n1, n2 = n2))
+  }              
+  return(out)
 }
 
 'getResults' = function(names,metric,dataType)
