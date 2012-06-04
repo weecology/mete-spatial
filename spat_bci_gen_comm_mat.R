@@ -7,25 +7,20 @@ source('/home/danmcglinn/maxent/spat/spat_sim_vario_func.R')
 
 ## read in data from the 2010 census (i.e. census 7)
 
-load('/home/danmcglinn/CTFSplots/BCI/bci_census7.Rdata')
+load('/home/danmcglinn/datasets/CTFSplots/BCI/bci_census7.Rdata')
 
 uniSpeciesNames = as.character(sort(unique(dat$Latin)))
 dat$spnum = match(dat$Latin,uniSpeciesNames)
 S = max(dat$spnum) 
 
-shortSide = 500
-longSide = 1000
-
-## for square quadrats the lengths are in meters defined here
-nPixels = wid(c(14,12,10,8,6,4))
-quadLen = shortSide/ nPixels
-quadN = nPixels^2 * (longSide / shortSide)
+i_bisections = c(13, 11, 9, 7, 5, 3)
+n_quadrats = 2^i_bisections
+domain = c(0,1000,0,500) # spatial domain in meters defined here
 
 ## generate a site x species matrix for each spatial scale
 
-comms = makeCommMat(dat$spnum,S,cbind(dat$gx,dat$gy),quadLen,quadN,c(0,1000,0,500))
+comms = make_comm_matrix(dat$spnum, S, cbind(dat$gx, dat$gy), n_quadrats, domain)
 
-write.csv(comms,file='/home/danmcglinn/maxent/spat/data/bci_comms.csv',
+write.csv(comms, file='/home/danmcglinn/maxent/spat/data/bci_comms.csv',
           row.names=FALSE)
-save(comms,file='/home/danmcglinn/CTFSplots/BCI/bci_comms_census7.Rdata')
-     
+save(comms, file='/home/danmcglinn/CTFSplots/BCI/bci_comms_census7.Rdata')
