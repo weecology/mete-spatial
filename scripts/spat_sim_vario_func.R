@@ -2076,19 +2076,25 @@ n_pixels_wide = function(i_bisections){
   ## abu: abundance associated with each record, if NULL then it is set to 1
   ##      individual per record
   ## grainSuffix : if supplied the grain column will have this appended to it
-  ##               so that it is clear what community this cooresponds with
+  ##               so that it is clear what community this corresponds with
   xdiff = abs(domain[2] - domain[1])
   ydiff = abs(domain[4] - domain[3])
-  if (xdiff >= ydiff) {
+  if (xdiff > ydiff) {
     xlengths = xdiff / n_pixels_long(log2(n_quadrats))
     ylengths = ydiff / n_pixels_wide(log2(n_quadrats))
   }  
-  else{
+  else if (xdiff < ydiff) {
     xlengths = xdiff / n_pixels_wide(log2(n_quadrats))
     ylengths = ydiff / n_pixels_long(log2(n_quadrats))
   }
+  else if (xdiff == ydiff) {
+    xlengths = xdiff / sqrt(n_quadrats)
+    ylengths = ydiff / sqrt(n_quadrats)
+  }
+  else
+    stop('Function cannot figure out how to split up the area')
   comms = matrix(NA, nrow=sum(n_quadrats), ncol=S + 3)
-  colnames(comms) = c('grain', 'x', 'y', paste('sp', 1:S, sep=''))
+  colnames(comms) = c('grain', 'x', 'y', paste0('sp', 1:S))
   irow = 1
   for (i in seq_along(n_quadrats)) {
     xbreaks = seq(domain[1], domain[2], xlengths[i])
@@ -2097,13 +2103,13 @@ n_pixels_wide = function(i_bisections){
       for (y in 1:(length(ybreaks) - 1)) {
         inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x + 1] & 
                   ybreaks[y] <= coords[,2] & coords[,2] < ybreaks[y + 1]
-        if (!is.null(grainSuffix)) {
-          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2),
-                                        grainSuffix, sep=''), x, y)
-        }  
-        else {
-          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2),sep=''),
+        if (is.null(grainSuffix)) {
+          comms[irow, c(1:3)] = c(paste0(round(xlengths[i] * ylengths[i], 2)),
                                   x, y)
+        }
+        else {
+          comms[irow, c(1:3)] = c(paste0(round(xlengths[i] * ylengths[i], 2),
+                                  grainSuffix), x, y)
         }
         if (is.null(abu) ){
           comms[irow, -c(1:3)] = as.integer(table(c(spnum[inQuad],1:S)) - 1)
