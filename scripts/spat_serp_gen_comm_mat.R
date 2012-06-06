@@ -3,13 +3,13 @@
 ## which was surveyed in 1998 on a 64 m^2 plot.
 ## Metadata: http://socrates.berkeley.edu/~hartelab/MaxEnt.html
 
-setwd('/home/danmcglinn/maxent/spat')
+setwd('~/maxent/spat')
 
 source('./scripts/spat_sim_vario_func.R')
 
 dat = read.csv('./data/serpentine_data.csv',header=T)
 
-i_bisections = c(8:4)
+i_bisections = c(8, 6, 4)
 n_quadrats = 2^i_bisections
 domain = c(1, 17, 1, 17) # defined in number of quadrats here
 

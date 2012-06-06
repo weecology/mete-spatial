@@ -3,11 +3,13 @@
 ## which was surveyed in 2010 for each spatial scale of interest
 ## Metadata: bci50ha.doc 
 
-source('/home/danmcglinn/maxent/spat/spat_sim_vario_func.R')
+setwd('~/maxent/spat')
+
+source('./scripts/spat_sim_vario_func.R')
 
 ## read in data from the 2010 census (i.e. census 7)
 
-load('/home/danmcglinn/datasets/CTFSplots/BCI/bci_census7.Rdata')
+load('~/datasets/CTFSplots/BCI/bci_census7.Rdata')
 
 uniSpeciesNames = as.character(sort(unique(dat$Latin)))
 dat$spnum = match(dat$Latin,uniSpeciesNames)
@@ -21,6 +23,4 @@ domain = c(0,1000,0,500) # spatial domain in meters defined here
 
 comms = make_comm_matrix(dat$spnum, S, cbind(dat$gx, dat$gy), n_quadrats, domain)
 
-write.csv(comms, file='/home/danmcglinn/maxent/spat/data/bci_comms.csv',
-          row.names=FALSE)
-save(comms, file='/home/danmcglinn/CTFSplots/BCI/bci_comms_census7.Rdata')
+write.csv(comms, file='./data/bci_comms.csv', row.names=FALSE)
