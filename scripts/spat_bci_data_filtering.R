@@ -5,6 +5,8 @@
 ## appropriate for analyses targeted at other topics
 ## Metadata: bci50ha.doc 
 
+setwd('~/datasets/CTFSplots/BCI')
+
 fileNames = dir()
 
 bciData = fileNames[grep('bci',fileNames)]
