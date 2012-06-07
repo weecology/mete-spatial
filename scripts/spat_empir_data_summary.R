@@ -2,17 +2,19 @@
 ## Purpose: to generate a table that summarizes characteristics of the empirical
 ## datasets that are employed in the distance decay study
 
-setwd('/home/danmcglinn/maxent/spat')
+setwd('~/maxent/spat')
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
-              'sherman3', 'serp')
+              'sherman3', 'serp', 'oosting')
 dat = vector("list", length=length(shrtnames))
 names(dat) = shrtnames
 for (i in seq_along(dat))
   dat[[i]] = read.csv(paste0('./data/', shrtnames[i], '_sad.csv'), header=FALSE)
 
-datnames = c('BCI', rep('Cocoli', 2), 'Crosstimbers', rep('Sherman', 3), 'Serpentine')
-shape = c(rep('rectangle', 5), rep('square', 3))
-area = c(50, rep(200*100*1e-4, 2), 4, rep(200*100*1e-4, 2), 140^2*1e-4, 64*1e-4)
+datnames = c('BCI', rep('Cocoli', 2), 'Crosstimbers', rep('Sherman', 3),
+             'Serpentine', 'Oosting')
+shape = c(rep('rectangle', 3), 'square', rep('rectangle', 2), rep('square', 3))
+area = c(50, rep(200*100*1e-4, 2), 4, rep(200*100*1e-4, 2), 140^2*1e-4, 64*1e-4,
+         160^2*1e-4)
 S = unlist(lapply(dat, length))
 N = unlist(lapply(dat, sum))
 
