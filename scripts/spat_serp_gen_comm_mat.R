@@ -7,7 +7,7 @@ setwd('~/maxent/spat')
 
 source('./scripts/spat_sim_vario_func.R')
 
-dat = read.csv('./data/serpentine_data.csv',header=T)
+dat = read.csv('./data/raw_data/serpentine_data.csv')
 
 i_bisections = c(8, 6, 4)
 n_quadrats = 2^i_bisections

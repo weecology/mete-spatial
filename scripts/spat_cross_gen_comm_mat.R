@@ -7,7 +7,7 @@ setwd('~/maxent/spat')
 
 source('./scripts/spat_sim_vario_func.R')
 
-dat = read.csv('~/datasets/crosstimbers/cross1998_filtered.csv')
+dat = read.csv('./data/filtered_data/cross1998_filtered.csv')
 
 uniSpeciesNames = as.character(sort(unique(dat$sp)))
 dat$spnum = match(dat$sp, uniSpeciesNames)

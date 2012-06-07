@@ -5,9 +5,9 @@
 ## be appropriate for analyses targeted at other topics
 ## Metadata: CrosstimbersMasterDataSheet1-20-12.xlsx
 
-setwd('/home/danmcglinn/datasets/crosstimbers')
+setwd('~/maxent/spat')
 
-dat = read.csv('crosstimbers1998.csv')
+dat = read.csv('./data/raw_data/crosstimbers1998.csv')
 
 head(dat)
 names(dat) = c('T','Q','N','sp','x','y','dbh','comments')
@@ -16,6 +16,6 @@ dat$T[as.character(dat$T)=='I'] = 'l'
 sort(unique(dat$sp))
 dat$sp[as.character(dat$sp)=='QUST '] = 'QUST'
 dat = dat[,-ncol(dat)]
-write.csv(dat,file='cross1998_filtered.csv',row.names=FALSE)
+write.csv(dat,file='./data/filtered_data/cross1998_filtered.csv',row.names=FALSE)
 
 

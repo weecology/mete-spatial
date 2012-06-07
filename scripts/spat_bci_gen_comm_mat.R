@@ -9,7 +9,7 @@ source('./scripts/spat_sim_vario_func.R')
 
 ## read in data from the 2010 census (i.e. census 7)
 
-load('~/datasets/CTFSplots/BCI/bci_census7.Rdata')
+dat = read.csv('./data/filtered_data/bci_census7_filtered.csv')
 
 uniSpeciesNames = as.character(sort(unique(dat$Latin)))
 dat$spnum = match(dat$Latin,uniSpeciesNames)

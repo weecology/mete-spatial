@@ -12,8 +12,7 @@ source('./scripts/spat_sim_vario_func.R')
 
 ## read in data from the 1999 census (i.e. census 3)
 
-dat = read.csv('~/datasets/CTFSplots/sherman/sherman_census3_filtered.csv',
-               header=TRUE)
+dat = read.csv('./data/filtered_data/sherman_census3_filtered.csv')
 
 uniSpeciesNames = as.character(sort(unique(dat$spcode)))
 dat$spnum = match(dat$spcode,uniSpeciesNames)

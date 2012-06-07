@@ -6,7 +6,7 @@ setwd('~/maxent/spat')
 
 source('./scripts/spat_sim_vario_func.R')
 
-dat = read.csv('~/datasets/oosting/oosting_trees_1990_filtered.csv')
+dat = read.csv('./data/filtered_data/oosting_trees_1990_filtered.csv')
 
 S = length(unique(dat$CODE))
 dat$spnum = as.integer(dat$CODE)

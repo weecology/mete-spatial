@@ -3,9 +3,10 @@
 ## spatial biodiversity patterns. 
 ## Metadata: http://esapubs.org/archive/ecol/E088/162/metadata.htm
 
-setwd('~/datasets/oosting/')
+setwd('~/maxent/spat')
 
-oost = read.delim('Oosting_Trees_1998.txt', colClasses = 'character')
+oost = read.delim('./data/raw_data/Oosting_Trees_1998.txt',
+                  colClasses = 'character')
 
 ## replace the '.' symbols with NA's so that the data can be processed
 
@@ -21,5 +22,6 @@ dat = data.frame(ID = as.numeric(oost[,1]),
 ## only keep the individual trees with a condition code of 1: alive and reasonably intact 
 dat = subset(dat, C90 == 1)
 
-write.csv(dat, 'oosting_trees_1990_filtered.csv', row.names=F)
+write.csv(dat, file = './data/filtered_data/oosting_trees_1990_filtered.csv',
+          row.names=F)
 
