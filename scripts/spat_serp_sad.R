@@ -1,4 +1,4 @@
-setwd('/home/danmcglinn/maxent/spat')
+setwd('~/maxent/spat')
 
 comms = read.csv('./data/serp_comms.csv')
 grains = unique(comms$grain)
