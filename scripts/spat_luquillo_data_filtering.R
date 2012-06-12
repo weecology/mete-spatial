@@ -23,5 +23,10 @@ goodData = dat$TAG == dat$STEMTAG &
 
 luqu = dat[goodData, ]
 
+range(luqu$GX)
+# the max spatial x should be 320 not 320.02
+# change this record 
+luqu$GX[luqu$GX == max(luqu$GX)] = 319.99
+
 write.csv(luqu, file='./data/filtered_data/luqu_census4_filtered.csv',
           row.names=F)

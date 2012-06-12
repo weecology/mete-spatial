@@ -4,7 +4,7 @@
 
 setwd('~/maxent/spat')
 
-dat= read.delim('~/datasets/CTFSplots/FERP/PlotsDataReport.txt')
+dat= read.delim('./data/raw_data/FERP_CTFS_2007_data.txt')
 
 ## drop dead stems
 ## drop secondary stem data
@@ -15,8 +15,13 @@ goodData = dat$Status == 'alive' &
            dat$Stem == 'main' &
            !is.na(dat$DBH) &
            !is.na(dat$gx) &
-           !is.na(dat$gy)  
+           !is.na(dat$gy) 
 
 ferp = dat[goodData,]
+
+range(ferp$gx)
+range(ferp$gy)
+## drop records that are less than zero
+ferp = ferp[ferp$gx > 0 & ferp$gy > 0, ]
 
 write.csv(ferp, file='./data/filtered_data/ferp_2007_filtered.csv', row.names=F)
