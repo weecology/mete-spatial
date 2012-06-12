@@ -10,7 +10,7 @@ dat$spnum = match(dat$Latin, uniSpeciesNames)
 S = max(dat$spnum) 
 
 range(dat$gx) ## max 200
-range(dat$gx) ## max 300
+range(dat$gy) ## max 300
 ## change into a single 150 x 300 quadrat
 trim = (200 - 150) / 2
 
