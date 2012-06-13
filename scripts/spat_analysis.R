@@ -7,9 +7,9 @@ library(vegan)
 library(snowfall)
 library(bigmemory)
 
-setwd('/home/danmcglinn/maxent/spat')
+setwd('~/maxent/spat')
 
-source('spat_sim_vario_func.R')
+source('./scripts/spat_sim_vario_func.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
 if( length(clArgs) > 1){

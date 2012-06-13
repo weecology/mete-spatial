@@ -9,12 +9,12 @@ library(danspkg)
 source('./scripts/spat_sim_vario_func.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
-if( length(clArgs) > 1){
+if (length(clArgs) > 1) {
   commName = clArgs[1]
   metricsToCalc = clArgs[2]
   dataType = clArgs[3]
 }
-if( length(clArgs) == 0 ){
+if (length(clArgs) == 0) {
   stop('Must specify commName, metricsToCalc, & dataType at command line')
   q('no')
 }
