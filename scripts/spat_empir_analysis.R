@@ -1,14 +1,12 @@
 ## Author: Dan McGlinn
 ## Purpose: to analyze the spatial patterns of community structure
-## in the sherman census 3 which was surveyed in 1999 for each spatial
-## scale of interest
-## Metadata: sherman_files.doc
-setwd('/home/danmcglinn/maxent/spat')
-.libPaths('/home/danmcglinn/R/x86_64-pc-linux-gnu-library/2.14')
+## in the empirical datasets
+
+setwd('~/maxent/spat')
 
 library(vegan)
 library(danspkg)
-source('spat_sim_vario_func.R')
+source('./scripts/spat_sim_vario_func.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
 if( length(clArgs) > 1){
@@ -21,11 +19,11 @@ if( length(clArgs) == 0 ){
   q('no')
 }
 
-## read in comms file for the 1999 census (i.e., census3) of sherman
-comms = read.csv(paste('./data/',commName,'_comms.csv',sep=''))
+## read in comms file 
+comms = read.csv(paste('./data/',commName, '_comms.csv', sep=''))
 
-## compute  Dist Decay statistics
-metrics = calcMetrics(comms,metricsToCalc,dataType,writeToFile=TRUE,
+## compute Dist Decay statistics
+metrics = calcMetrics(comms, metricsToCalc, dataType, writeToFile=TRUE,
                       fileSuffix=commName)
 
 
