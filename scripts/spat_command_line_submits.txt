@@ -26,30 +26,45 @@ Rscript spat_analysis.R 100 10000 200 11 FALSE binary varWithin 90 0 >error_varW
 Rscript spat_analysis.R 100 10000 200 11 FALSE binary varWithin 0 0 >error_varWithin_grid_0deg.log 2>&1 &
 
 ## analyze omidirectional variograms of empirical datasets
-Rscript spat_sherman_analysis.R sorensen abu >error_sorensen_abu_sherm.log 2>&1 &
-Rscript spat_sherman_analysis.R varWithin abu >error_varWithin_abu_sherm.log 2>&1 &
-Rscript spat_sherman_analysis.R sorensen binary >error_sorensen_binary_sherm.log 2>&1 &
-Rscript spat_sherman_analysis.R varWithin binary >error_varWithin_binary_sherm.log 2>&1 &
+Rscript spat_empir_analysis.R sherman1 sorensen abu >error_sorensen_abu_sherman1.log 2>&1 &
+Rscript spat_empir_analysis.R sherman1 varWithin abu >error_varWithin_abu_sherman1.log 2>&1 &
+Rscript spat_empir_analysis.R sherman1 sorensen binary >error_sorensen_binary_sherman1.log 2>&1 &
+Rscript spat_empir_analysis.R sherman1 varWithin binary >error_varWithin_binary_sherman1.log 2>&1 &
 
-Rscript spat_cocoli_analysis.R sorensen abu >error_sorensen_abu_cocoli.log 2>&1 &
-Rscript spat_cocoli_analysis.R varWithin abu >error_varWithin_abu_cocoli.log 2>&1 &
-Rscript spat_cocoli_analysis.R sorensen binary >error_sorensen_binary_cocoli.log 2>&1 &
-Rscript spat_cocoli_analysis.R varWithin binary >error_varWithin_binary_cocoli.log 2>&1 &
+Rscript spat_empir_analysis.R sherman2 sorensen abu >error_sorensen_abu_sherman2.log 2>&1 &
+Rscript spat_empir_analysis.R sherman2 varWithin abu >error_varWithin_abu_sherman2.log 2>&1 &
+Rscript spat_empir_analysis.R sherman2 sorensen binary >error_sorensen_binary_sherman2.log 2>&1 &
+Rscript spat_empir_analysis.R sherman2 varWithin binary >error_varWithin_binary_sherman2.log 2>&1 &
 
-Rscript spat_bci_analysis.R sorensen abu >error_sorensen_abu_bci.log 2>&1 &
-Rscript spat_bci_analysis.R varWithin abu >error_varWithin_abu_bci.log 2>&1 &
-Rscript spat_bci_analysis.R sorensen binary >error_sorensen_binary_bci.log 2>&1 &
-Rscript spat_bci_analysis.R varWithin binary >error_varWithin_binary_bci.log 2>&1 &
+Rscript spat_empir_analysis.R sherman3 sorensen abu >error_sorensen_abu_sherman3.log 2>&1 &
+Rscript spat_empir_analysis.R sherman3 varWithin abu >error_varWithin_abu_sherman3.log 2>&1 &
+Rscript spat_empir_analysis.R sherman3 sorensen binary >error_sorensen_binary_sherman3.log 2>&1 &
+Rscript spat_empir_analysis.R sherman3 varWithin binary >error_varWithin_binary_sherman3.log 2>&1 &
 
-Rscript spat_serp_analysis.R sorensen abu >error_sorensen_abu_serp.log 2>&1 &
-Rscript spat_serp_analysis.R varWithin abu >error_varWithin_abu_serp.log 2>&1 &
-Rscript spat_serp_analysis.R sorensen binary >error_sorensen_binary_serp.log 2>&1 &
-Rscript spat_serp_analysis.R varWithin binary >error_varWithin_binary_serp.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli1 sorensen abu >error_sorensen_abu_cocoli1.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli1 varWithin abu >error_varWithin_abu_cocoli1.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli1 sorensen binary >error_sorensen_binary_cocoli1.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli1 varWithin binary >error_varWithin_binary_cocoli1.log 2>&1 &
 
-Rscript spat_cross_analysis.R sorensen abu >error_sorensen_abu_cross.log 2>&1 &
-Rscript spat_cross_analysis.R varWithin abu >error_varWithin_abu_cross.log 2>&1 &
-Rscript spat_cross_analysis.R sorensen binary >error_sorensen_binary_cross.log 2>&1 &
-Rscript spat_cross_analysis.R varWithin binary >error_varWithin_binary_cross.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli2 sorensen abu >error_sorensen_abu_cocoli2.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli2 varWithin abu >error_varWithin_abu_cocoli2.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli2 sorensen binary >error_sorensen_binary_cocoli2.log 2>&1 &
+Rscript spat_empir_analysis.R cocoli2 varWithin binary >error_varWithin_binary_cocoli2.log 2>&1 &
+
+Rscript spat_empir_analysis.R bci sorensen abu >error_sorensen_abu_bci.log 2>&1 &
+Rscript spat_empir_analysis.R bci varWithin abu >error_varWithin_abu_bci.log 2>&1 &
+Rscript spat_empir_analysis.R bci sorensen binary >error_sorensen_binary_bci.log 2>&1 &
+Rscript spat_empir_analysis.R bci varWithin binary >error_varWithin_binary_bci.log 2>&1 &
+
+Rscript spat_empir_analysis.R serp sorensen abu >error_sorensen_abu_serp.log 2>&1 &
+Rscript spat_empir_analysis.R serp varWithin abu >error_varWithin_abu_serp.log 2>&1 &
+Rscript spat_empir_analysis.R serp sorensen binary >error_sorensen_binary_serp.log 2>&1 &
+Rscript spat_empir_analysis.R serp varWithin binary >error_varWithin_binary_serp.log 2>&1 &
+
+Rscript spat_empir_analysis.R cross sorensen abu >error_sorensen_abu_cross.log 2>&1 &
+Rscript spat_empir_analysis.R cross varWithin abu >error_varWithin_abu_cross.log 2>&1 &
+Rscript spat_empir_analysis.R cross sorensen binary >error_sorensen_binary_cross.log 2>&1 &
+Rscript spat_empir_analysis.R cross varWithin binary >error_varWithin_binary_cross.log 2>&1 &
 
 
 ## generate empirically based communities WITHOUT fixing the SAD
