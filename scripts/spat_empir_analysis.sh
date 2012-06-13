@@ -14,7 +14,7 @@ then
       do
         bsub -q week -J $commName\
         Rscript spat_empir_analysis.R $i $j $k\
-        -o "error_${j}_${k}_${i}.log"
+        -o error_$j_$k_$i.log
       done
     done
   done
@@ -29,7 +29,7 @@ then
       for k in $dataType 
       do
         Rscript spat_empir_analysis.R $i $j $k\
-        >"error_${j}_${k}_${i}.log" 2>&1 &
+        >error_$j_$k_$i.log 2>&1 &
       done
     done
   done
