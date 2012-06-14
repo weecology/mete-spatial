@@ -815,7 +815,7 @@ FixUnSamp2<-function(oarray,rarray){
 ##3.2##
 'vario' = function(x, coord, grain=1, breaks=NA, hmax=NA, round.up=FALSE,
                    pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
-                   direction = 'omnidirectional', quantile=FALSE,
+                   quants=NULL, direction = 'omnidirectional',
                    tolerance = pi/8, unit.angle = c('radians', 'degrees'),
                    distance.metric = 'euclidean')
 {
@@ -853,7 +853,8 @@ FixUnSamp2<-function(oarray,rarray){
   ##   used to specify directional variograms. Default defines the
   ##   omnidirectional variogram. The value must be in the interval [0, pi] 
   ##   radians ([0, 180] degrees).
-  ## quantile: ...
+  ## quants: any quantiles to compute, these offer rough estimates of variability
+  ##   in the empirical variogram
   ## tolerance: numerical value for the tolerance angle, when computing
   ##   directional variograms. The value must be in the interval [0, pi/2]
   ##   radians ([0, 90] degrees). Defaults to pi/8.
@@ -929,20 +930,18 @@ FixUnSamp2<-function(oarray,rarray){
     N = nrow(x)
   } 
   vobject = list()
+  vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg, median, direction,
+                             tolerance, unit.angle, distance.metric, 
+                             quants = ifelse(is.null(quants), NA, 
+                                             paste(quants * 100, "%",
+                                                   collapse=", ", sep="")))
   if(class(x) == "sim"){
     if(binary)
       x = apply(census(x, snap=snap), c(1, 2), as.logical) * 1
     else
       x = census(x, snap=snap)
-    vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg,
-                               median, niche.wid.rel=x$p$s.rel,
-                               disp.wid.rel=x$p$u.rel, direction, tolerance,
-                               unit.angle, distance.metric)
-  }
-  else{
-    vobject$parms = data.frame(grain, hmax, S=S, N=N,pos.neg,
-                               median, direction, tolerance ,unit.angle,
-                               distance.metric)
+    vobject$parms = cbind(vobject$parms, niche.wid.rel=x$p$s.rel,
+                          disp.wid.rel=x$p$u.rel) 
   }
   H[H > hmax] = NA
   H = as.vector(H)
@@ -981,6 +980,8 @@ FixUnSamp2<-function(oarray,rarray){
   else
     exp.split = split(vegdist(x, method=distance.metric), H)
   exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
+  if (!is.null(quants)) 
+    exp.qt = sapply(exp.split, function(x) quantile(x, quants))
   vobject$vario = cbind(vobject$vario, exp.var=exp.gamma)
   if (median)
     exp.med = sapply(exp.split, median, na.rm=TRUE)
@@ -991,37 +992,33 @@ FixUnSamp2<-function(oarray,rarray){
     ## communities... Ecology 84:1045-1057 to see that observed multivariate
     ## variogram can be computed from the species richness vector
     obs.gamma = sapply(split(dist(rich)^2 * .5, H), mean, na.rm=TRUE)
+    vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
+                          ratio = obs.gamma/exp.gamma)
     if (pos.neg) {
       cov.mat = getCovFractions(x)
       pos.split = split(cov.mat$pos, H)
       neg.split = split(cov.mat$neg, H)
       pos = sapply(pos.split, mean)
       neg = sapply(neg.split, mean)
+      vobject$vario = cbind(vobject$vario, pos = pos, neg = neg)
       if (median) {
         pos.med = sapply(pos.split, median)
         neg.med = sapply(neg.split, median)
-        vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
-                              ratio = obs.gamma/exp.gamma, pos = pos, neg = neg,
-                              exp.med = exp.med, pos.med = pos.med,
+        vobject$vario = cbind(vobject$vario, exp.med = exp.med, pos.med = pos.med,
                               neg.med = neg.med)
       }
-      else
-        vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
-                              ratio = obs.gamma/exp.gamma, pos = pos, neg = neg)
     ##Note: obs.var = exp.var + pos.var + neg.var
     }
     else{
       if (median) {
         obs.gamma.med = sapply(split(dist(rich)^2 * .5, H),median, na.rm=TRUE)
-        vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
-                              ratio = obs.gamma / exp.gamma, exp.med = exp.med,
-                              obs.med = obs.gamma.med)
-      }
-      else
-        vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
-                              ratio = obs.gamma / exp.gamma)
+        vobject$vario = cbind(vobject$vario, obs.med = obs.gamma.med,
+                              exp.med = exp.med)
+      }  
     }
-  }  
+  }
+  if (!is.null(quants))
+    vobject$vario = cbind(vobject$vario, exp.qt = t(exp.qt))
   if (is.vector(x))
     vobject$p = sum(x) / length(x)
   else
