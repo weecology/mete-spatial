@@ -933,8 +933,7 @@ FixUnSamp2<-function(oarray,rarray){
   vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg, median, direction,
                              tolerance, unit.angle, distance.metric, 
                              quants = ifelse(is.null(quants), NA, 
-                                             paste(quants * 100, "%",
-                                                   collapse=", ", sep="")))
+                                             paste(quants* 100, collapse=", ")))
   if(class(x) == "sim"){
     if(binary)
       x = apply(census(x, snap=snap), c(1, 2), as.logical) * 1
@@ -980,8 +979,11 @@ FixUnSamp2<-function(oarray,rarray){
   else
     exp.split = split(vegdist(x, method=distance.metric), H)
   exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
-  if (!is.null(quants)) 
+  if (!is.null(quants)) {
     exp.qt = sapply(exp.split, function(x) quantile(x, quants))
+    exp.qt = t(exp.qt)
+    colnames(exp.qt) = paste(quants * 100)
+  }  
   vobject$vario = cbind(vobject$vario, exp.var=exp.gamma)
   if (median)
     exp.med = sapply(exp.split, median, na.rm=TRUE)
@@ -1018,7 +1020,7 @@ FixUnSamp2<-function(oarray,rarray){
     }
   }
   if (!is.null(quants))
-    vobject$vario = cbind(vobject$vario, exp.qt = t(exp.qt))
+    vobject$vario = cbind(vobject$vario, exp.qt = exp.qt)
   if (is.vector(x))
     vobject$p = sum(x) / length(x)
   else
