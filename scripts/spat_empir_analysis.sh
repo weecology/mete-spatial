@@ -12,7 +12,7 @@ then
     do 
       for k in $dataType 
       do
-        bsub -q week -J $commName -o error_$j_$k_$i.log\
+        bsub -q week -J $commName -o ./log_files/error_$j_$k_$i.log\
         Rscript spat_empir_analysis.R $i $j $k 
       done
     done
@@ -27,7 +27,7 @@ then
     do 
       for k in $dataType 
       do
-        Rscript spat_empir_analysis.R $i $j $k >error_$j_$k_$i.log 2>&1 &
+        Rscript spat_empir_analysis.R $i $j $k >./log_files/error_$j_$k_$i.log 2>&1 &
       done
     done
   done
