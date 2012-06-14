@@ -12,8 +12,8 @@ then
     do 
       for k in $dataType 
       do
-        bsub -q week -J $commName\
-        Rscript spat_empir_analysis.R $i $j $k -o error_$j_$k_$i.log
+        bsub -q week -J $commName -o error_$j_$k_$i.log\
+        Rscript spat_empir_analysis.R $i $j $k 
       done
     done
   done
