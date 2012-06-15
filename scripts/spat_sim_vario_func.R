@@ -1807,7 +1807,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         varWithin = vector('list', length(commNames))      
         names(varWithin) = commNames
       }  
-      varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,
+      varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,quants=quants,
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees')
       if(!is.null(nperm)){ 
@@ -1826,7 +1826,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         varBetween = vector('list', length(commNames))      
         names(varBetween) = commNames
       }  
-      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,
+      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,quants=quants,
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       if(!is.null(nperm)){ 
@@ -1845,7 +1845,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         names(jaccard) = commNames
       }  
       jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard',
-                           direction=direction,tolerance=tolerance,
+                          quants=quants, direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       jaccardNull = NULL
       jaccardExp = 1 - jacExp(mat,1) #  to convert into a dissimiarlity
@@ -1866,7 +1866,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
       }  
       ## bray-curtis is equiv to sorensen        
       sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray',
-                           direction=direction,tolerance=tolerance,
+                           quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       sorensenNull = NULL
       sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
@@ -1909,8 +1909,9 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
 
 
 calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
-                          hmax=NA,direction='omidirectional',tolerance=NA,nperm=NULL,
-                          RPargs=NULL,writeToFile=FALSE,fileSuffix=NULL){
+                          hmax=NA,quants=NA,direction='omidirectional',
+                          tolerance=NA,nperm=NULL,RPargs=NULL,writeToFile=FALSE,
+                          fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -1954,7 +1955,7 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
         names(varWithin) = commNames
       }     
       varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,
-                           direction=direction,tolerance=tolerance,
+                           quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees')
       if(!is.null(nperm)){ 
         varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
@@ -1972,7 +1973,7 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
         varBetween = vector('list', length(commNames))      
         names(varBetween) = commNames
       }       
-      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,
+      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,quants=quants,
                            direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       if(!is.null(nperm)){ 
@@ -1991,7 +1992,7 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
         names(jaccard) = commNames
       }  
       jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard',
-                           direction=direction,tolerance=tolerance,
+                           quants=quants, direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       jaccardNull = NULL
       jaccardExp = 1 - jacExp(mat,1) #  to convert into a dissimiarlity
@@ -2012,7 +2013,7 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
       }   
       ## bray-curtis is equiv to sorensen        
       sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray',
-                           direction=direction,tolerance=tolerance,
+                           quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       sorensenNull = NULL
       sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
