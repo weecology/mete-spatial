@@ -935,7 +935,7 @@ FixUnSamp2<-function(oarray,rarray){
   vobject = list()
   vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg, median, direction,
                              tolerance, unit.angle, distance.metric, 
-                             quants = ifelse(is.na(quants), NA, 
+                             quants = ifelse(is.na(quants[1]), NA, 
                                              paste(quants* 100, collapse=", ")))
   if(class(x) == "sim"){
     if(binary)
@@ -982,7 +982,7 @@ FixUnSamp2<-function(oarray,rarray){
   else
     exp.split = split(vegdist(x, method=distance.metric), H)
   exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
-  if (!is.na(quants)) {
+  if (!is.na(quants[1])) {
     exp.qt = sapply(exp.split, function(x) quantile(x, quants, na.rm=TRUE))
     exp.qt = t(exp.qt)
     colnames(exp.qt) = paste(quants * 100)
@@ -1022,7 +1022,7 @@ FixUnSamp2<-function(oarray,rarray){
       }  
     }
   }
-  if (!is.na(quants))
+  if (!is.na(quants[1]))
     vobject$vario = cbind(vobject$vario, exp.qt = exp.qt)
   if (is.vector(x))
     vobject$p = sum(x) / length(x)
