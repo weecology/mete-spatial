@@ -983,7 +983,7 @@ FixUnSamp2<-function(oarray,rarray){
     exp.split = split(vegdist(x, method=distance.metric), H)
   exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
   if (!is.na(quants)) {
-    exp.qt = sapply(exp.split, function(x) quantile(x, quants))
+    exp.qt = sapply(exp.split, function(x) quantile(x, quants, na.rm=TRUE))
     exp.qt = t(exp.qt)
     colnames(exp.qt) = paste(quants * 100)
   }  
