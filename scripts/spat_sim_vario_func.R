@@ -815,7 +815,7 @@ FixUnSamp2<-function(oarray,rarray){
 ##3.2##
 'vario' = function(x, coord, grain=1, breaks=NA, hmax=NA, round.up=FALSE,
                    pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
-                   quants=NULL, direction = 'omnidirectional',
+                   quants=NA, direction = 'omnidirectional',
                    tolerance = pi/8, unit.angle = c('radians', 'degrees'),
                    distance.metric = 'euclidean')
 {
@@ -908,6 +908,9 @@ FixUnSamp2<-function(oarray,rarray){
   else
     x = ifelse(x == -999, NA, x)
   Dist = dist(coord)
+  maxDist = max(Dist)
+  if (is.na(hmax))
+    hmax = round((maxDist / 2) / grain) * grain
   if (is.na(breaks[1])) {
     if (round.up)
       H = ceiling(Dist / grain) * grain
@@ -916,11 +919,11 @@ FixUnSamp2<-function(oarray,rarray){
   }
   else {
     H = Dist
+    if (length(breaks) == 1)
+      breaks = seq(0, maxDist, length.out=breaks)
     for (i in 1:(length(breaks) - 1))
       H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
   }
-  if (is.na(hmax))
-    hmax = round((max(Dist) / 2) / grain) * grain
   if (is.vector(x)) {
     S = 1
     N = length(x)
@@ -932,7 +935,7 @@ FixUnSamp2<-function(oarray,rarray){
   vobject = list()
   vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg, median, direction,
                              tolerance, unit.angle, distance.metric, 
-                             quants = ifelse(is.null(quants), NA, 
+                             quants = ifelse(is.na(quants), NA, 
                                              paste(quants* 100, collapse=", ")))
   if(class(x) == "sim"){
     if(binary)
@@ -969,7 +972,7 @@ FixUnSamp2<-function(oarray,rarray){
   }
   ## geoR code from function variog ends here
   Dist = sapply(split(Dist, H), mean, na.rm=TRUE)
-  vobject$vario = data.frame(H = names(table(H)), Dist = Dist,
+  vobject$vario = data.frame(H = as.numeric(names(table(H))), Dist = Dist,
                              n = as.numeric(table(H)))
   ## below 'exp.gamma' is the expected variogram if 'x' is a sitexsp
   ## pres/abse matrix. The expectation is based upon the assumption of zero
@@ -979,7 +982,7 @@ FixUnSamp2<-function(oarray,rarray){
   else
     exp.split = split(vegdist(x, method=distance.metric), H)
   exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
-  if (!is.null(quants)) {
+  if (!is.na(quants)) {
     exp.qt = sapply(exp.split, function(x) quantile(x, quants))
     exp.qt = t(exp.qt)
     colnames(exp.qt) = paste(quants * 100)
@@ -1019,7 +1022,7 @@ FixUnSamp2<-function(oarray,rarray){
       }  
     }
   }
-  if (!is.null(quants))
+  if (!is.na(quants))
     vobject$vario = cbind(vobject$vario, exp.qt = exp.qt)
   if (is.vector(x))
     vobject$p = sum(x) / length(x)
@@ -1028,6 +1031,7 @@ FixUnSamp2<-function(oarray,rarray){
   vobject$perm = FALSE
   ## the above line indicates to the function 'vGraph' if the variogram is the
   ## result of a randomization or not
+  row.names(vobject$vario) = NULL
   return(vobject)
 }
 
@@ -1761,7 +1765,7 @@ jacExp = function(mat,areaSampA,areaSampB=NULL){
 }
 
 ##3.17##
-calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,
+calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,quants=NA
                        direction='omnidirectional',tolerance=NA,nperm=NULL,npar,
                        RPargs=NULL,writeToFile=FALSE,fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
@@ -1778,6 +1782,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,
   ## grain: interval size for distance classes, only used if 'breaks' not supplied
   ## breaks: the spatial breaks that define the spatial lags to be compared
   ## hmax: the maximum spatial lag
+  ## quants: the quantiles to compute
   ## nperm: number of permutations to carry out for null models
   ## npar: number of processesors to run null models on
   ## RPargs: arguments to parameterize the Random Patterns null model
