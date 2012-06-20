@@ -813,7 +813,7 @@ FixUnSamp2<-function(oarray,rarray){
 } 
 
 ##3.2##
-'vario' = function(x, coord, grain=1, breaks=NA, hmax=NA, round.up=FALSE,
+'vario' = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE,
                    pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
                    quants=NA, direction = 'omnidirectional',
                    tolerance = pi/8, unit.angle = c('radians', 'degrees'),
@@ -840,8 +840,11 @@ FixUnSamp2<-function(oarray,rarray){
   ## coord: the spatial coordinates
   ## grain: interval size for distance classes, only used if 'breaks' not supplied
   ## breaks: the spatial breaks that define the spatial lags to be compared
-  ## hmax: the maximum spatial lag
-  ## round.up: if TRUE the spatial lags are rounded up to nearest integer
+  ## hmin: the minimum spatial lag, default value of NA is treated as a minimum
+  ##   of 1
+  ## hmax: the maximum spatial lag, default value of NA is treated as half of 
+  ##   the maximum distance
+  ## round.int: if TRUE the spatial lags are rounded to nearest integer
   ## pos.neg: if TRUE the positive and negative parts of the covariance matrix
   ##   are output
   ## binary: if TRUE and x is class sim then abundances are converted to
@@ -909,21 +912,48 @@ FixUnSamp2<-function(oarray,rarray){
     x = ifelse(x == -999, NA, x)
   Dist = dist(coord)
   maxDist = max(Dist)
-  if (is.na(hmax))
-    hmax = round((maxDist / 2) / grain) * grain
   if (is.na(breaks[1])) {
-    if (round.up)
-      H = ceiling(Dist / grain) * grain
-    else
-      H = round(Dist / grain) * grain
+    if (is.na(hmin))
+      hmin = grain
+    if (is.na(hmax))
+      hmax = round((maxDist / 2) / grain) * grain
+    H = round(Dist / grain) * grain
   }
   else {
+    if (is.na(hmin))
+      hmin = 1
+    if (is.na(hmax))
+      hmax = maxDist / 2
     H = Dist
-    if (length(breaks) == 1)
-      breaks = seq(0, maxDist, length.out=breaks)
-    for (i in 1:(length(breaks) - 1))
+    if (is.numeric(breaks[1])) {
+      if (length(breaks) == 1)
+        breaks = seq(hmin, hmax, length.out=breaks)
+    }
+    else {
+      if (breaks[1] == 'log')
+        base = 'exp'
+      else if (breaks[1] == 'log2')
+        base = '2^'
+      else if (breaks[1] == 'log10')
+        base = '10^'
+      else 
+        stop('Specification of breaks using a character string must be log, log2, 
+             or log10')
+      incre = (hmax - hmin) / as.numeric(breaks[2])
+      hmax = hmax + incre
+      breaks = eval(parse(text = paste(base, '(seq(', breaks[1], '(hmin),', 
+                                       breaks[1], '(hmax), length.out=', 
+                                       breaks[2], '))', sep='')))
+    } 
+    if (round.int)
+      breaks = round(breaks)
+    for (i in 1:(length(breaks) - 1)) {
       H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
+    }  
   }
+  H[H < hmin] = NA
+  H[H > hmax] = NA
+  H = as.vector(H)
   if (is.vector(x)) {
     S = 1
     N = length(x)
@@ -945,8 +975,6 @@ FixUnSamp2<-function(oarray,rarray){
     vobject$parms = cbind(vobject$parms, niche.wid.rel=x$p$s.rel,
                           disp.wid.rel=x$p$u.rel) 
   }
-  H[H > hmax] = NA
-  H = as.vector(H)
   ## geoR code from function variog with slight modifications starts here'
   if (direction != "omnidirectional") {
     ## note that the changes: 'u' has been changed for as.vector(Dist) and
@@ -2189,13 +2217,13 @@ n_pixels_wide = function(i_bisections){
   return(results)
 }
 
-'reshapeResults' = function(results,metric){
+'reshapeResults' = function(results, metric){
   ## Purpose: to reshape the results from a nested list to a matrix
   ## of the most important information
-  out= vector('list',length=length(results))
+  out = vector('list', length=length(results))
   names(out) = names(results)
-  for(i in seq_along(results)){ ## the datset
-    if(is.null(results[[i]]))
+  for (i in seq_along(results)) { ## the datset
+    if (is.null(results[[i]]))
       next
     vExp = vector('list',length=length(results[[i]]))
     Dist = vExp
@@ -2204,23 +2232,36 @@ n_pixels_wide = function(i_bisections){
     for(j in seq_along(results[[i]])){ ## the grain/community
       if(is.null(results[[i]][[j]]))
         next
-      Dist[[j]] = results[[i]][[j]][[1]]$vario$Dist
-      n[[j]] = results[[i]][[j]][[1]]$vario$n
-      rpExp[[j]] = rep(results[[i]][[j]][[3]],length(Dist[[j]]))
-      if(any(metric %in% c('sorensen','jaccard')))
-        vExp[[j]] = 1 - results[[i]][[j]][[1]]$vario$exp.var
+      vobject = results[[i]][[j]][[1]]$vario
+      quants = !is.na(results[[i]][[j]][[1]]$parms$quants)
+      Dist[[j]] = vobject$Dist 
+      n[[j]] = vobject$n
+      rpExp[[j]] = rep(results[[i]][[j]][[3]], length(Dist[[j]]))
+      if (quants) {
+        qt.names = names(vobject)[grep('exp.qt',names(vobject))]
+        vExp[[j]] = vobject[ , qt.names]
+      }
+      else 
+        vExp[[j]] = vobject$exp.var
+      if (any(metric %in% c('sorensen','jaccard'))) {
+        vExp[[j]] = 1 - vExp[[j]]
+      }  
+      if (j == 1) 
+        vExp_dat = vExp[[j]]
       else
-        vExp[[j]] = results[[i]][[j]][[1]]$vario$exp.var
+        vExp_dat = rbind(vExp_dat, vExp[[j]])
     }
     if(is.null(names(results[[i]])))
       commNames = 1:length(results[[i]])
     else
       commNames = names(results[[i]])
-    out[[i]] = data.frame(Dist = unlist(Dist),Metric = unlist(vExp),
-                          Exp = unlist(rpExp),N = unlist(n))
+    names(vExp_dat) = sub('exp.qt.','',names(vExp_dat))
+    names(vExp_dat) = rev(names(vExp_dat))
+    out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
+                          Exp = unlist(rpExp), N = unlist(n))
     out[[i]] = data.frame(out[[i]],
-               Comm = unlist(mapply(rep,commNames,each=sapply(vExp,length),
-                                       SIMPLIFY=FALSE)))
+               Comm = as.numeric(unlist(mapply(rep,commNames,each=sapply(n, length),
+                                       SIMPLIFY=FALSE))))
   }
   return(out)
 }  
@@ -2262,26 +2303,55 @@ avgResults = function(results,combine = NULL){
   return(out)
 }
 
-plotEmpir = function(results,log="",col=NULL,lwd=NULL){
+plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
+                     col=NULL,lwd=NULL, ...){
   ## Purpose: to plot the results, expects that the graphical window has been 
   ## setup appropriately 
   ## Arguments
   ## results: a list from which the results should be ploted
   ## log: which axes are to be log transformed
+  ## quants: if TRUE will plot quantiles as well
   ## col: what colors to use
   ## lwd: the line width of the lines
-  if(is.null(lwd))
+  if (is.null(lwd))
     lwd = 2
   for(i in seq_along(results)){
-    unigrains = unique(results[[i]]$Comm)
+    #grains = as.numeric(as.character(results[[i]]$Comm))
+    grains = results[[i]]$Comm
+    unigrains = unique(grains)
+    results[[i]]$Dist = results[[i]]$Dist * sqrt(grains)
+    resp_var = names(results[[i]])[grep('Metric', names(results[[i]]))]
+    if (length(resp_var) > 1) {
+      names(results[[i]]) = sub('.50','',names(results[[i]]))
+    }   
+    else {
+      if (quants)
+        stop("This results file does not contain data on quantiles")
+    } 
     if(is.null(col))
-      col = 1:length(unigrains)
-    plot(Metric ~ Dist,data = results[[i]],subset= Comm == i,
-         xlim = range(Dist), ylim = range(Metric),type='n',log=log,
+      col = palette()[-1]
+    if (quants) {
+      col_poly = apply(col2rgb(col), 2, 
+                  function(x) rgb(x[1],x[2],x[3], 
+                                  alpha=alpha * max(x), 
+                                  maxColorValue = max(x)))
+    }  
+    plot(Metric ~ Dist, data = results[[i]],
+         xlim = range(Dist), ylim = range(Metric), type='n', log=log,
          main=names(results)[i])
-    for(j in seq_along(unigrains)){
-      lines(Metric ~ Dist,data = results[[i]],subset= Comm == unigrains[j],
-            col=col[j],lwd=lwd)
+    for (j in seq_along(unigrains)) {
+      dat = subset(results[[i]], Comm == unigrains[j])
+      if (quants) {
+        xvals = dat$Dist
+        xvals = c(xvals, rev(xvals))
+        yvals = dat$Metric.25
+        yvals = c(yvals, rev(dat$Metric.75))
+        polygon(xvals, yvals, border=NA, col=col_poly[j])
+        lines(Metric ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
+      }  
+      else { 
+        lines(Metric ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
+      }  
     }  
   }
 }
