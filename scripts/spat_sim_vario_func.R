@@ -1830,7 +1830,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
   for(i in seq_along(grains)){
     coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * as.numeric(grains[i])
     mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
-    if (!is.na(breaks)) {
+    if (!is.na(breaks[1])) {
       if (is.list(breaks))
         brks = breaks[[i]]
       else
