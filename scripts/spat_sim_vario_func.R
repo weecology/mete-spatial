@@ -1825,18 +1825,22 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
       fileSuffix = paste(fileSuffix,'_',direction,'deg',sep='') 
   }
   grains = unique(comms[,1])
+  if (is.na(hmin[1]))
+    hmin_vals = sqrt(grains)
+  else
+    hmin_vals = hmin
   out = vector('list',length(grains))
   names(out) = paste('comm',grains,sep='')
   for(i in seq_along(grains)){
-    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * 
-             sqrt(as.numeric(grains[i]))
+    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
         brks = breaks[[i]]
       else
         brks = breaks
-    }  
+    }
+    hmin = hmin_vals[i]
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
