@@ -1828,7 +1828,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
   out = vector('list',length(grains))
   names(out) = paste('comm',grains,sep='')
   for(i in seq_along(grains)){
-    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * grains[i]
+    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * as.numeric(grains[i])
     mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
     if (!is.na(breaks)) {
       if (is.list(breaks))
@@ -2327,7 +2327,7 @@ plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
     #grains = as.numeric(as.character(results[[i]]$Comm))
     grains = results[[i]]$Comm
     unigrains = unique(grains)
-    results[[i]]$Dist = results[[i]]$Dist * sqrt(grains)
+    results[[i]]$Dist = results[[i]]$Dist 
     resp_var = names(results[[i]])[grep('Metric', names(results[[i]]))]
     if (length(resp_var) > 1) {
       names(results[[i]]) = sub('.50','',names(results[[i]]))
