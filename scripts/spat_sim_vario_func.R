@@ -1830,10 +1830,12 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
   for(i in seq_along(commNames)){
     coords = as.matrix(comms[comms[,1] == commNames[i],2:3])
     mat = as.matrix(comms[comms[,1] == commNames[i],-c(1:3)])
-    if (is.list(breaks))
-      brks = breaks[[i]]
-    else
-      brks = breaks
+    if (!is.na(breaks)) {
+      if (is.list(breaks))
+        brks = breaks[[i]]
+      else
+        brks = breaks
+    }  
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
