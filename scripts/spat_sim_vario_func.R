@@ -1828,7 +1828,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
   out = vector('list',length(grains))
   names(out) = paste('comm',grains,sep='')
   for(i in seq_along(grains)){
-    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * as.numeric(grains[i])
+    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * 
+             sqrt(as.numeric(grains[i]))
     mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
