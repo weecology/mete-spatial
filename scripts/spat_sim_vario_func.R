@@ -1824,12 +1824,12 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
     if(direction != 'omnidirectional')
       fileSuffix = paste(fileSuffix,'_',direction,'deg',sep='') 
   }
-  commNames = unique(comms[,1])
-  out = vector('list',length(commNames))
-  names(out) = paste('comm',commNames,sep='')
-  for(i in seq_along(commNames)){
-    coords = as.matrix(comms[comms[,1] == commNames[i],2:3])
-    mat = as.matrix(comms[comms[,1] == commNames[i],-c(1:3)])
+  grains = unique(comms[,1])
+  out = vector('list',length(grains))
+  names(out) = paste('comm',grains,sep='')
+  for(i in seq_along(grains)){
+    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * grains[i]
+    mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
     if (!is.na(breaks)) {
       if (is.list(breaks))
         brks = breaks[[i]]
@@ -1840,8 +1840,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
       if(i == 1){
-        varWithin = vector('list', length(commNames))      
-        names(varWithin) = commNames
+        varWithin = vector('list', length(grains))      
+        names(varWithin) = grains
       }  
       varWithinObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=FALSE,
                            quants=quants,direction=direction,tolerance=tolerance,
@@ -1859,8 +1859,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
     }
     if(any('varBetween' %in% metricsToCalc)){
       if(i == 1){
-        varBetween = vector('list', length(commNames))      
-        names(varBetween) = commNames
+        varBetween = vector('list', length(grains))      
+        names(varBetween) = grains
       }  
       varBetweenObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=TRUE,
                             quants=quants,direction=direction,tolerance=tolerance,
@@ -1877,8 +1877,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
     }
     if(any('jaccard' %in% metricsToCalc)){
       if(i == 1){
-        jaccard = vector('list', length(commNames))  
-        names(jaccard) = commNames
+        jaccard = vector('list', length(grains))  
+        names(jaccard) = grains
       }  
       jaccardObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
@@ -1897,8 +1897,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
     }
     if(any('sorensen' %in% metricsToCalc)){
       if(i == 1){
-        sorensen = vector('list', length(commNames))
-        names(sorensen) = commNames
+        sorensen = vector('list', length(grains))
+        names(sorensen) = grains
       }  
       ## bray-curtis is equiv to sorensen        
       sorensenObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='bray',
