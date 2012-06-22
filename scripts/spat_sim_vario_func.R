@@ -1793,7 +1793,8 @@ jacExp = function(mat,areaSampA,areaSampB=NULL){
 }
 
 ##3.17##
-calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,quants=NA,
+calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
+                       hmax=NA,quants=NA,
                        direction='omnidirectional',tolerance=NA,nperm=NULL,npar,
                        RPargs=NULL,writeToFile=FALSE,fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
@@ -1809,6 +1810,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
   ##           and an additional analytical null expectation is calculated
   ## grain: interval size for distance classes, only used if 'breaks' not supplied
   ## breaks: the spatial breaks that define the spatial lags to be compared
+  ## hmin: the minimum spatial lag
   ## hmax: the maximum spatial lag
   ## quants: the quantiles to compute
   ## nperm: number of permutations to carry out for null models
@@ -1828,6 +1830,10 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
   for(i in seq_along(commNames)){
     coords = as.matrix(comms[comms[,1] == commNames[i],2:3])
     mat = as.matrix(comms[comms[,1] == commNames[i],-c(1:3)])
+    if (is.list(breaks))
+      brks = breaks[[i]]
+    else
+      brks = breaks
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
@@ -1835,8 +1841,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         varWithin = vector('list', length(commNames))      
         names(varWithin) = commNames
       }  
-      varWithinObs = vario(mat,coords,grain,breaks,hmax,pos.neg=FALSE,quants=quants,
-                           direction=direction,tolerance=tolerance,
+      varWithinObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=FALSE,
+                           quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees')
       if(!is.null(nperm)){ 
         varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
@@ -1854,9 +1860,9 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         varBetween = vector('list', length(commNames))      
         names(varBetween) = commNames
       }  
-      varBetweenObs = vario(mat,coords,grain,breaks,hmax,pos.neg=TRUE,quants=quants,
-                           direction=direction,tolerance=tolerance,
-                           unit.angle='degrees') 
+      varBetweenObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=TRUE,
+                            quants=quants,direction=direction,tolerance=tolerance,
+                            unit.angle='degrees') 
       if(!is.null(nperm)){ 
         varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
                                     meth='randpat',RPargs=RPargs,npar=npar)
@@ -1872,7 +1878,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         jaccard = vector('list', length(commNames))  
         names(jaccard) = commNames
       }  
-      jaccardObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='jaccard',
+      jaccardObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       jaccardNull = NULL
@@ -1893,7 +1899,7 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmax=NA,qu
         names(sorensen) = commNames
       }  
       ## bray-curtis is equiv to sorensen        
-      sorensenObs  = vario(mat,coords,grain,breaks,hmax,distance.metric='bray',
+      sorensenObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='bray',
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       sorensenNull = NULL
