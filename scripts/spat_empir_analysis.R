@@ -24,7 +24,7 @@ comms = read.csv(paste('./data/',commName, '_comms.csv', sep=''))
 
 ## specify how to bin the spatial lags
 breaks = read.csv('./data/nbreaks.csv')
-nbreaks = breaks[breaks$comm == commName, 3] + 1
+nbreaks = breaks$nbreaks[breaks$comm == commName] + 1
 breaks = sapply(nbreaks, function(x) list(c('log2', x)))
 
 ## specify quantiles to examine variogram at
