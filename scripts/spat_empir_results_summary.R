@@ -24,6 +24,10 @@ empirSorAbu = reshapeResults(empirAbu,'sorensen')
 empirSorBin = merge_drop(empirSorBin)
 empirSorAbu = merge_drop(empirSorAbu)
 
+par(mfrow=c(2,4))
+plotEmpir(empirSorAbu,log='x', type='o')
+plotEmpir(empirSorAbu,log='x', type='o',quants=T)
+    
 
 empirBin = getResults(shrtnames,'varWithin','binary')
 empirAbu = getResults(shrtnames,'varWithin','abu')
@@ -32,6 +36,18 @@ empirVarAbu = reshapeResults(empirAbu,'varWithin')
 ## Average cocoli1 & 2 and sherman 1 & 2 and drop sherman3
 empirVarBin = merge_drop(empirVarBin)
 empirVarAbu = merge_drop(empirVarAbu)
+
+par(mfrow=c(2,4))
+plotEmpir(empirVarAbu,log='x', type='o')
+plotEmpir(empirVarAbu,log='x', type='o',quants=T)
+
+
+##
+commName = 'serp'
+par(mfrow=c(1,2))
+plotEmpir(empirSorAbu[commName],log='x', type='o')
+plotEmpir(empirVarAbu[commName],log='xy', type='o')
+
 
 #pdf('spat_empir_sor_bin_curves.pdf')
 par(mfrow=c(2,4))
