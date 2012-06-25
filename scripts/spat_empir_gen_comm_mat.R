@@ -55,7 +55,7 @@ dat2 = dat[dat$y<100,]
 plot(dat1$x,dat1$y,col='red',pch='.',ylim=range(dat$y),xlim=range(dat$x))
 points(dat2$x,dat2$y,col='blue',pch='.')
 
-i_bisections = c(13, 11, 9, 7, 5, 3)
+i_bisections = c(13, 11, 9, 7, 5)
 n_quadrats = 2^i_bisections
 domain1 = c(0,100,100,300) # spatial domain in meters defined here
 domain2 = c(0,200,0,100) 
@@ -108,7 +108,7 @@ plot(dat1$x,dat1$y,col='red',pch='.',ylim=range(dat$y),xlim=range(dat$x))
 points(dat2$x,dat2$y,col='blue',pch='.')
 points(dat3$x,dat3$y,col='green3',pch='.')
 
-i_bisections = c(13, 11, 9, 7, 5, 3)
+i_bisections = c(13, 11, 9, 7, 5)
 n_quadrats = 2^i_bisections
 domain1 = c(140,240,240,440) # spatial domain in meters defined here
 domain2 = c(140,240,40,240)
@@ -179,7 +179,7 @@ range(dat$gy) ## max 300
 ## change into a single 150 x 300 quadrat
 trim = (200 - 150) / 2
 
-i_bisections = c(13, 11, 9, 7, 5, 3)
+i_bisections = c(13, 11, 9, 7, 5)
 n_quadrats = 2^i_bisections
 domain = c(trim, 200 - trim, 0, 300) # spatial domain in meters defined here
 
@@ -243,4 +243,47 @@ comms = make_comm_matrix(input_dat$spnum, S, input_dat[,2:3], n_quadrats, domain
 write.csv(comms, file='./data/serp_comms.csv',row.names=FALSE)
 
 ##------------------------------------------------------------------------------
+
+## NC plots
+## Umstead tornado 1988, Hurricane Hugo 1989, and Hurricane Fran 1996
+
+setwd('~/maxent/spat')
+
+dat_names = paste('m', c('04','07','12','13',91:96), sep='')
+plc_names = c('graveyard','landsend','rocky','bormann',
+              'woodbridge','baldmnt','bryan','bigoak',
+              'shoestring','bigisland')
+skip_lines = c(79, 20, 58, 49, 10, 10, 9, 87, 13, 46)
+
+dat = vector('list', length(dat_names))
+for (i in seq_along(dat_names)) {  
+  file_path = paste('./data/raw_data/', paste(dat_names[i], plc_names[i], sep='_'), 
+                    '.csv', sep='')
+  tmp = read.csv(file_path, skip=skip_lines[i] + 1, header=F, na.strings='.')
+  names(tmp) = as.matrix(read.csv(file_path, skip=skip_lines[i], nrows=1, header=F))
+  dat[[i]] = tmp
+}
+names(dat) = dat_names
+
+head(dat[[1]])  ## c(78, 92, 89, 92, 97)
+head(dat[[2]])  ## c(78, 82, 89, 93, 97)
+head(dat[[3]])  ## c(78, 82, 85, 90, 97)
+head(dat[[4]])  ## c(50, 74, 82, 89, 93, 97, 00)
+head(dat[[5]])  ## c(84, 86, 91, 98)
+head(dat[[6]])  ## c(84, 86, 91)
+head(dat[[7]])  ## c(86, 91, 98)
+head(dat[[8]])  ## c(86, 90, 93, 97, 01)
+head(dat[[9]])  ## c(85, 89, 93)
+head(dat[[10]]) ## c(83, 89, 93, 96
+
+yrs = c(92, 93, 90, 93, 91, 91, 90, 93, 93)
+
+
+
+
+
+
+
+
+
 
