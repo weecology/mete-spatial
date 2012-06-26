@@ -389,18 +389,40 @@ uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
 tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
 S = max(tmp$spnum) 
 
-range(tmp$X) ## max 50
-range(tmp$Y) ## max 100
+range(tmp$X) ## max 185
+range(tmp$Y) ## max 92.5
 
-i_bisections = c(11, 9, 7, 5)
+i_bisections = c(13, 11, 9, 7, 5)
 n_quadrats = 2^i_bisections
-domain = c(0, 50, 0, 100) # spatial domain in meters defined here
+domain = c(0, 185, 0, 92.5) # spatial domain in meters defined here
 
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
+######### 
+i = 8
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
+
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
+
+range(tmp$X) ## max 200
+range(tmp$Y) ## max 100
+
+i_bisections = c(13, 11, 9, 7, 5)
+n_quadrats = 2^i_bisections
+domain = c(0, 200, 0, 100) # spatial domain in meters defined here
+
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
+
+#########
 ## output the comms object to seperate files.
 for (i in seq_along(comms)) {
   write.csv(comms[[i]], file=paste('./data/', plc_names[i], '_comms.csv', sep=''),
             row.names=F)
 }
+
+

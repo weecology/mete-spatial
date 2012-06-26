@@ -388,14 +388,15 @@ head(dat_flat)
 maps_name_errors = dat_flat[is.na(dat_flat$Sci), ]
 write.csv(maps_name_errors, file='./data/maps_name_errors.csv', row.names=F)
 
-## bring information from Bob Peet in 
+## bring in information from Bob Peet and Michael Lee 
 
 correct_key = rbind(c("0OFL", "COFL"), 
                     c("CHIV", "CHVI"),
                     c("CPF;", "COFL"),
                     c("EUON", "EUAM"),  
                     c("ILAX", "ILEX"),
-                    c("JPRS", "JUVI"),
+                    c("JPRS", "PRSE"),
+                    c("MACO", "VIPR"),
                     c("PLEC", "PIEC"))
 
 colnames(correct_key) = c('SPEC','SPEC_corrected')
@@ -493,7 +494,7 @@ table(sp_dat$SPEC)
 
 ## output filtered files
 for (i in seq_along(dat_names)) {
-  tmp = dat_flat[dat_fat$dat == dat_names[i], -8]
+  tmp = dat_flat[dat_flat$dat == dat_names[i], -c(1, 2, 8)]
   write.csv(tmp, file= paste('./data/filtered_data/', file_names[i],'_19', 
                              yrs[i], '_filtered.csv', sep=''), row.names=FALSE)
 }
