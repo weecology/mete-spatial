@@ -2144,7 +2144,7 @@ n_pixels_wide = function(i_bisections){
   else
     stop('Function cannot figure out how to split up the area')
   comms = matrix(NA, nrow=sum(n_quadrats), ncol=S + 3)
-  colnames(comms) = c('grain', 'x', 'y', paste0('sp', 1:S))
+  colnames(comms) = c('grain', 'x', 'y', paste('sp', 1:S, sep=''))
   irow = 1
   for (i in seq_along(n_quadrats)) {
     xbreaks = seq(domain[1], domain[2], xlengths[i])
@@ -2154,12 +2154,12 @@ n_pixels_wide = function(i_bisections){
         inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x + 1] & 
                   ybreaks[y] <= coords[,2] & coords[,2] < ybreaks[y + 1]
         if (is.null(grainSuffix)) {
-          comms[irow, c(1:3)] = c(paste0(round(xlengths[i] * ylengths[i], 2)),
+          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2), sep=''),
                                   x, y)
         }
         else {
-          comms[irow, c(1:3)] = c(paste0(round(xlengths[i] * ylengths[i], 2),
-                                  grainSuffix), x, y)
+          comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2),
+                                  grainSuffix, sep=''), x, y)
         }
         if (is.null(abu) ){
           comms[irow, -c(1:3)] = as.integer(table(c(spnum[inQuad],1:S)) - 1)
