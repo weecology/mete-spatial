@@ -244,200 +244,163 @@ write.csv(comms, file='./data/serp_comms.csv',row.names=FALSE)
 
 ##------------------------------------------------------------------------------
 
-## NC plots
-## Umstead tornado 1988, Hurricane Hugo 1989, and Hurricane Fran 1996
-## C = CC** = Condition code for hear of preceding diameter D**
-## 1=live, OK; 2=dead; 3=missing; 4=died back below breast ht; 5=cut
-## 6=damaged by Hurrricane Fran in 97; consult Hurricane codes
-## coordinates are sometimes in decimeters and somtimes in meters, always check
-## the readme file.
+## Purpose: to create site x species matrics for the NC plots f
+## Metadata: is in the raw data files and in ~/datasets/NC_LTREB/Maps/Readme_maps.txt 
 
 setwd('~/maxent/spat')
 
-dat_names = paste('m', c('04','07','12','13',91:94,96), sep='')
+source('./scripts/spat_sim_vario_func.R')
+
+dat_names = paste('m', c('04','07','12','13',91:94), sep='')
 plc_names = c('graveyard','landsend','rocky','bormann',
-              'woodbridge','baldmnt','bryan','bigoak',
-              'bigisland')
-file_names = paste(dat_names, plc_names, sep='_')
-skip_lines = c(79, 20, 58, 49, 10, 10, 9, 87, 46)
+              'woodbridge','baldmnt','bryan','bigoak')
+yrs = c(92, 93, 90, 93, 91, 91, 91, 93)
 
-dat = vector('list', length(dat_names))
-for (i in seq_along(dat_names)) {  
-  file_path = paste('./data/raw_data/', file_names[i], '.csv', sep='')
-  tmp = read.csv(file_path, skip=skip_lines[i] + 1, header=F, na.strings='.')
-  names(tmp) = as.matrix(read.csv(file_path, skip=skip_lines[i], nrows=1, header=F))
-  dat[[i]] = tmp
-}
-names(dat) = dat_names
+file_names = paste(dat_names, '_', plc_names, '_19', yrs, '_filtered.csv', sep='') 
 
-head(dat[[1]])  ## c(78, 82, 89, 92, 97)
-head(dat[[2]])  ## c(78, 82, 89, 93, 97)
-head(dat[[3]])  ## c(78, 82, 85, 90, 97)
-head(dat[[4]])  ## c(50, 74, 82, 89, 93, 97, 00)
-head(dat[[5]])  ## c(84, 86, 91, 98)
-head(dat[[6]])  ## c(84, 86, 91)
-head(dat[[7]])  ## c(86, 91, 98)
-head(dat[[8]])  ## c(86, 90, 93, 97, 01)
-head(dat[[9]])  ## c(83, 89, 93, 96
+dat = vector('list', length(file_names))
+for (i in seq_along(file_names))
+  dat[[i]] = read.csv(file.path('./data/filtered_data', file_names[i]))
+names(dat) = plc_names
 
-yrs = c(92, 93, 90, 93, 91, 91, 91, 93, 93)
+comms = vector('list', length(file_names))
+names(comms) = plc_names
 
-dat_filter = dat
-
+######### 
 i = 1
-tmp = dat_filter[[i]]
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-head(tmp)
-true = !is.na(tmp$D92) & 
-       tmp[,13] == 1 &
-       tmp$X <= 1000
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-tmp$X = tmp$X / 10
-tmp$Y = tmp$Y / 10
-plot(tmp$X[true], tmp$Y[true])
+range(tmp$X) ## max 100
+range(tmp$Y) ## max 100
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D92')]
-###
+i_bisections = c(12, 10, 8, 6, 4)
+n_quadrats = 2^i_bisections
+domain = c(0, 100, 0, 100) # spatial domain in meters defined here
+
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
+
+######### 
 i = 2
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-true = !is.na(tmp$D93) & 
-       tmp[,12] == 1 &
-       tmp$X <= 1300 & 
-       tmp$Y <= 650
+range(tmp$X) ## max 130
+range(tmp$Y) ## max 65
 
-tmp$X = tmp$X / 10
-tmp$Y = tmp$Y / 10
-plot(tmp$X[true], tmp$Y[true])
+i_bisections = c(13, 11, 9, 7, 5)
+n_quadrats = 2^i_bisections
+domain = c(0, 130, 0, 65) # spatial domain in meters defined here
 
-head(tmp[true,])
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D93')]
-###
+######### 
 i = 3
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-true = !is.na(tmp$D90) & 
-       tmp[,13] == 1 &
-       tmp$X <= 1200 
+range(tmp$X) ## max 120
+range(tmp$Y) ## max 120
 
-tmp$X = tmp$X / 10
-tmp$Y = tmp$Y / 10
-plot(tmp$X[true], tmp$Y[true])
+i_bisections = c(12, 10, 8, 6, 4)
+n_quadrats = 2^i_bisections
+domain = c(0, 120, 0, 120) # spatial domain in meters defined here
 
-head(tmp[true,])
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D90')]
-###
+######### 
 i = 4
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-names(tmp)
-true = !is.na(tmp$D93) & 
-       tmp[,13] == 1
+range(tmp$X) ## max 140
+range(tmp$Y) ## max 140
 
-plot(tmp$X[true], tmp$Y[true])
+i_bisections = c(12, 10, 8, 6, 4)
+n_quadrats = 2^i_bisections
+domain = c(0, 140, 0, 140) # spatial domain in meters defined here
 
-head(tmp[true,])
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D93')]
-###
+######### 
 i = 5
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-names(tmp)
-true = !is.na(tmp$D91) & 
-       tmp[,12] == 1 & 
-       tmp$X <= 710 &
-       tmp$Y <= 710
+range(tmp$X) ## max 71
+range(tmp$Y) ## max 71
 
-tmp$X = tmp$X / 10
-tmp$Y = tmp$Y / 10
-plot(tmp$X[true], tmp$Y[true])
+i_bisections = c(12, 10, 8, 6, 4)
+n_quadrats = 2^i_bisections
+domain = c(0, 71, 0, 71) # spatial domain in meters defined here
 
-head(tmp[true,])
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
+######### 
 i = 6
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-names(tmp)
-true = !is.na(tmp$D91) & 
-       tmp[,12] == 1 & 
+range(tmp$X) ## max 50
+range(tmp$Y) ## max 100
 
-tmp$X = tmp$X / 10
-tmp$Y = tmp$Y / 10
-plot(tmp$X[true], tmp$Y[true])
+i_bisections = c(11, 9, 7, 5)
+n_quadrats = 2^i_bisections
+domain = c(0, 50, 0, 100) # spatial domain in meters defined here
 
-head(tmp[true,])
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
+######### 
 i = 7
+tmp = dat[[i]]
+plot(tmp$X, tmp$Y) 
 
-tmp = dat_filter[[i]]
+uniSpeciesNames = as.character(sort(unique(tmp$SPEC)))
+tmp$spnum = match(tmp$SPEC, uniSpeciesNames)
+S = max(tmp$spnum) 
 
-head(tmp)
-names(tmp)
-true = !is.na(tmp$D91) & 
-       tmp$CC91 == 1 & 
-       tmp$X <= 185 &
-       tmp$Y <= 185 / 2
-  
-plot(tmp$X[true], tmp$Y[true])
+range(tmp$X) ## max 50
+range(tmp$Y) ## max 100
 
-head(tmp[true,])
+i_bisections = c(11, 9, 7, 5)
+n_quadrats = 2^i_bisections
+domain = c(0, 50, 0, 100) # spatial domain in meters defined here
 
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
-i = 8
+## generate a site x species matrix for each spatial scale
+comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-tmp = dat_filter[[i]]
-
-head(tmp)
-names(tmp)
-true = !is.na(tmp$D93) & 
-  tmp[,10] == 1 & 
-  tmp$X <= 200 
-
-plot(tmp$X[true], tmp$Y[true])
-
-head(tmp[true,])
-
-dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D93')]
-###
-i = 9
-
-tmp = dat_filter[[i]]
-
-head(tmp)
-names(tmp)
-true = !is.na(tmp$'93') 
-
-plot(tmp$x[true], tmp$y[true])
-
-tmp$SPEC = 'PIPA'
-head(tmp[true,])
-
-dat_filter[[i]] = tmp[true, c('Num','SPEC','x','y','93')]
-names(dat_filter[[i]]) = c('ID','SPEC','X','Y','D93')
-###
-## output filtered files
-for (i in seq_along(dat_filter)) {
-  write.csv(dat_filter[[i]], file=
-            paste('./data/filtered_data/', file_names[i],'_19', yrs[i], 
-                  '_filtered.csv', sep=''), row.names=FALSE)
+## output the comms object to seperate files.
+for (i in seq_along(comms)) {
+  write.csv(comms[[i]], file=paste('./data/', plc_names[i], '_comms.csv', sep=''),
+            row.names=F)
 }
-
-
