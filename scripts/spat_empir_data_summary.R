@@ -4,18 +4,29 @@
 
 setwd('~/maxent/spat')
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo')
+              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+              'bigoak')
+
 dat = vector("list", length=length(shrtnames))
 names(dat) = shrtnames
 for (i in seq_along(dat))
-  dat[[i]] = read.csv(paste0('./data/', shrtnames[i], '_sad.csv'), header=FALSE)
+  dat[[i]] = read.csv(paste('./data/', shrtnames[i], '_sad.csv', sep=''),
+                      header=FALSE)
 
 datnames = c('BCI', rep('Cocoli', 2), 'Crosstimbers', rep('Sherman', 3),
-             'Serpentine', 'Oosting', 'FERP','Luquillo')
+             'Serpentine', 'Oosting', 'FERP', 'Luquillo', 'Graveyard',
+             'Landsend', 'Rocky', 'Bormann', 'Wood Bridge', 'Bald Mnt', 
+             'Bryan', 'Big Oak')
+
 shape = c(rep('rectangle', 3), 'square', rep('rectangle', 2), rep('square', 3), 
-          rep('rectangle', 2))
-area = c(50, rep(200*100*1e-4, 2), 4, rep(200*100*1e-4, 2), 140^2*1e-4, 64*1e-4,
-         160^2*1e-4, 150*300*1e-4, 250*500*1e-4)
+          rep('rectangle', 2), 'square', 'rectangle', rep('square', 3), 
+          rep('rectangle', 3))
+
+area = c(50 * 1e4, rep(200 * 100, 2), 4 * 1e4, rep(200 * 100, 2), 140^2, 64,
+         160^2, 150 * 300, 250 * 500, 100^2, 130 * 65, 120^2, 140^2, 71^2,
+         50 * 100, 185 * 92.5, 200 * 100) * 1e-4
+
 S = unlist(lapply(dat, length))
 N = unlist(lapply(dat, sum))
 
