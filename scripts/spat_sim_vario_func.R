@@ -1840,6 +1840,8 @@ calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
       else
         brks = breaks
     }
+    else
+      brks = NA
     hmin = hmin_vals[i]
     if(dataType == 'binary')
       mat = (mat > 0) * 1
