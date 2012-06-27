@@ -3,7 +3,9 @@ setwd('./maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo')
+              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+              'bigoak')
 
 merge_drop = function(results){
   result_names = names(results)
@@ -27,7 +29,6 @@ empirSorAbu = merge_drop(empirSorAbu)
 par(mfrow=c(2,4))
 plotEmpir(empirSorAbu,log='x', type='o')
 plotEmpir(empirSorAbu,log='x', type='o',quants=T)
-    
 
 empirBin = getResults(shrtnames,'varWithin','binary')
 empirAbu = getResults(shrtnames,'varWithin','abu')
@@ -43,10 +44,10 @@ plotEmpir(empirVarAbu,log='x', type='o',quants=T)
 
 
 ##
-commName = 'serp'
+commName = 'bryan'
 par(mfrow=c(1,2))
-plotEmpir(empirSorAbu[commName],log='x', type='o')
-plotEmpir(empirVarAbu[commName],log='xy', type='o')
+plotEmpir(empirSorAbu[commName],log='x', type='o', quants=T)
+plotEmpir(empirVarAbu[commName],log='x', type='o', quants=T)
 
 
 #pdf('spat_empir_sor_bin_curves.pdf')
