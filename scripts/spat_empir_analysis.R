@@ -23,9 +23,15 @@ if (length(clArgs) == 0) {
 comms = read.csv(paste('./data/',commName, '_comms.csv', sep=''))
 
 ## specify how to bin the spatial lags
-breaks = read.csv('./data/nbreaks.csv')
-nbreaks = breaks$nbreaks[breaks$comm == commName] + 1
-breaks = sapply(nbreaks, function(x) list(c('log2', x)))
+spat_breaks = read.csv('./data/nbreaks.csv')
+spat_breaks$nbreaks = spat_breaks$nbreaks + 1
+if (any(spat_breaks$comm == commName)) {
+  nbreaks = spat_breaks$nbreaks[spat_breaks$comm == commName]
+  breaks = sapply(nbreaks, function(x) list(c('log2', x)))
+}
+if (!any(spat_breaks$comm == commName)) {
+  breaks = NA
+}
 
 ## specify quantiles to examine variogram at
 quants = c(0.25, 0.50, 0.75)
