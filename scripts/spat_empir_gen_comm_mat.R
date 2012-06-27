@@ -266,8 +266,8 @@ names(dat) = plc_names
 comms = vector('list', length(file_names))
 names(comms) = plc_names
 
-######### 
-i = 1
+######### graveyard
+i = 1 
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
 
@@ -285,8 +285,8 @@ domain = c(0, 100, 0, 100) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
-i = 2
+######### landsend
+i = 2 ## 
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
 
@@ -304,7 +304,7 @@ domain = c(0, 130, 0, 65) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### rocky
 i = 3
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
@@ -323,7 +323,7 @@ domain = c(0, 120, 0, 120) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### bormann
 i = 4
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
@@ -342,7 +342,7 @@ domain = c(0, 140, 0, 140) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### wood bridge
 i = 5
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
@@ -361,7 +361,7 @@ domain = c(0, 71, 0, 71) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### baldmnt
 i = 6
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
@@ -380,7 +380,7 @@ domain = c(0, 50, 0, 100) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### bryan
 i = 7
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
@@ -399,7 +399,7 @@ domain = c(0, 185, 0, 92.5) # spatial domain in meters defined here
 ## generate a site x species matrix for each spatial scale
 comms[[i]] = make_comm_matrix(tmp$spnum, S, cbind(tmp$X, tmp$Y), n_quadrats, domain)
 
-######### 
+######### bigoak
 i = 8
 tmp = dat[[i]]
 plot(tmp$X, tmp$Y) 
