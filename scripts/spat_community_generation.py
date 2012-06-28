@@ -49,15 +49,15 @@ def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
         runtype = 'transect'
     else:
         runtype = 'grid'
-    return './comms/simulated_comms_%s%s_C%s_B%s_%s.txt' % (comm_name,
+    return '../comms/simulated_comms_%s%s_C%s_B%s_%s.txt' % (comm_name,
                                                                 empir, ncomm,
                                                                 bisec, runtype)
 
 def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
     
     nquad = 2 ** (bisec - 1) # number of quadrats per community 
-    if 'comms' not in os.listdir(os.path.curdir):
-            os.mkdir('comms')    
+    if 'comms' not in os.listdir('.' + os.path.curdir):
+            os.mkdir('../comms')    
 
     # Make an array so that the data is easier to output
     out = np.empty((ncomm, nquad, S + 3)) 
