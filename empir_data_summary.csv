@@ -1,20 +1,20 @@
-"datnames","shrtnames","shape","area","S","N"
-"BCI","bci","rectangle",50,301,205096
-"Cocoli","cocoli1","rectangle",2,136,4411
-"Cocoli","cocoli2","rectangle",2,141,4241
-"Crosstimbers","cross","square",4,7,7625
-"Sherman","sherman1","rectangle",2,181,7502
-"Sherman","sherman2","rectangle",2,168,7743
-"Sherman","sherman3","square",1.96,191,6660
-"Serpentine","serp","square",0.0064,24,37182
-"Oosting","oosting","square",2.56,39,8887
-"FERP","ferp","rectangle",4.5,31,5885
-"Luquillo","luquillo","rectangle",12.5,124,32320
-"Graveyard","graveyard","square",1,36,2584
-"Landsend","landsend","rectangle",0.845,41,2139
-"Rocky","rocky","square",1.44,37,3383
-"Bormann","bormann","square",1.96,30,3879
-"Wood Bridge","woodbridge","square",0.5041,19,758
-"Bald Mnt","baldmnt","rectangle",0.5,17,669
-"Bryan","bryan","rectangle",1.71125,48,3394
-"Big Oak","bigoak","rectangle",2,40,5469
+"datnames","shrtnames","shape","area_ha","bisect_fine","bisect_coarse","grain_fine_m2","grain_coarse_m2","S","N"
+"BCI","bci","rectangle",50,13,3,61.03515625,62500,301,205096
+"Cocoli","cocoli1","rectangle",2,13,5,2.44140625,625,136,4411
+"Cocoli","cocoli2","rectangle",2,13,5,2.44140625,625,141,4241
+"Crosstimbers","cross","square",4,12,4,9.765625,2500,7,7625
+"Sherman","sherman1","rectangle",2,13,5,2.44140625,625,181,7502
+"Sherman","sherman2","rectangle",2,13,5,2.44140625,625,168,7743
+"Sherman","sherman3","square",1.96,12,4,4.78515625,1225,191,6660
+"Serpentine","serp","square",0.0064,8,4,0.25,4,24,37182
+"Oosting","oosting","square",2.56,12,4,6.25,1600,39,8887
+"FERP","ferp","rectangle",4.5,13,5,5.4931640625,1406.25,31,5885
+"Luquillo","luquillo","rectangle",12.5,13,3,15.2587890625,15625,124,32320
+"Graveyard","graveyard","square",1,12,4,2.44140625,625,36,2584
+"Landsend","landsend","rectangle",0.845,13,5,1.031494140625,264.0625,41,2139
+"Rocky","rocky","square",1.44,12,4,3.515625,900,37,3383
+"Bormann","bormann","square",1.96,12,4,4.78515625,1225,30,3879
+"Wood Bridge","woodbridge","square",0.5041,12,4,1.230712890625,315.0625,19,758
+"Bald Mnt","baldmnt","rectangle",0.5,11,5,2.44140625,156.25,17,669
+"Bryan","bryan","rectangle",1.71125,13,5,2.08892822265625,534.765625,48,3394
+"Big Oak","bigoak","rectangle",2,13,5,2.44140625,625,40,5469
