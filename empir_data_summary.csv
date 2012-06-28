@@ -1,20 +1,20 @@
-"datnames","shape","area","S","N"
-"BCI","rectangle",50,301,205096
-"Cocoli","rectangle",2,136,4411
-"Cocoli","rectangle",2,141,4241
-"Crosstimbers","square",4,7,7625
-"Sherman","rectangle",2,181,7502
-"Sherman","rectangle",2,168,7743
-"Sherman","square",1.96,191,6660
-"Serpentine","square",0.0064,24,37182
-"Oosting","square",2.56,39,8887
-"FERP","rectangle",4.5,31,5885
-"Luquillo","rectangle",12.5,124,32320
-"Graveyard","square",1,36,2584
-"Landsend","rectangle",0.845,41,2139
-"Rocky","square",1.44,37,3383
-"Bormann","square",1.96,30,3879
-"Wood Bridge","square",0.5041,19,758
-"Bald Mnt","rectangle",0.5,17,669
-"Bryan","rectangle",1.71125,48,3394
-"Big Oak","rectangle",2,40,5469
+"datnames","shrtnames","shape","area","S","N"
+"BCI","bci","rectangle",50,301,205096
+"Cocoli","cocoli1","rectangle",2,136,4411
+"Cocoli","cocoli2","rectangle",2,141,4241
+"Crosstimbers","cross","square",4,7,7625
+"Sherman","sherman1","rectangle",2,181,7502
+"Sherman","sherman2","rectangle",2,168,7743
+"Sherman","sherman3","square",1.96,191,6660
+"Serpentine","serp","square",0.0064,24,37182
+"Oosting","oosting","square",2.56,39,8887
+"FERP","ferp","rectangle",4.5,31,5885
+"Luquillo","luquillo","rectangle",12.5,124,32320
+"Graveyard","graveyard","square",1,36,2584
+"Landsend","landsend","rectangle",0.845,41,2139
+"Rocky","rocky","square",1.44,37,3383
+"Bormann","bormann","square",1.96,30,3879
+"Wood Bridge","woodbridge","square",0.5041,19,758
+"Bald Mnt","baldmnt","rectangle",0.5,17,669
+"Bryan","bryan","rectangle",1.71125,48,3394
+"Big Oak","bigoak","rectangle",2,40,5469
