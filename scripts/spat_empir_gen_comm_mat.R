@@ -213,7 +213,39 @@ comms = make_comm_matrix(dat$spnum, S, cbind(dat$NX, dat$NY), n_quadrats, domain
 write.csv(comms,file='./data/oosting_comms.csv',row.names=F)
 
 ##------------------------------------------------------------------------------
+## Purpose: to create a site by species matrix for the the Luquillo forest
+## dataset for analysis of spatial biodiversity patterns, this survey is
+## from 2006/2007
+## Metadata: http://luq.lternet.edu/data/luqmetadata119
+## see the following page for the status codes defined:
+## http://luq.lternet.edu/data/variable/codes
 
+setwd('~/maxent/spat')
+
+source('./scripts/spat_sim_vario_func.R')
+
+dat = read.csv('./data/filtered_data/luquillo_census4_filtered.csv')
+
+uniSpeciesNames = as.character(sort(unique(dat$SPCODE)))
+dat$spnum = match(dat$SPCODE, uniSpeciesNames)
+S = max(dat$spnum) 
+
+range(dat$GX) ## max 320
+range(dat$GY) ## max 500
+## change into a single 250 x 500 quadrat
+trim = (320 - 250) / 2
+
+i_bisections = c(13, 11, 9, 7, 5, 3) 
+n_quadrats = 2^i_bisections
+domain = c(trim, 320 - trim, 0, 500) # spatial domain in meters defined here
+
+## generate a site x species matrix for each spatial scale
+
+comms = make_comm_matrix(dat$spnum, S, cbind(dat$GX, dat$GY), n_quadrats, domain)
+
+write.csv(comms, file='./data/luquillo_comms.csv', row.names=FALSE)
+
+##------------------------------------------------------------------------------
 ## Purpose: to create site x species matrices for the serpentine dataset
 ## which was surveyed in 1998 on a 64 m^2 plot.
 ## Metadata: http://socrates.berkeley.edu/~hartelab/MaxEnt.html
@@ -243,7 +275,6 @@ comms = make_comm_matrix(input_dat$spnum, S, input_dat[,2:3], n_quadrats, domain
 write.csv(comms, file='./data/serp_comms.csv',row.names=FALSE)
 
 ##------------------------------------------------------------------------------
-
 ## Purpose: to create site x species matrics for the NC plots f
 ## Metadata: is in the raw data files and in ~/datasets/NC_LTREB/Maps/Readme_maps.txt 
 

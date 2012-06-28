@@ -151,7 +151,7 @@ range(luqu$GX)
 # change this record 
 luqu$GX[luqu$GX == max(luqu$GX)] = 319.99
 
-write.csv(luqu, file='./data/filtered_data/luqu_census4_filtered.csv',
+write.csv(luqu, file='./data/filtered_data/luquillo_census4_filtered.csv',
           row.names=F)
 
 ##------------------------------------------------------------------------------
