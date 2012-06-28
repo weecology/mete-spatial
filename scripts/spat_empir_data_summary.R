@@ -44,7 +44,7 @@ write.csv(datSummary, file='empir_data_summary.csv', row.names=FALSE)
 
 ## output shrtnames, S, N, and bisectoin info for the simulation routines
 write.table(matrix(shrtnames, nrow=1), file=file.path('./data', 'shrtnames.txt'),
-            sep=' ', row.names=FALSE, col.names=FALSE)
+            sep=' ', row.names=FALSE, col.names=FALSE, quote=FALSE)
 write.table(matrix(S, nrow=1), file=file.path('./data', 'S_vals.txt'), sep=' ', 
             row.names=FALSE, col.names=FALSE)
 write.table(matrix(N, nrow=1), file=file.path('./data', 'N_vals.txt'), sep=' ', 
