@@ -55,7 +55,7 @@ def comm_filename(S, N, ncomm, bisec, transect=False, abu=None, comm_name=None):
 
 def output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name):
     
-    nquad = 2 ** (bisec - 1) # number of quadrats per community 
+    nquad = 2 ** bisec # number of quadrats per community 
     if 'comms' not in os.listdir('.' + os.path.curdir):
             os.mkdir('../comms')    
 
