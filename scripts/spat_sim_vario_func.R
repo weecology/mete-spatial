@@ -1667,9 +1667,8 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   return(out)
 }  
 
-
 ##3.9##
-'quadAggregator' = function(mat, coords, grains, binary=FALSE){
+'aggr_comm_matrix' = function(mat, coords, bisec, binary=FALSE){
   ## Purpose: This function generates aggregated community matrices for each
   ## spatial grain that is specified. This function is only approrpriate for 
   ## data from a regular square spatial grid.  If coordinates are not supplied
@@ -1677,48 +1676,69 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   ## Inputs:
   ## mat: site x species matrix assumed to be sampled from a square grid
   ## coords: two column spatial x and y coordinates
-  ## grains: spatial grains to aggregate community at, thse  must represent 
-  ##         quadrasections (i.e. aggregations of groups of 4 quadrats)
+  ## bisec: specifies the levels of bisection that the community should be 
+  ##   aggregated at
   ## binary: boolean, if TRUE binary pres/abse matrix returned
-  ## Note: assumes that spatially defined square was sampled.
-  ## ToDo: 1) Allow rectrangular quadrats, 2) allow bisection aggregation
-  side_length = sqrt(nrow(mat)) 
-  if (missing(coords)) {
-    coords = expand.grid(1:side_length, 1:side_length)
+  S = ncol(mat)
+  N = nrow(mat)
+  D = dist(coords)
+  minD = min(D)
+  domain = c(min(coords[ ,1]), max(coords[ ,1]) + minD,
+             min(coords[ ,2]), max(coords[ ,2]) + minD)
+  xdiff = abs(domain[1] - domain[2]) 
+  ydiff = abs(domain[3] - domain[4]) 
+  bisec_start = log2(N)
+  if (missing(bisec)) {
+    bisec = log2(bisec_start) : 2
+  } 
+  if (any(bisec > bisec_start))
+    stop(paste('The number of bisections must be less than ',
+               bisec_start, sep=''))
+  if (xdiff > ydiff) {
+    xlengths = xdiff / n_pixels_long(bisec)
+    ylengths = ydiff / n_pixels_wide(bisec)
   }
-  if (missing(grains)) {
-    grains = (2^(0:(log2(side_length) - 1)))^2
+  else if (xdiff < ydiff) {
+    xlengths = xdiff / n_pixels_wide(bisec)
+    ylengths = ydiff / n_pixels_long(bisec)
   }
-  grains = grains[sqrt(grains) == round(sqrt(grains))]
-  lens = sqrt(grains) 
-  nRows = sum((side_length / lens)^2)
+  else if (xdiff == ydiff) { ## extent is a sqr.
+    xlengths = xdiff / sqrt(2^bisec)
+    ylengths = ydiff / sqrt(2^bisec)
+  }
+  else
+    stop('Function cannot figure out how to split up the area')
+  n_quadrats = sum(2^bisec)
+
+  comms = matrix(NA, nrow=sum(n_quadrats), ncol=S + 3)
+  colnames(comms) = c('grain', 'x', 'y', colnames(mat))
   irow = 1
-  out = matrix(NA, ncol=ncol(mat) + 3, nrow=nRows)
-  for (i in seq_along(grains)) {
-    if (lens[i] == 1) {  # if area == 1
-      out[1:nrow(mat),] = as.matrix(cbind(grains[i], coords, mat))
-      irow = nrow(mat) + 1
+  for (i in seq_along(bisec)) {
+    if (bisec[i] == bisec_start) {
+      indices = irow : (irow + N - 1)
+      comms[indices, 1:3] = cbind(round(xlengths[i] * ylengths[i], 2),
+                                  coords[ ,1], coords[ ,2])    
+      comms[indices, -(1:3)] = as.matrix(mat)
+      irow = max(indices) + 1
     }
-    else{
-      breaks = seq(1, side_length, lens[i])
-      for(x in breaks){
-        for(y in breaks){
-          true = coords[,1] >= x & coords[,1] < (x + lens[i]) &
-                 coords[,2] >= y & coords[,2] < (y + lens[i])
-          out[irow, ] = c(grains[i], 
-                          apply(coords[true,], 2, mean), 
-                          apply(mat[true,], 2, sum))
-          irow = irow +1
+    else {
+      xbreaks = seq(domain[1], domain[2], xlengths[i])
+      ybreaks = seq(domain[3], domain[4], ylengths[i]) 
+      for (x in 1:(length(xbreaks) - 1)) {
+        for (y in 1:(length(ybreaks) - 1)) {
+          inQuad =  xbreaks[x] <= coords[ ,1] & coords[ ,1] < xbreaks[x + 1] & 
+                    ybreaks[y] <= coords[ ,2] & coords[ ,2] < ybreaks[y + 1]
+          comms[irow, 1:3] = c(round(xlengths[i] * ylengths[i], 2), x, y)
+          comms[irow, -(1:3)] = apply(mat[inQuad, ], 2, sum)
+          irow = irow + 1 
         }
       }
-    }
-  }  
-  colnames(out) = c('grain', 'x', 'y', colnames(mat))
-  if (binary) {
-    out[,-(1:3)] = as.numeric(out[,-(1:3)] > 0)
+    }  
   }
-  return(out)
-}  
+  if (binary)
+    comms[ ,-(1:3)] = as.numeric(comms[ ,-(1:3)] > 0)
+  return(comms)
+}
 
 
 ##3.10##
@@ -2098,18 +2118,18 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
 }
 
 
-n_pixels_long = function(i_bisections){
+n_pixels_long = function(i_bisec){
   ## returns the number of pixels on the side of a grid with more or equal pixels
   ## after i bisection events
   ## old function name: len
-  2^floor((i_bisections + 1) / 2) 
+  2^floor((i_bisec + 1) / 2) 
 }
 
-n_pixels_wide = function(i_bisections){
+n_pixels_wide = function(i_bisec){
   ## returns the number of pixels on the side of a grid with less or equal pixels
   ## after i bisection events
   ## old function name: wid
-  2^floor(i_bisections / 2) 
+  2^floor(i_bisec / 2) 
 } 
 
 ##3.19 ##
@@ -2181,6 +2201,7 @@ n_pixels_wide = function(i_bisections){
   ## retrives the record of how a species' abunance was bisected in a particular
   ## landscape the input into this function can be generated by the function 
   ## 'make_comm_matrix'
+  ## Note: this function is necessary for mle fitting of Conlisk et al. models
   ## arguments:
   ## grains: a vector of spatial grains that is associated with each abundance
   ## abu: a vector of abundances across the spatial scales of interest
@@ -2188,22 +2209,22 @@ n_pixels_wide = function(i_bisections){
   grains = as.numeric(grains)
   grains_table = table(grains)
   grains_unique = as.integer(names(grains_table))
-  i_bisections = log2(as.integer(grains_table))
+  i_bisec = log2(as.integer(grains_table))
   out = data.frame(n1 = NULL, n2 = NULL)
   for (i in seq_along(grains_unique)) {
     abu_tmp = abu[grains == grains_unique[i]]
-    if (i_bisections[i] == 1) {
+    if (i_bisec[i] == 1) {
       n1 = abu_tmp[1] 
       n2 = abu_tmp[2]
     }  
     else {
-      if (i_bisections[i]%%2 == 0) {
+      if (i_bisec[i]%%2 == 0) {
         true = 1:length(abu_tmp)%%2 == 1
         n1 = abu_tmp[true]
         n2 = abu_tmp[!true]          
       }
       else {
-        block_size = 2^(i_bisections[i] - ceiling(i_bisections[i] / 2))
+        block_size = 2^(i_bisec[i] - ceiling(i_bisec[i] / 2))
         true = rep(rep(c(T,F), each=block_size), times=block_size)
         n1 = abu_tmp[true]
         n2 = abu_tmp[!true]
