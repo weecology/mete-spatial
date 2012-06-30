@@ -2,9 +2,7 @@
 ##Purpose: to compare MaxEnt generate community to null models
 ##Outputs: the result of a null permutation routine.
 
-library(danspkg)
 library(vegan)
-library(snowfall)
 library(bigmemory)
 
 setwd('~/maxent/spat')
@@ -12,26 +10,30 @@ setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
-if( length(clArgs) > 1){
+if (length(clArgs) > 1) {
   S = clArgs[1]
   N = clArgs[2]
   ncomm = clArgs[3]
-  bisec = clArgs[4]
-  transect = clArgs[5]
-  dataType = clArgs[6]
-  metricsToCalc = clArgs[7]
-  direction = clArgs[8]
-  tolerance = clArgs[9]
-  name = clArgs[10]
-  big = clArgs[11]
+  bisec_fine = as.numeric(clArgs[4])
+  bisec_coarse = as.numeric(clArgs[5])
+  grain_fine = as.numeric(clArgs[6]))
+  transect = clArgs[7]
+  dataType = clArgs[8]
+  metricsToCalc = clArgs[9]
+  direction = clArgs[10]
+  tolerance = clArgs[11]
+  name = clArgs[12]
+  big = clArgs[13]
 }
-if( !exists(as.character(substitute(S))) ){
+if (!exists(as.character(substitute(S)))) {
   S = 10
-  N = 1076
+  N = 100
   ncomm = 200
-  bisec = 13
+  bisec_fine = 12
+  bisec_fine = 6
+  grain_fine = 1
   transect = FALSE
-  dataType = 'both'
+  dataType = 'abu'
   metricsToCalc = 'all'
   direction = 'NA'
   tolerance = 'NA'
@@ -39,45 +41,68 @@ if( !exists(as.character(substitute(S))) ){
   big = FALSE
 }
 
-direction = ifelse(direction == 'NA','omnidirectional',as.numeric(direction))
-tolerance = ifelse(tolerance == 'NA',NA,as.numeric(tolerance)) 
+direction = ifelse(direction == 'NA', 'omnidirectional', as.numeric(direction))
+tolerance = ifelse(tolerance == 'NA', NA, as.numeric(tolerance)) 
 
 if(name == 'NA'){
   fileSuffix = ifelse(transect,
-               paste('S',S,'_N',N,'_C',ncomm,'_B',bisec,'_transect',sep=''),
-               paste('S',S,'_N',N,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+               paste('S', S, '_N', N, '_C', ncomm, '_B', bisec_fine, '_transect',
+                     sep=''),
+               paste('S', S, '_N', N, '_C', ncomm, '_B', bisec_fine, '_grid', sep=''))
 }
 if(name != 'NA'){
   fileSuffix = ifelse(transect,
-               paste(name,'_C',ncomm,'_B',bisec,'_transect',sep=''),
-               paste(name,'_C',ncomm,'_B',bisec,'_grid',sep=''))
+               paste(name, '_C', ncomm, '_B', bisec_fine, '_transect', sep=''),
+               paste(name, '_C', ncomm, '_B', bisec_fine, '_grid', sep=''))
 }
 
-fileName = paste('simulated_comms_',fileSuffix,'.txt',sep='')
+fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
-big = ifelse(big,TRUE,FALSE)
-if(big)
-  comms = read.big.matrix(file.path('./comms',fileName),header=TRUE,
-                          type='integer',sep=',',descriptor = fileSuffix)
-if(!big)
-  comms = read.csv(file.path('./comms',fileName),header=T)
+big = ifelse(big, TRUE, FALSE)
+if (big)
+  comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
+                          type='integer', sep=',', descriptor = fileSuffix)
+if (!big)
+  comms = read.csv(file.path('./comms', fileName), header=T)
 
 gc()
 
-nperm = NULL
-npar = NULL
-RPargs = NULL
-#nperm = 500
-#npar = 8
-#RPargs = c(TRUE,8,1e2,1e4,0.01,1)
+## specify how to bin the spatial lags
+spat_breaks = read.csv('./data/nbreaks.csv')
+spat_breaks$nbreaks = spat_breaks$nbreaks + 1
+if (any(spat_breaks$comm == name)) {
+  nbreaks = spat_breaks$nbreaks[spat_breaks$comm == name]
+  breaks = sapply(nbreaks, function(x) list(c('log2', x)))
+}
+if (!any(spat_breaks$comm == name)) {
+  breaks = NA
+}
 
-dataType = ifelse(dataType=='both',c('binary','abu'),dataType)
+## specify quantiles to examine variogram at
+quants = c(0.25, 0.50, 0.75)
 
-system.time(sapply(dataType,function(x){
-                   calcMetrics(comms=comms,metricsToCalc=metricsToCalc,dataType=x,
-                   direction=direction,tolerance=tolerance,nperm=nperm,npar=npar,
-                   RPargs=RPargs,writeToFile=TRUE,fileSuffix=fileSuffix)}))
+## specify bisections levels
+bisec = seq(bisec_fine, bisec_coarse, -2)
 
+## specify grain names
+grain_names = round(grain_fine * 2^(max(bisec) - bisec), 2)
 
+## loop through all the communities
+comm_ids = unique(comms[ , 1])
+metrics = vector('list', length(comm_ids))
+names(metrics) = comm_ids      
+for (i in seq_along(comm_ids)) {
+  comm_tmp = comms[comms[ , 1] == comm_ids[i], ]
+  mat = comm_tmp[ , -(1:3)]
+  coords = comm_tmp[ , 2:3]
+  ## aggregate community matrix to other appropriate spatial lags
+  comms_aggr = aggr_comm_matrix(mat, coords, bisec, grain_names)
+  metrics[[i]] = calcMetrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
+                        quants=quants, direction=direction, tolerance=tolerance,
+                        writeToFile=FALSE)
+  ## update save file as loop progresses
+  save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
+                           fileSuffix, '_', dataType, '.Rdata', sep=''))
+}
 
 
