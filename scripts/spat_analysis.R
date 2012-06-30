@@ -30,7 +30,7 @@ if (!exists(as.character(substitute(S)))) {
   N = 100
   ncomm = 200
   bisec_fine = 12
-  bisec_fine = 6
+  bisec_coarse = 6
   grain_fine = 1
   transect = FALSE
   dataType = 'abu'
