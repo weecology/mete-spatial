@@ -33,12 +33,14 @@ N = unlist(lapply(dat, sum))
 bisect = read.table('./data/bisect.txt', sep=' ', header=F)
 bisect_fine = bisect[match(shrtnames, bisect[,1]), 2]
 bisect_coarse = bisect[match(shrtnames, bisect[,1]), 3]
+grain_fine = area / 2^bisect_fine * 1e4
+grain_coarse = area / 2^bisect_coarse * 1e4
 
 ## output overall summary
 datSummary = data.frame(datnames, shrtnames, shape, area_ha = area,
                         bisect_fine, bisect_coarse, 
-                        grain_fine_m2 = area / 2^bisect_fine * 1e4,
-                        grain_coarse_m2 = area / 2^bisect_coarse * 1e4,
+                        grain_fine_m2 = grain_fine,
+                        grain_coarse_m2 = grain_coarse,
                         S, N)
 write.csv(datSummary, file='empir_data_summary.csv', row.names=FALSE)
 
@@ -52,6 +54,8 @@ write.table(matrix(N, nrow=1), file=file.path('./data', 'N_vals.txt'), sep=' ',
 write.table(matrix(bisect_fine, nrow=1), file=file.path('./data', 'bisect_fine.txt'),
             sep=' ', row.names=FALSE, col.names=FALSE)
 write.table(matrix(bisect_coarse, nrow=1), file=file.path('./data', 'bisect_coarse.txt'),
+            sep=' ', row.names=FALSE, col.names=FALSE)
+write.table(matrix(grain_fine, nrow=1), file=file.path('./data', 'grain_fine.txt'),
             sep=' ', row.names=FALSE, col.names=FALSE)
 
 freq = sapply(1:length(dat),  function(x) as.numeric(dat[[x]]) / N[x])
