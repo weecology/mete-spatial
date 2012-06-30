@@ -272,6 +272,9 @@ input_dat = data.frame(spnum, x, y, abu)[abu > 0,]
 comms = make_comm_matrix(input_dat$spnum, S, input_dat[,2:3], n_quadrats, domain,
                          input_dat$abu)
 
+## fix grain names, so that they are in units of m2
+comms[ , 1] = as.numeric(comms[ , 1]) * 0.25
+
 write.csv(comms, file='./data/serp_comms.csv',row.names=FALSE)
 
 ##------------------------------------------------------------------------------
