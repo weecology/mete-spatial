@@ -1668,7 +1668,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
 }  
 
 ##3.9##
-'aggr_comm_matrix' = function(mat, coords, bisec, binary=FALSE){
+'aggr_comm_matrix' = function(mat, coords, bisec, grain_names=NULL, binary=FALSE){
   ## Purpose: This function generates aggregated community matrices for each
   ## spatial grain that is specified. This function is only approrpriate for 
   ## data from a regular square spatial grid.  If coordinates are not supplied
@@ -1709,15 +1709,17 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   else
     stop('Function cannot figure out how to split up the area')
   n_quadrats = sum(2^bisec)
-
+  if (is.null(grain_names))
+    grains = round(xlengths[i] * ylengths[i], 2)
+  else
+    grains = grain_names
   comms = matrix(NA, nrow=sum(n_quadrats), ncol=S + 3)
   colnames(comms) = c('grain', 'x', 'y', colnames(mat))
   irow = 1
   for (i in seq_along(bisec)) {
     if (bisec[i] == bisec_start) {
       indices = irow : (irow + N - 1)
-      comms[indices, 1:3] = cbind(round(xlengths[i] * ylengths[i], 2),
-                                  coords[ ,1], coords[ ,2])    
+      comms[indices, 1:3] = cbind(grains[i], coords[ ,1], coords[ ,2])    
       comms[indices, -(1:3)] = as.matrix(mat)
       irow = max(indices) + 1
     }
@@ -1728,7 +1730,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
         for (y in 1:(length(ybreaks) - 1)) {
           inQuad =  xbreaks[x] <= coords[ ,1] & coords[ ,1] < xbreaks[x + 1] & 
                     ybreaks[y] <= coords[ ,2] & coords[ ,2] < ybreaks[y + 1]
-          comms[irow, 1:3] = c(round(xlengths[i] * ylengths[i], 2), x, y)
+          comms[irow, 1:3] = c(grains[i], x, y)
           comms[irow, -(1:3)] = apply(mat[inQuad, ], 2, sum)
           irow = irow + 1 
         }
