@@ -1719,7 +1719,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   for (i in seq_along(bisec)) {
     if (bisec[i] == bisec_start) {
       indices = irow : (irow + N - 1)
-      comms[indices, 1:3] = cbind(grains[i], coords[ ,1], coords[ ,2])    
+      comms[indices, 1:3] = cbind(grains[i], coords[ , 1], coords[ , 2])    
       comms[indices, -(1:3)] = as.matrix(mat)
       irow = max(indices) + 1
     }
@@ -1728,8 +1728,8 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
       ybreaks = seq(domain[3], domain[4], ylengths[i]) 
       for (x in 1:(length(xbreaks) - 1)) {
         for (y in 1:(length(ybreaks) - 1)) {
-          inQuad =  xbreaks[x] <= coords[ ,1] & coords[ ,1] < xbreaks[x + 1] & 
-                    ybreaks[y] <= coords[ ,2] & coords[ ,2] < ybreaks[y + 1]
+          inQuad =  xbreaks[x] <= coords[ , 1] & coords[ , 1] < xbreaks[x + 1] & 
+                    ybreaks[y] <= coords[ , 2] & coords[ , 2] < ybreaks[y + 1]
           comms[irow, 1:3] = c(grains[i], x, y)
           comms[irow, -(1:3)] = apply(mat[inQuad, ], 2, sum)
           irow = irow + 1 
@@ -1738,7 +1738,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
     }  
   }
   if (binary)
-    comms[ ,-(1:3)] = as.numeric(comms[ ,-(1:3)] > 0)
+    comms[ , -(1:3)] = as.numeric(comms[ , -(1:3)] > 0)
   return(comms)
 }
 
@@ -1815,10 +1815,10 @@ jacExp = function(mat,areaSampA,areaSampB=NULL){
 }
 
 ##3.17##
-calcMetrics = function(comms,metricsToCalc,dataType,grain=1,breaks=NA,hmin=NA,
-                       hmax=NA,quants=NA,
-                       direction='omnidirectional',tolerance=NA,nperm=NULL,npar,
-                       RPargs=NULL,writeToFile=FALSE,fileSuffix=NULL){
+calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, 
+                       hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
+                       tolerance=NA, nperm=NULL, npar, RPargs=NULL,
+                       writeToFile=FALSE,fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -2255,7 +2255,7 @@ n_pixels_wide = function(i_bisec){
   return(results)
 }
 
-'reshapeResults' = function(results, metric){
+'reshapeResults' = function(results, metric, sim.results=FALSE){
   ## Purpose: to reshape the results from a nested list to a matrix
   ## of the most important information
   out = vector('list', length=length(results))
@@ -2270,19 +2270,27 @@ n_pixels_wide = function(i_bisec){
     for(j in seq_along(results[[i]])){ ## the grain/community
       if(is.null(results[[i]][[j]]))
         next
-      vobject = results[[i]][[j]][[1]]$vario
-      quants = !is.na(results[[i]][[j]][[1]]$parms$quants)
+      if (sim.results) {
+        vobject = results[[i]][[j]][[1]][[1]]$vario
+        quants = !is.na(results[[i]][[j]][[1]][[1]]$parms$quants)
+        rpExp[[j]] = rep(results[[i]][[j]][[1]][[3]], nrow(vobject))
+      }
+      else {
+        vobject = results[[i]][[j]][[1]]$vario
+        quants = !is.na(results[[i]][[j]][[1]]$parms$quants)
+        rpExp[[j]] = rep(results[[i]][[j]][[3]], nrow(vobject))
+      }
       Dist[[j]] = vobject$Dist 
       n[[j]] = vobject$n
-      rpExp[[j]] = rep(results[[i]][[j]][[3]], length(Dist[[j]]))
+      vExp[[j]] = data.frame(avg = vobject$exp.var)
       if (quants) {
         qt.names = names(vobject)[grep('exp.qt',names(vobject))]
-        vExp[[j]] = vobject[ , qt.names]
+        vExp[[j]] = cbind(vExp[[j]], vobject[ , qt.names])
       }
-      else 
-        vExp[[j]] = vobject$exp.var
       if (any(metric %in% c('sorensen','jaccard'))) {
+        ## convert the values into similarity measures
         vExp[[j]] = 1 - vExp[[j]]
+        rpExp[[j]] = 1 - rpExp[[j]]
       }  
       if (j == 1) 
         vExp_dat = vExp[[j]]
@@ -2294,52 +2302,150 @@ n_pixels_wide = function(i_bisec){
     else
       commNames = names(results[[i]])
     names(vExp_dat) = sub('exp.qt.','',names(vExp_dat))
-    names(vExp_dat) = rev(names(vExp_dat))
+    if (any(metric %in% c('sorensen','jaccard'))) 
+      names(vExp_dat[ , -1]) = rev(names(vExp_dat[ , -1]))
     out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
                           Exp = unlist(rpExp), N = unlist(n))
     out[[i]] = data.frame(out[[i]],
-               Comm = as.numeric(unlist(mapply(rep,commNames,each=sapply(n, length),
-                                       SIMPLIFY=FALSE))))
+               Comm = unlist(mapply(rep,commNames,each=sapply(n, length),
+                                       SIMPLIFY=FALSE)))
   }
   return(out)
 }  
 
-avgResults = function(results,combine = NULL){
-  ## Purpose: to compute the averages of the results given a vector 'combine'
-  ## Arguments
-  ## combine:  a matrix, each row specifies an index, each column specifies a 
-  ##           different one to average over. If combine is NA then no elements
-  ##           are averaged over.
-  out = vector('list',length(results))
-  names(out) = names(results)
-  for(i in seq_along(results)){
-    if(is.null(results[[i]]))
-      next
-    if(is.na(combine[[i]][1]))
-      combine[[i]] = results[[i]]$Comm
-    unicombine = unique(combine[[i]])
-    for(j in seq_along(unicombine)){
-      true = combine[[i]] == unicombine[j]
-      Dist = tapply(results[[i]]$Dist[true],round(results[[i]]$Dist[true],3),mean)
-      Metric = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),mean)
-      MetricLo = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),quantile,.025)
-      MetricHi = tapply(results[[i]]$Metric[true],round(results[[i]]$Dist[true],3),quantile,.975)    
-      Exp = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),mean)
-      ExpLo = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),quantile,.025)
-      ExpHi = tapply(results[[i]]$Exp[true],round(results[[i]]$Dist[true],3),quantile,.975)    
-      N = tapply(results[[i]]$N[true],round(results[[i]]$Dist[true],3),sum)
-      Comm = rep(unicombine[j],length(Metric))
-      if(j == 1){
-        out[[i]] = data.frame(Dist,Metric,MetricLo,MetricHi,Exp,ExpLo,ExpHi,N,Comm)
-      }  
-      else{
-        out[[i]] = rbind(out[[i]],data.frame(Dist,Metric,MetricLo,MetricHi,Exp,
-                                             ExpLo,ExpHi,N,Comm))
-      }  
-    }  
+avgResults = function(results) {
+  ## convert to flat file for averaging
+  N = length(results)
+  for (i in seq_along(results)) {
+    if (i == 1){
+      flat = results[[i]] 
+    }
+    else
+      flat = rbind(flat, results[[i]])
+  }
+  uniComms = unique(flat$Comm)
+  for (i in seq_along(uniComms)) {
+    true = flat$Comm == uniComms[i]
+    avgs = apply(flat[true, c('Dist', 'N', 'Metric.50', 'Metric.avg', 'Exp')],
+                 2, function(x) tapply(x, round(flat$Dist[true], 4), mean))
+    qts_lo = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp')], 2, function(x)
+                   tapply(x, round(flat$Dist[true], 4), quantile, 0.025))
+    qts_hi = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp')], 2, function(x)
+                   tapply(x, round(flat$Dist[true], 4), quantile, 0.975))
+    dat = data.frame(grain = as.numeric(sub('comm','',uniComms[i])),
+                       Dist = avgs[,1], N = avgs[,2], 
+                       med.lo = qts_lo[,1], med = avgs[,3], med.hi = qts_hi[,1], 
+                       avg.lo = qts_lo[,2], avg = avgs[,4], avg.hi = qts_hi[,2],
+                       exp.lo = qts_lo[,3], exp = avgs[,5], exp.hi = qts_hi[,3])
+    if (i == 1)
+      out = dat
+    else
+      out = rbind(out, dat)
   }
   return(out)
 }
+
+'loadSimResults' = function(S, N, dirPath, B=12, dataType='abu') {
+  ## this function is for loading the simulation results associated with the 
+  ## parameter space analysis
+  ## Arguments:
+  ## S: richness values
+  ## N: abundance values
+  ## dirPath: the directory where the results are stored
+  ## B: the number of bisection associated with 
+  ## dataType: the kind of data: 'abu' or 'binary'
+  results = vector('list', length(S) * length(N))
+  icount = 0
+  files = dir(dirPath)
+  for (s in S) {
+    for (n in N) {
+      icount = icount + 1
+      fileSuffix = paste('_S', s, '_N', n, '_C200_B', B, '_grid_', dataType, sep='')
+      fileName = files[grep(fileSuffix, files)]
+      if (length(fileName) == 0) {
+        next 
+      }
+      load(file.path(dirPath, fileName))
+      results[[icount]] = metrics
+      rm(metrics)
+    }
+  }
+  return(results)
+}
+
+'avgSimResults' = function(results, metric) {
+  ## This function averages the simulation results over all the different runs
+  ## for each parameter combination
+  ## Arguments
+  ## results: the output of the function 'loadSimResults'
+  ## metric: the metric analyzed: 'sorensen', 'varWithin', 'jaccard'
+  simAvg = vector('list', length(results))
+  for (i in seq_along(results)) {
+    if (is.null(results[[i]]))
+      next
+    simRaw = reshapeResults(results[[i]], metric, TRUE)
+    simAvg[[i]] = avgResults(simRaw)
+  }
+  return(simAvg)
+}
+
+'getSimStats' = function(results, S, N) {
+  ## computes the slope, intercept, and R2 value for the exponential
+  ## and power models across the range of S and N for the simulated results
+  ## using Ordinary Least Squares and Weighted regression approaches
+  ## the output is a multidimensional array:
+  ## the dimensions are [model type, coef type, meth type, grain, S, N]
+  ## Arguments:
+  ## results: the results file which the models will be fit to
+  ## S: the richness values used to parametrize the simulated results
+  ## N: the abundance values used to parameterize the simulated results
+  grains = unique(results[[1]]$grain)
+  stats = array(NA, dim=c(2, 3, 2, length(grains), length(S), length(N)))
+  dimnames(stats)[[1]] = c('exp', 'pwr')
+  dimnames(stats)[[2]] = c('b0', 'b1', 'r2')
+  dimnames(stats)[[3]] = c('ols', 'wtr')
+  dimnames(stats)[[4]] = grains
+  dimnames(stats)[[5]] = S
+  dimnames(stats)[[6]] = N
+  i = 0
+  for (s in seq_along(S)) {
+    for (n in seq_along(N)) {
+      i = i + 1
+      if (is.null(results[[i]]))
+        next
+      for (g in seq_along(grains)) {
+        j = 1
+        for (meth in c('ols', 'wtr')) {  ## wtr is for weighted regression
+          if (meth == 'ols') {
+            logmod = lm(avg ~ log10(Dist), subset = grain == grains[g], 
+                        data=results[[i]])
+            if (min(results[[i]]$avg) > 0) 
+              pwrmod = lm(log10(avg) ~ log10(Dist), subset = grain == grains[g],
+                          data = results[[i]])
+          }   
+          if (meth == 'wtr') {
+            logmod = lm(avg ~ log10(Dist), weights=N, subset = grain == grains[g],
+                        data=results[[i]])
+            if (min(results[[i]]$avg) > 0)
+              pwrmod = lm(log10(avg) ~ log10(Dist), weights=N, 
+                          subset = grain == grains[g], data = results[[i]])
+          }
+          stats[1, 1:2, j, g, s, n] = coef(logmod)
+          stats[1, 3, j, g, s, n] = summary(logmod)$r.squ
+          if (min(results[[i]]$avg) > 0) {
+            stats[2, 1:2, j, g, s, n] = coef(pwrmod)
+            stats[2, 3, j, g, s, n] = summary(pwrmod)$r.squ
+          }  
+          else 
+            print(paste('skipped', S[s], N[n], sep=' ')) 
+          j = j + 1
+        }  
+      }  
+    }
+  }
+  return(stats)
+}
+
 
 plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
                      col=NULL,lwd=NULL, ...){
