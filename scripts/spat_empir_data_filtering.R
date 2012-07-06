@@ -226,6 +226,7 @@ yrs = c(92, 93, 90, 93, 91, 91, 91, 93)
 
 dat_filter = dat
 
+######### graveyard
 i = 1
 tmp = dat_filter[[i]]
 
@@ -240,7 +241,8 @@ tmp$Y = tmp$Y / 10
 plot(tmp$X[true], tmp$Y[true])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D92')]
-###
+
+######### landsend
 i = 2
 
 tmp = dat_filter[[i]]
@@ -258,7 +260,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D93')]
-###
+
+######### rocky
 i = 3
 
 tmp = dat_filter[[i]]
@@ -276,7 +279,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D90')]
-###
+
+######### bormann
 i = 4
 
 tmp = dat_filter[[i]]
@@ -291,7 +295,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D93')]
-###
+
+######### wood bridge
 i = 5
 
 tmp = dat_filter[[i]]
@@ -310,7 +315,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
+
+######### baldmnt
 i = 6
 
 tmp = dat_filter[[i]]
@@ -327,7 +333,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
+
+######### bryan
 i = 7
 
 tmp = dat_filter[[i]]
@@ -344,7 +351,8 @@ plot(tmp$X[true], tmp$Y[true])
 head(tmp[true,])
 
 dat_filter[[i]] = tmp[true, c('ID','SPEC','X','Y','D91')]
-###
+
+######### bigoak
 i = 8
 
 tmp = dat_filter[[i]]
