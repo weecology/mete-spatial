@@ -39,6 +39,12 @@ empirVarAbu = reshapeResults(empirAbu,'varWithin')
 empirVarBin = merge_drop(empirVarBin)
 empirVarAbu = merge_drop(empirVarAbu)
 
+## export results to file
+save(empirSorBin, file='./sorensen/empirSorBin.Rdata')
+save(empirSorAbu, file='./sorensen/empirSorAbu.Rdata')
+save(empirVarBin, file='./varWithin/empirVarBin.Rdata')
+save(empirVarAbu, file='./varWithin/empirVarAbu.Rdata')
+
 ## examine results
 par(mfrow=c(4,4))
 plotEmpir(empirSorAbu, type='o')
