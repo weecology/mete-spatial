@@ -2447,8 +2447,8 @@ avgResults = function(results) {
 }
 
 
-plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
-                     col=NULL,lwd=NULL, ...){
+plotEmpir = function(results, log="", quants=FALSE, alpha=1/3,
+                     col=NULL, lwd=NULL, ...){
   ## Purpose: to plot the results, expects that the graphical window has been 
   ## setup appropriately 
   ## Arguments
@@ -2459,6 +2459,12 @@ plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
   ## lwd: the line width of the lines
   if (is.null(lwd))
     lwd = 2
+  y_is_log = regexpr('y', log)[1] != -1
+  if (y_is_log) { 
+    mins = unlist(lapply(results, function(x) min(x$Metric.50)))
+    if (any(mins == 0))
+      print("Note: Points will be dropped where the metric equals zero becuase the y-axis is log transformed")
+  }
   for(i in seq_along(results)){
     #grains = as.numeric(as.character(results[[i]]$Comm))
     grains = results[[i]]$Comm
@@ -2479,9 +2485,13 @@ plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
                   function(x) rgb(x[1],x[2],x[3], 
                                   alpha=alpha * max(x), 
                                   maxColorValue = max(x)))
-    }  
-    plot(Metric ~ Dist, data = results[[i]],
-         xlim = range(Dist), ylim = range(Metric), type='n', log=log,
+    }
+    if (y_is_log)
+      yRange = range(results[[i]]$Metric[results[[i]]$Metric > 0])
+    else
+      yRange = range(results[[i]]$Metric)
+    plot(Metric ~ Dist, data = results[[i]], subset = Metric > 0,
+         xlim = range(Dist), ylim = yRange, type='n', log=log,
          main=names(results)[i])
     for (j in seq_along(unigrains)) {
       dat = subset(results[[i]], Comm == unigrains[j])
@@ -2490,12 +2500,17 @@ plotEmpir = function(results,log="",quants=FALSE, alpha=1/3,
         xvals = c(xvals, rev(xvals))
         yvals = dat$Metric.25
         yvals = c(yvals, rev(dat$Metric.75))
-        polygon(xvals, yvals, border=NA, col=col_poly[j])
+        if (y_is_log) { 
+          xvals = xvals[yvals > 0]
+          yvals = yvals[yvals > 0]
+        }
+        if (length(xvals) > 0)
+          polygon(xvals, yvals, border=NA, col=col_poly[j])
+      }
+      if (y_is_log)
+        lines(Metric ~ Dist, data = dat, subset=Metric > 0, col=col[j], lwd=lwd, ...)
+      else
         lines(Metric ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
-      }  
-      else { 
-        lines(Metric ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
-      }  
     }  
   }
 }
