@@ -7,11 +7,16 @@ shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
               'bigoak')
 
-merge_drop = function(results){
+merge_drop = function(results) {
   result_names = names(results)
   to_drop = match(c('cocoli2','sherman2','sherman3'), result_names)
-  cocoli_results = (results$cocoli1 + results$cocoli2)/2
-  sherman_results = (results$sherman1 + results$sherman2)/2
+  to_avg = c('Metric.avg', 'Metric.25', 'Metric.50', 'Metric.75', 'Exp', 'N')
+  cocoli_results = (subset(results$cocoli1, select= -Comm) + 
+                    subset(results$cocoli2, select= -Comm)) / 2
+  cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
+  sherman_results = (subset(results$sherman1, select= -Comm) + 
+                     subset(results$sherman2, select= -Comm)) / 2
+  sherman_results = data.frame(sherman_results, Comm=results$sherman1[ , 'Comm'])
   results = results[-to_drop]
   results[['cocoli1']] = cocoli_results
   results[['sherman1']] = sherman_results
@@ -26,10 +31,6 @@ empirSorAbu = reshapeResults(empirAbu,'sorensen')
 empirSorBin = merge_drop(empirSorBin)
 empirSorAbu = merge_drop(empirSorAbu)
 
-par(mfrow=c(2,4))
-plotEmpir(empirSorAbu,log='x', type='o')
-plotEmpir(empirSorAbu,log='x', type='o',quants=T)
-
 empirBin = getResults(shrtnames,'varWithin','binary')
 empirAbu = getResults(shrtnames,'varWithin','abu')
 empirVarBin = reshapeResults(empirBin,'varWithin')
@@ -38,70 +39,44 @@ empirVarAbu = reshapeResults(empirAbu,'varWithin')
 empirVarBin = merge_drop(empirVarBin)
 empirVarAbu = merge_drop(empirVarAbu)
 
-par(mfrow=c(2,4))
-plotEmpir(empirVarAbu,log='x', type='o')
-plotEmpir(empirVarAbu,log='x', type='o',quants=T)
+## examine results
+par(mfrow=c(4,4))
+plotEmpir(empirSorAbu, type='o')
+plotEmpir(empirSorAbu, log='xy', type='o')
+plotEmpir(empirSorAbu,log='xy', type='o',quants=T)
 
+par(mfrow=c(4,4))
+plotEmpir(empirVarAbu,log='x', type='o')
+plotEmpir(empirVarAbu,log='xy', type='o',quants=T)
 
 ##
-commName = 'bryan'
+commName = 'cocoli1'
 par(mfrow=c(1,2))
-plotEmpir(empirSorAbu[commName],log='x', type='o', quants=T)
-plotEmpir(empirVarAbu[commName],log='x', type='o', quants=T)
+plotEmpir(empirSorAbu[commName],log='xy', type='o', quants=T)
+plotEmpir(empirVarAbu[commName],log='xy', type='o', quants=F)
 
-
-#pdf('spat_empir_sor_bin_curves.pdf')
-par(mfrow=c(2,4))
-plotEmpir(empirSorBin, quants=TRUE, type='o')
-plotEmpir(empirSorBin, quants=FALSE, type='o')
-
-plotEmpir(empirSorBin[3], log='x', quants=T)
-#dev.off()
-#pdf('spat_empir_sor_abu_curves.pdf')
-par(mfrow=c(2,4))
-plotEmpir(empirSorAbu, quants=TRUE)
-plotEmpir(empirSorAbu, quants=FALSE)
-plotEmpir(empirSorAbu,log='x', type='o')
-#dev.off()
-#pdf('spat_empir_varWithin_bin_curves.pdf')
-par(mfrow=c(3,4))
-plotEmpir(empirVarBin, quants=TRUE)
-plotEmpir(empirVarBin,log='xy')
-#dev.off()
-#pdf('spat_empir_varWithin_abu_curves.pdf')
-par(mfrow=c(2,4))
-plotEmpir(empirVarAbu)
-plotEmpir(empirVarAbu,log='xy')
-#dev.off()
-
-#vGridExpAvg = apply(vGridExp,1,mean)
-#vGridExpQt = apply(vGridExp,1,function(x)quantile(x,c(.025,.975)))
-
-## finding the optimal bin sizes
-## bci
-comm = 'bci'
-results = empirSorAbu[comm]
-unigrains = unique(results[[1]]$Comm)
-col = palette()[-1]
-par(mfrow=c(1,1))
-plotEmpir(results, type='o', log='xy')
-for (i in seq_along(unigrains))
-  abline(v = 2 * sqrt(unigrains[i]),col=col[i])
-empirSorAbu[comm]
-####
-r2 = results[[1]][results[[1]]$Comm==unigrains[1],]
-breaks = exp(seq(0, log(max(r2$Dist) * sqrt(unigrains[1])),
-                        length.out=20))
-H = r2$Dist
-for (i in 1:(length(breaks) - 1))
-  H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
-
-en.split = split(r2$Metric.50 * r2$N , H)
-n.split = split(r2$N, H)
-dn.split = split(r2$Dist * sqrt(unigrains[1]) * r2$N, H)
-e.mean = sapply(en.split, sum) / sapply(n.split, sum)
-d.mean = sapply(dn.split, sum) / sapply(n.split, sum)
-plotEmpir(results,log='xy',type='o')
-lines(d.mean, e.mean, type='o', pch=19)
-      
-
+## generate pdfs
+for (metric in c('Sor', 'Var')) {
+  for (type in c('Bin', 'Abu')) {
+    for (log_it in c(FALSE, TRUE)) {
+      if (log_it)
+        prefix = './figs/spat_empir_loglog_'
+      else
+        prefix = './figs/spat_empir_'
+      pdf(paste(prefix, metric, '_', type, '_curves.pdf', sep=''),
+          width = 7 * 2, height = 7 * 2)
+        par(mfrow=c(4,4))
+        data = eval(parse(text=paste('empir', metric, type, sep='')))
+        if (log_it) {
+          plotEmpir(data, quants=FALSE, type='o', log='xy')
+          plotEmpir(data, quants=TRUE, type='o', log='xy')
+        }  
+        else {
+          plotEmpir(data, quants=FALSE, type='o')
+          plotEmpir(data, quants=TRUE, type='o')
+        }
+        rm(data)
+      dev.off()
+    }  
+  }  
+}
