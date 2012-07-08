@@ -11,7 +11,11 @@ import os
 import mete
 
 
-data_names = ['bci','cocoli1','cocoli2','cross','serp','sherman1','sherman2','sherman3']
+data_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
+              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+              'bigoak']
+
 slopes = []
 for shrt_name in data_names:
     datafile = open('./sar/' + shrt_name + '_empir_sar.csv', 'r')
