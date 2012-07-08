@@ -2237,7 +2237,7 @@ n_pixels_wide = function(i_bisec){
   return(out)
 }
 
-'getResults' = function(names,metric,dataType)
+'getResults' = function(names, metric, dataType, simResult=FALSE)
 {
   ## Purpose: to import the results of the 'calcMetrics' function
   ## and to load them into a list
@@ -2245,12 +2245,16 @@ n_pixels_wide = function(i_bisec){
   ## names: the short names that were used in the naming of the output files
   ## metric: the metric calculated, see 'calcMetrics' for options
   ## dataType: the data type of interest, 'binary' or 'abu'
-  results = vector('list',length=length(names))
+  ## simResult: specifies if the object is a simulation result
+  results = vector('list', length=length(names))
   names(results) = names
-  for(i in seq_along(results)){
-    load(paste('./',metric,'/',metric,'_',names[i],'_',dataType,'.Rdata',
+  for (i in seq_along(results)) {
+    load(paste('./', metric, '/' ,metric, '_', names[i], '_', dataType, '.Rdata',
                sep=''))
-    results[[i]] = eval(parse(text=metric))
+    if (simResult)
+      results[[i]] = metrics
+    else
+      results[[i]] = eval(parse(text=metric))
   }
   return(results)
 }
@@ -2345,6 +2349,34 @@ avgResults = function(results) {
   return(out)
 }
 
+'merge_drop' = function(results) {
+  result_names = names(results)
+  to_drop = unlist(sapply(c('cocoli2','sherman2','sherman3'),
+                          function(x) grep(x, result_names)))
+  to_avg = c('Metric.avg', 'Metric.25', 'Metric.50', 'Metric.75', 'Exp', 'N')
+  cocoli_results = (subset(results$cocoli1, select= -Comm) + 
+                    subset(results$cocoli2, select= -Comm)) / 2
+  cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
+  sherman_results = (subset(results$sherman1, select= -Comm) + 
+                     subset(results$sherman2, select= -Comm)) / 2
+  sherman_results = data.frame(sherman_results, Comm=results$sherman1[ , 'Comm'])
+  results = results[-to_drop]
+  results[[grep('cocoli1', names(results))]] = cocoli_results
+  results[[grep('sherman1', names(results))]] = sherman_results
+  return(results)
+}
+
+'get_file_names' = function(path, strings, invert=FALSE) {
+  indices = NULL
+  for (i in seq_along(strings)) {
+    indices = c(indices, unlist(sapply(strings[[i]], function(x) 
+                grep(x, dir(path), invert=invert[i]))))
+  }  
+  indices = as.numeric(names(which(table(indices) == length(strings))))
+  files = dir(path)[indices]
+  return(files)
+}
+
 'loadSimResults' = function(S, N, dirPath, B=12, dataType='abu') {
   ## this function is for loading the simulation results associated with the 
   ## parameter space analysis
@@ -2380,6 +2412,7 @@ avgResults = function(results) {
   ## results: the output of the function 'loadSimResults'
   ## metric: the metric analyzed: 'sorensen', 'varWithin', 'jaccard'
   simAvg = vector('list', length(results))
+  names(simAvg) = names(results)
   for (i in seq_along(results)) {
     if (is.null(results[[i]]))
       next
@@ -2447,59 +2480,74 @@ avgResults = function(results) {
 }
 
 
-plotEmpir = function(results, log="", quants=FALSE, alpha=1/3,
-                     col=NULL, lwd=NULL, ...){
+'plotEmpir' = function(results, metric='median', Exp=FALSE, log="", quants=FALSE,
+                       ylim=NULL, title=TRUE, sub="", alpha=1/3,
+                       add=FALSE, col=NULL, lwd=NULL, ...)
+{
   ## Purpose: to plot the results, expects that the graphical window has been 
   ## setup appropriately 
   ## Arguments
   ## results: a list from which the results should be ploted
+  ## metric: the metric of interest: median or average
   ## log: which axes are to be log transformed
   ## quants: if TRUE will plot quantiles as well
+  ## ylim: a list of ylims that is the length of results
+  ## title: if TRUE the the plot is given a main title from the names of results
+  ## alpha: specifies the transpancy level on the quantiles
   ## col: what colors to use
   ## lwd: the line width of the lines
-  if (is.null(lwd))
-    lwd = 2
+  ## ...: other arguments supplied to the function lines()
+  if (metric == 'median')
+    metric_column = na.omit(match(c('Med', 'Metric.50'), names(results[[1]])))[1]
+  else if (metric == 'average')
+    metric_column = na.omit(match(c('Avg', 'Metric.avg'), names(results[[1]])))[1]
+  else
+    stop('metric agruments should be either "median" or "average"')
   y_is_log = regexpr('y', log)[1] != -1
   if (y_is_log) { 
-    mins = unlist(lapply(results, function(x) min(x$Metric.50)))
+    mins = unlist(lapply(results, function(x) min(x[ , metric_column])))
     if (any(mins == 0))
       print("Note: Points will be dropped where the metric equals zero becuase the y-axis is log transformed")
   }
   for(i in seq_along(results)){
-    #grains = as.numeric(as.character(results[[i]]$Comm))
     grains = results[[i]]$Comm
     unigrains = unique(grains)
-    results[[i]]$Dist = results[[i]]$Dist 
-    resp_var = names(results[[i]])[grep('Metric', names(results[[i]]))]
-    if (length(resp_var) > 1) {
-      names(results[[i]]) = sub('.50','',names(results[[i]]))
-    }   
-    else {
-      if (quants)
-        stop("This results file does not contain data on quantiles")
-    } 
+    resp_var = results[[i]][ , metric_column]
     if(is.null(col))
       col = palette()[-1]
-    if (quants) {
+    if (quants[1]) {
       col_poly = apply(col2rgb(col), 2, 
-                  function(x) rgb(x[1],x[2],x[3], 
+                  function(x) rgb(x[1], x[2], x[3], 
                                   alpha=alpha * max(x), 
                                   maxColorValue = max(x)))
     }
-    if (y_is_log)
-      yRange = range(results[[i]]$Metric[results[[i]]$Metric > 0])
-    else
-      yRange = range(results[[i]]$Metric)
-    plot(Metric ~ Dist, data = results[[i]], subset = Metric > 0,
-         xlim = range(Dist), ylim = yRange, type='n', log=log,
-         main=names(results)[i])
+    if (is.null(ylim)) {
+     if (y_is_log)
+         yRange = range(resp_var[resp_var > 0])
+      else
+        yRange = range(resp_var)
+    }
+    else {
+      yRange = ylim[[i]]
+    }  
+    if (title)
+      main = names(results)[i]
+    else 
+      main = ''
+    if (is.null(lwd))
+      lwd = 2
+    if (!add)
+      plot(resp_var ~ Dist, data = results[[i]], subset = resp_var > 0,
+           xlim = range(Dist), ylim = yRange, type='n', log=log,
+           main=paste(main, '\n', sub, sep=''), ylab=metric)
     for (j in seq_along(unigrains)) {
       dat = subset(results[[i]], Comm == unigrains[j])
-      if (quants) {
+      resp_var = dat[ , metric_column]
+      if (quants[1]) {
         xvals = dat$Dist
         xvals = c(xvals, rev(xvals))
-        yvals = dat$Metric.25
-        yvals = c(yvals, rev(dat$Metric.75))
+        yvals = dat[ , (metric_column - 1)]
+        yvals = c(yvals, rev(dat[ , (metric_column + 1)]))
         if (y_is_log) { 
           xvals = xvals[yvals > 0]
           yvals = yvals[yvals > 0]
@@ -2508,12 +2556,53 @@ plotEmpir = function(results, log="", quants=FALSE, alpha=1/3,
           polygon(xvals, yvals, border=NA, col=col_poly[j])
       }
       if (y_is_log)
-        lines(Metric ~ Dist, data = dat, subset=Metric > 0, col=col[j], lwd=lwd, ...)
+        lines(resp_var ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lwd=lwd, ...)
       else
-        lines(Metric ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
+        lines(resp_var ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
+      if (Exp)
+        lines(Exp ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lty=2, lwd=lwd,
+              ...)
     }  
   }
 }
+
+str_clean = function(str) {
+  str = gsub('\n', '', str)
+  str = gsub(' ', '', str)
+  return(str)
+}
+
+'comp_results' = function(site, results, args=NULL, ...) {
+  plot_names = names(results)
+  args = sapply(args, str_clean) 
+  for (i in seq_along(plot_names)) {
+    if (!grepl(site, plot_names[i])) 
+     next
+    for (j in seq_along(results)) {
+      if (j == 1) {
+        if (is.null(args[j])) 
+          plotEmpir(results[[j]][i], ...)
+        else 
+          eval(parse(text=paste('plotEmpir(results[[j]][i],', args[j], ',...)',
+                                sep='')))
+      }
+      else {
+        index = grep(plot_names[i], names(results[[j]]))
+        if (length(index) > 0) {
+          if (is.null(args[j])) 
+            plotEmpir(results[[j]][i], add=TRUE, ...)
+          else 
+            eval(parse(text=paste('plotEmpir(results[[j]][i], add=TRUE,', args[j],
+                                  ',...)', sep='')))
+        }
+      }  
+    }  
+  }
+}
+
+
+
+
 
 #####Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS#####
 
