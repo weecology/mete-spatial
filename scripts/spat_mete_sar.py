@@ -25,13 +25,13 @@ else:
     bisec = 4
     shrt_name = 'test'
     
-Amax = 2 ** (bisec - 1) # number of quadrats per community 
+Amax = 2 ** bisec  # number of quadrats per community 
 Amin = 1
  
-sar_down = mete.downscale_sar(Amax,S,N,Amin)
+sar_down = mete.downscale_sar(Amax, S, N, Amin)
 
 # Make an array so that the data is easier to output
-out = np.empty((bisec-1, 2)) 
+out = np.empty((bisec, 2)) 
 for i in range(0,2):
     out[:,i] = sar_down[i]
 
@@ -40,7 +40,7 @@ filename = './sar/' + shrt_name + '_mete_sar.txt'
 writer = open(filename,'wb') 
 datawriter = csv.writer(writer)
 datawriter.writerow(['area','sr'])
-for i in range(0, bisec-1):
+for i in range(0, bisec):
     datawriter.writerow(out[i,])
 
 writer.close()  
