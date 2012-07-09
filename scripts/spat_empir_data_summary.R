@@ -58,17 +58,23 @@ write.table(matrix(bisect_coarse, nrow=1), file=file.path('./data', 'bisect_coar
 write.table(matrix(grain_fine, nrow=1), file=file.path('./data', 'grain_fine.txt'),
             sep=' ', row.names=FALSE, col.names=FALSE)
 
-freq = sapply(1:length(dat),  function(x) as.numeric(dat[[x]]) / N[x])
 
-pdf('./figs/empirical_rads.pdf')
+## order dat by richness
+to_order = order(sapply(dat, length), decreasing=TRUE)
+dat = dat[to_order]
+N = N[to_order]
+S = S[to_order]
+freq = sapply(1:length(dat),  function(x) as.numeric(dat[[x]]) / N[x])
+pdf('./figs/empirical_rads.pdf', width=7 * 2, height=7)
+  col = terrain.colors(length(dat)+2)
   par(mfrow=c(1, 2))
   plot(1:S[1], as.numeric(freq[[1]]), ylim=range(freq), type='n', log='y', 
        xlab='rank', ylab='log Relative Freq.')
   for (i in seq_along(dat))
-    lines(1:S[i], as.numeric(freq[[i]]), col=i, lwd=2)
-  legend('topright', names(dat), col=1:length(dat), lwd=2, bty='n')
+    lines(1:S[i], as.numeric(freq[[i]]), col=col[i], lwd=2)
+  legend('topright', names(dat), col=col[1:length(dat)], lwd=2, bty='n')
   plot(1:S[1], as.numeric(freq[[1]]), ylim=range(freq), type='n', log='xy', 
        xlab='log rank', ylab='log Relative Freq.')
   for (i in seq_along(dat))
-    lines(1:S[i], as.numeric(freq[[i]]), col=i, lwd=2)
+    lines(1:S[i], as.numeric(freq[[i]]), col=col[i], lwd=2)
 dev.off()
