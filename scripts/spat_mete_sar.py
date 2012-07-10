@@ -11,8 +11,8 @@ import os
 
 import mete
 
-if 'sar' not in os.listdir(os.path.curdir):
-    os.mkdir('sar')
+if 'sar' not in os.listdir('..'):
+    os.mkdir('../sar')
 
 if(len(sys.argv) > 1):
     S = int(sys.argv[1]) 
@@ -35,7 +35,7 @@ out = np.empty((bisec, 2))
 for i in range(0,2):
     out[:,i] = sar_down[i]
 
-filename = './sar/' + shrt_name + '_mete_sar.txt'
+filename = '../sar/' + shrt_name + '_mete_sar.txt'
 
 writer = open(filename,'wb') 
 datawriter = csv.writer(writer)
