@@ -1,27 +1,11 @@
 ## Purpose: to graphically summarize the empirical results
-setwd('./maxent/spat')
+setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
               'bigoak')
-
-merge_drop = function(results) {
-  result_names = names(results)
-  to_drop = match(c('cocoli2','sherman2','sherman3'), result_names)
-  to_avg = c('Metric.avg', 'Metric.25', 'Metric.50', 'Metric.75', 'Exp', 'N')
-  cocoli_results = (subset(results$cocoli1, select= -Comm) + 
-                    subset(results$cocoli2, select= -Comm)) / 2
-  cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
-  sherman_results = (subset(results$sherman1, select= -Comm) + 
-                     subset(results$sherman2, select= -Comm)) / 2
-  sherman_results = data.frame(sherman_results, Comm=results$sherman1[ , 'Comm'])
-  results = results[-to_drop]
-  results[['cocoli1']] = cocoli_results
-  results[['sherman1']] = sherman_results
-  return(results)
-}
 
 empirBin = getResults(shrtnames,'sorensen','binary')
 empirAbu = getResults(shrtnames,'sorensen','abu')
@@ -60,6 +44,19 @@ commName = 'cocoli1'
 par(mfrow=c(1,2))
 plotEmpir(empirSorAbu[commName],log='xy', type='o', quants=T)
 plotEmpir(empirVarAbu[commName],log='xy', type='o', quants=F)
+
+## mean vs median
+plotEmpir(empirSorAbu[1], metric='median', log='xy')
+plotEmpir(empirSorAbu[1], metric='average', log='xy', lty=2, add=T)
+
+plotEmpir(empirSorBin[1], metric='median', log='xy')
+plotEmpir(empirSorBin[1], metric='average', log='xy', lty=2, add=T)
+
+plotEmpir(empirVarAbu[1],  metric='median', log='xy')
+plotEmpir(empirVarAbu[1], metric='average', log='xy', lty=2, add=T)
+
+plotEmpir(empirVarBin[1],  metric='median', log='xy')
+plotEmpir(empirVarBin[1], metric='average', log='xy', lty=2, add=T)
 
 ## generate pdfs
 for (metric in c('Sor', 'Var')) {
