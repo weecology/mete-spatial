@@ -2479,9 +2479,69 @@ avgResults = function(results) {
   return(stats)
 }
 
+'getStats' = function(results, metric='median') {
+  ## computes the slope, intercept, and R2 value for the exponential
+  ## and power models across the range of S and N for the simulated results
+  ## using Ordinary Least Squares and Weighted regression approaches
+  ## the output is a multidimensional array:
+  ## the dimensions are [model type, coef type, meth type, grain, S, N]
+  ## Arguments:
+  ## results: the results file which the models will be fit to
+  ## S: the richness values used to parametrize the simulated results
+  ## N: the abundance values used to parameterize the simulated results
+  if (metric == 'median')
+    metric_column = na.omit(match(c('Med', 'Metric.50'), names(results[[1]])))[1]
+  else if (metric == 'average')
+    metric_column = na.omit(match(c('Avg', 'Metric.avg'), names(results[[1]])))[1]
+  else
+    stop('metric agruments should be either "median" or "average"')
+  out = vector('list', length(results))
+  names(out) = names(results)
+  for (i in seq_along(results)) {
+    grains = as.character(unique(results[[i]]$Comm))
+    resp_var = results[[i]][ , metric_column]
+    stats = array(NA, dim=c(2, 3, 2, length(grains)))
+    dimnames(stats)[[1]] = c('exp', 'pwr')
+    dimnames(stats)[[2]] = c('b0', 'b1', 'r2')
+    dimnames(stats)[[3]] = c('ols', 'wtr')
+    dimnames(stats)[[4]] = grains
+    for (g in seq_along(grains)) {
+      j = 1
+      for (meth in c('ols', 'wtr')) {  ## wtr is for weighted regression
+        if (meth == 'ols') {
+          logmod = lm(resp_var ~ log10(Dist), subset = as.character(Comm) == grains[g], 
+                      data=results[[i]])
+          if (min(resp_var) > 0) 
+            pwrmod = lm(log10(resp_var) ~ log10(Dist), subset = as.character(Comm) == grains[g],
+                          data = results[[i]])
+        }   
+        if (meth == 'wtr') {
+          logmod = lm(resp_var ~ log10(Dist), weights=N, 
+                      subset = as.character(Comm) == grains[g],
+                      data=results[[i]])
+          if (min(resp_var) > 0)
+            pwrmod = lm(log10(resp_var) ~ log10(Dist), weights=N, 
+                        subset = as.character(Comm) == grains[g], data = results[[i]])
+        }
+        stats[1, 1:2, j, g] = coef(logmod)
+        stats[1, 3, j, g] = summary(logmod)$r.squ
+        if (min(resp_var) > 0) {
+          stats[2, 1:2, j, g] = coef(pwrmod)
+          stats[2, 3, j, g] = summary(pwrmod)$r.squ
+        }  
+        else {
+          print(paste('skipped', names(results)[i], sep=' ')) 
+        }  
+        j = j + 1        
+      }  
+    }
+    out[[i]] = stats
+  }
+  return(out)
+}
 
-'plotEmpir' = function(results, metric='median', Exp=FALSE, log="", quants=FALSE,
-                       ylim=NULL, title=TRUE, sub="", alpha=1/3,
+'plotEmpir' = function(results, metric='median', expected=FALSE, log="", 
+                       quants=FALSE, ylim=NULL, title=TRUE, sub="", alpha=1/3,
                        add=FALSE, col=NULL, lwd=NULL, ...)
 {
   ## Purpose: to plot the results, expects that the graphical window has been 
@@ -2559,7 +2619,7 @@ avgResults = function(results) {
         lines(resp_var ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lwd=lwd, ...)
       else
         lines(resp_var ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
-      if (Exp)
+      if (expected)
         lines(Exp ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lty=2, lwd=lwd,
               ...)
     }  
@@ -2573,8 +2633,9 @@ str_clean = function(str) {
 }
 
 'comp_results' = function(site, results, args=NULL, ...) {
-  plot_names = names(results)
-  args = sapply(args, str_clean) 
+  plot_names = names(results[[1]])
+  if (!is.null(args))
+    args = sapply(args, str_clean) 
   for (i in seq_along(plot_names)) {
     if (!grepl(site, plot_names[i])) 
      next
@@ -2590,9 +2651,9 @@ str_clean = function(str) {
         index = grep(plot_names[i], names(results[[j]]))
         if (length(index) > 0) {
           if (is.null(args[j])) 
-            plotEmpir(results[[j]][i], add=TRUE, ...)
+            plotEmpir(results[[j]][index], add=TRUE, ...)
           else 
-            eval(parse(text=paste('plotEmpir(results[[j]][i], add=TRUE,', args[j],
+            eval(parse(text=paste('plotEmpir(results[[j]][index], add=TRUE,', args[j],
                                   ',...)', sep='')))
         }
       }  
