@@ -15,43 +15,53 @@ import mete
 if 'sar' not in os.listdir('..'):
     os.mkdir('../sar')
 
-shrtname = sys.argv[1]
-    
-datafile = open('../sar/empir_sars.csv', 'r')
-datareader = csv.reader(datafile)
-data = []
-for row in datareader:
-    data.append(row)
+site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
+              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+              'bigoak']
 
-for i in range(1, len(data)):
-    data[i][1 : ] = map(float, data[i][1 : ])
+for shrt_name in site_names:
+    datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
+    datareader = csv.reader(datafile)
+    data = []
+    for row in datareader:
+        data.append(row)
+   
+    # drop the header row
+    site_data = []
+    for i in range(1,len(data)):
+        site_data.append(data[i][0:3])
 
-indices = mete.which([data[i][0] == shrtname and data[i][3] > 2 for i in range(0, len(data))])
+    site_data = [map(float,x) for x in site_data]
 
-Amin = min([int(data[i][1]) for i in indices])
-Amax = max([int(data[i][1]) for i in indices])
-S = max([int(data[i][2]) for i in indices])
-N = max([int(data[i][3]) for i in indices])
+    # enforce a minimum individual density of 2
+    indices = mete.which([site_data[i][2] > 2 for i in range(0, len(site_data))])
 
-sar_down = mete.downscale_sar(Amax, S, N, Amin)
+    site_data = [site_data[i] for i in indices]
 
-# add values at Amax
-sar_down[0].append(Amax)
-sar_down[1].append(S)
+    # get parameters needed for computing the mete sar
+    Amin = min(site_data[0])
+    Amax = max(site_data[0])
+    S = max(site_data[1])
+    N = max(site_data[2])
 
-# Make an array so that the data is easier to output
+    sar_down = mete.downscale_sar(Amax, S, N, Amin)
 
-out = np.empty((len(sar_down[0]), 2)) 
-for i in range(0,2):
-    out[ : , i] = sar_down[i] 
+    # add values at Amax
+    sar_down[0].append(Amax)
+    sar_down[1].append(S)
 
-filename = '../sar/' + shrtname + '_mete_sar.txt'
+    # Make an array so that the data is easier to output
+    out = np.empty((len(sar_down[0]), 2)) 
+    for i in range(0,2):
+        out[ : , i] = sar_down[i] 
 
-writer = open(filename, 'wb') 
-datawriter = csv.writer(writer)
-datawriter.writerow(['area', 'sr'])
-for i in range(0, len(sar_down[0])):
-    datawriter.writerow(out[i, ])
+    filename = '../sar/' + shrtname + '_mete_sar.txt'
+    writer = open(filename, 'wb') 
+    datawriter = csv.writer(writer)
+    datawriter.writerow(['area', 'sr'])
+    for i in range(0, len(sar_down[0])):
+        datawriter.writerow(out[i, ])
 
-writer.close()  
+    writer.close()
 
