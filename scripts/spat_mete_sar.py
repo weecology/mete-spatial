@@ -39,11 +39,13 @@ for shrt_name in site_names:
 
     site_data = [site_data[i] for i in indices]
 
+    site_data = np.array(site_data)
+
     # get parameters needed for computing the mete sar
-    Amin = min(site_data[0])
-    Amax = max(site_data[0])
-    S = max(site_data[1])
-    N = max(site_data[2])
+    Amin = min(site_data[:, 0])
+    Amax = max(site_data[:, 0])
+    S = max(site_data[:, 1])
+    N = max(site_data[:, 2])
 
     sar_down = mete.downscale_sar(Amax, S, N, Amin)
 
@@ -56,7 +58,7 @@ for shrt_name in site_names:
     for i in range(0,2):
         out[ : , i] = sar_down[i] 
 
-    filename = '../sar/' + shrtname + '_mete_sar.txt'
+    filename = '../sar/' + shrt_name + '_mete_sar.txt'
     writer = open(filename, 'wb') 
     datawriter = csv.writer(writer)
     datawriter.writerow(['area', 'sr'])
