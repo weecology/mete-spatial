@@ -5,7 +5,7 @@ source('./scripts/spat_sim_vario_func.R')
 
 fileNames = dir('./sar')
 
-meteFiles = grep('mete_sar', fileNames)
+meteFiles = grep('mete_sar.txt', fileNames)
 mete = vector('list', length(meteFiles))
 names(mete) = sub('_mete_sar.txt', '', fileNames[meteFiles])
 for( i in seq_along(meteFiles)) {
@@ -15,12 +15,16 @@ for( i in seq_along(meteFiles)) {
 bisect_fine = read.table('./data/bisect_fine.txt')
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
 
+files = dir('./comms')
 ncomm = 200
-for (i in seq_along(names(mete))) {
+
+for (i in seq_along(mete)) {
   name = names(mete)[i]
   bisect = as.numeric(bisect_fine[match(name, shrtnames)])
-  fileSuffix = paste(names(mete)[i], '_C', ncomm, '_B', bisect, '_grid', sep='')
+  fileSuffix = paste(name, '_C', ncomm, '_B', bisect, '_grid', sep='')
   fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
+  if (!(fileName %in% files)) 
+    next
   comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
                           type='integer', sep=',', descriptor = fileSuffix)
   Ns = n_pixels_long(bisect)
@@ -40,20 +44,20 @@ for (i in seq_along(names(mete))) {
                     FUN = quantile, 0.975)
   sarLo = aggregate(cbind(richness, indiv, count) ~ grains, data = sar,
                     FUN = quantile, 0.025)
+  out = data.frame(comm = name, grains = grains, 
+                   sr.lo = sarLo$richness, sr.avg = sarAvg$richness, 
+                   sr.hi = sarHi$richness, ind.lo = sarLo$indiv, 
+                   ind.avg = sarAvg$indiv, ind.hi = sarHi$indiv, 
+                   count = sarAvg$count)
+  write.csv(out, file=paste('./sar/', name, '_mete_sar_avgs.csv', sep=''),
+            row.names=FALSE)
   if (i == 1)
-    sarOut = data.frame(comm = name, grains = grains, 
-                        sr.lo = sarLo$richness, sr.avg = sarAvg$richness, 
-                        sr.hi = sarHi$richness, ind.lo = sarLo$indiv, 
-                        ind.avg = sarAvg$indiv, ind.hi = sarHi$indiv, 
-                        count = sarAvg$count)
+    sarOut = out
   else
-    sarOut = rbind(sarOut,
-                   data.frame(comm = name, grains = grains, 
-                              sr.lo = sarLo$richness, sr.avg = sarAvg$richness, 
-                              sr.hi = sarHi$richness, ind.lo = sarLo$indiv, 
-                              ind.avg = sarAvg$indiv, ind.hi = sarHi$indiv, 
-                              count = sarAvg$count))
+    sarOut = rbind(sarOut, out)
   print(paste(name, 'is done', sep=' '))
+  rm(comms)
+  gc()
 }
 
 write.csv(sarOut, file ='./sar/mete_sar_avgs.csv', row.names=FALSE)
