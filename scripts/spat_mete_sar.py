@@ -4,7 +4,6 @@ Date: 9/21/11
 Purpose: to calculate the METE prediction for the SAR
 """
 
-from math import log
 import numpy as np
 import csv
 import sys
