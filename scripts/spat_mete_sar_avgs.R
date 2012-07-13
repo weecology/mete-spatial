@@ -3,6 +3,7 @@ library(bigmemory)
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
+
 fileNames = dir('./sar')
 
 meteFiles = grep('mete_sar.txt', fileNames)
@@ -11,15 +12,22 @@ names(mete) = sub('_mete_sar.txt', '', fileNames[meteFiles])
 for( i in seq_along(meteFiles)) {
   mete[[i]] = read.csv(paste('./sar/', fileNames[meteFiles[i]], sep=''))
 }
+sitename = names(mete)
+
+clArgs = commandArgs(trailingOnly=TRUE)
+if (length(clArgs) > 1) {
+  sitename = clArgs[1]
+  grains = mete[[match(sitename, names(mete))]]$area
+}
 
 bisect_fine = read.table('./data/bisect_fine.txt')
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
-
+  
 files = dir('./comms')
 ncomm = 200
 
-for (i in seq_along(mete)) {
-  name = names(mete)[i]
+for (i in seq_along(sitename)) {
+  name = sitename[i]
   bisect = as.numeric(bisect_fine[match(name, shrtnames)])
   fileSuffix = paste(name, '_C', ncomm, '_B', bisect, '_grid', sep='')
   fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
@@ -29,7 +37,8 @@ for (i in seq_along(mete)) {
                           type='integer', sep=',', descriptor = fileSuffix)
   Ns = n_pixels_long(bisect)
   Ms = n_pixels_wide(bisect)
-  grains = mete[[i]]$area
+  if (length(clArgs) == 0) 
+    grains = mete[[i]]$area
   for (j in 1:ncomm) {
     comm_tmp = comms[comms[ , 1] == j, ]
     psp = mat2psp(comm_tmp[ , -(1:3)], Ns, Ms)
