@@ -69,5 +69,6 @@ for (i in seq_along(sitename)) {
   gc()
 }
 
-write.csv(sarOut, file ='./sar/mete_sar_avgs.csv', row.names=FALSE)
+if(length(clArgs) == 0)
+  write.csv(sarOut, file ='./sar/mete_sar_avgs.csv', row.names=FALSE)
 
