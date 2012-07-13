@@ -1619,14 +1619,13 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   ## grains: the areas in pixels for which to compute the SAR
   ##         only grains that have integer log base 2 are considered
   ## mv_window: FALSE indicates that a non-moving window SAR will be calculated
-  ## Note: This implementation may require that the grain of 
   if (class(psp) != 'array')
     stop('psp must be a community array (S X N X M)')
   grains = grains[log2(grains) == round(log2(grains))]
   grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
   ## define the size of sampling units on each side
-  lenN = 2^ceiling(log2(grains) / 2)
-  lenM = 2^floor(log2(grains) / 2)
+  lenN = n_pixels_long(log2(grains))
+  lenM = n_pixels_wide(log2(grains))
   sr = rep(0, length(grains))
   ind = rep(0, length(grains))
   cs = rep(0, length(grains))
@@ -1653,10 +1652,10 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
       }  
       for (n in brksN) {
         for (m in brksM) {
-          sr[l] = sr[l] + sum(apply(psp[, n:(n + (lenN[l] - 1)),
-                                          m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0)
-          ind[l] = ind[l] + sum(apply(psp[, n:(n + (lenN[l] - 1)),
-                                            m:(m + (lenM[l] - 1))], 1, sum))
+          sr[l] = sr[l] + sum(apply(psp[ , n:(n + (lenN[l] - 1)),
+                                           m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0)
+          ind[l] = ind[l] + sum(apply(psp[ , n:(n + (lenN[l] - 1)),
+                                             m:(m + (lenM[l] - 1))], 1, sum))
           cs[l] = cs[l] + 1
         }
       }
@@ -1853,9 +1852,16 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
     hmin_vals = hmin
   out = vector('list',length(grains))
   names(out) = paste('comm',grains,sep='')
-  for(i in seq_along(grains)){
-    coords = as.matrix(comms[comms[,1] == grains[i], 2:3]) * sqrt(grains[i])
-    mat = as.matrix(comms[comms[,1] == grains[i],-c(1:3)])
+  for (i in seq_along(grains)) {
+    true = comms[ , 1] == grains[i]
+    if (log2(sum(true)) %% 2 == 1) {
+      coords = as.matrix(comms[true, 2]) * sqrt(grains[i] / 2 )
+      coords = cbind(coords, 
+                     as.matrix(comms[true, 3]) * 2 * sqrt(grains[i] / 2))
+    }
+    else  
+      coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
+    mat = as.matrix(comms[true, -c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
         brks = breaks[[i]]
@@ -2162,8 +2168,19 @@ n_pixels_wide = function(i_bisec){
     ylengths = ydiff / n_pixels_long(log2(n_quadrats))
   }
   else if (xdiff == ydiff) {
-    xlengths = xdiff / sqrt(n_quadrats)
-    ylengths = ydiff / sqrt(n_quadrats)
+    xlengths = ylengths = rep(NA, length(n_quadrats))
+    for (i in seq_along(n_quadrats)) {
+      if (log2(n_quadrats[i]) %% 2 == 1) {
+        ## if # of bisections is odd then arbitrarily 
+        ##make x dimension have more cells
+        xlengths[i] = xdiff / n_pixels_long(log2(n_quadrats[i]))
+        ylengths[i] = ydiff / n_pixels_wide(log2(n_quadrats[i]))
+      }  
+      else {
+        xlengths[i] = xdiff / sqrt(n_quadrats[i])
+        ylengths[i] = ydiff / sqrt(n_quadrats[i])
+      } 
+    }  
   }
   else
     stop('Function cannot figure out how to split up the area')
@@ -2450,22 +2467,24 @@ avgResults = function(results) {
         j = 1
         for (meth in c('ols', 'wtr')) {  ## wtr is for weighted regression
           if (meth == 'ols') {
-            logmod = lm(avg ~ log10(Dist), subset = grain == grains[g], 
-                        data=results[[i]])
-            if (min(results[[i]]$avg) > 0) 
+            if (min(results[[i]]$avg) > 0) {
+              expmod = lm(log10(avg) ~ Dist, subset = grain == grains[g], 
+                          data=results[[i]])
               pwrmod = lm(log10(avg) ~ log10(Dist), subset = grain == grains[g],
                           data = results[[i]])
+            }  
           }   
           if (meth == 'wtr') {
-            logmod = lm(avg ~ log10(Dist), weights=N, subset = grain == grains[g],
-                        data=results[[i]])
-            if (min(results[[i]]$avg) > 0)
+            if (min(results[[i]]$avg) > 0) {
+              expmod = lm(log10(avg) ~ Dist, weights=N, subset = grain == grains[g],
+                          data=results[[i]])
               pwrmod = lm(log10(avg) ~ log10(Dist), weights=N, 
                           subset = grain == grains[g], data = results[[i]])
+            }  
           }
-          stats[1, 1:2, j, g, s, n] = coef(logmod)
-          stats[1, 3, j, g, s, n] = summary(logmod)$r.squ
           if (min(results[[i]]$avg) > 0) {
+            stats[1, 1:2, j, g, s, n] = coef(expmod)
+            stats[1, 3, j, g, s, n] = summary(expmod)$r.squ
             stats[2, 1:2, j, g, s, n] = coef(pwrmod)
             stats[2, 3, j, g, s, n] = summary(pwrmod)$r.squ
           }  
@@ -2509,23 +2528,26 @@ avgResults = function(results) {
       j = 1
       for (meth in c('ols', 'wtr')) {  ## wtr is for weighted regression
         if (meth == 'ols') {
-          logmod = lm(resp_var ~ log10(Dist), subset = as.character(Comm) == grains[g], 
-                      data=results[[i]])
-          if (min(resp_var) > 0) 
+          if (min(resp_var) > 0) {
+            expmod = lm(log10(resp_var) ~ Dist, subset = as.character(Comm) == grains[g], 
+                        data=results[[i]])
+   
             pwrmod = lm(log10(resp_var) ~ log10(Dist), subset = as.character(Comm) == grains[g],
                           data = results[[i]])
+          }  
         }   
         if (meth == 'wtr') {
-          logmod = lm(resp_var ~ log10(Dist), weights=N, 
-                      subset = as.character(Comm) == grains[g],
-                      data=results[[i]])
-          if (min(resp_var) > 0)
+          if (min(resp_var) > 0) { 
+            expmod = lm(log10(resp_var) ~ Dist, weights=N, 
+                        subset = as.character(Comm) == grains[g],
+                        data=results[[i]])
             pwrmod = lm(log10(resp_var) ~ log10(Dist), weights=N, 
                         subset = as.character(Comm) == grains[g], data = results[[i]])
+          }  
         }
-        stats[1, 1:2, j, g] = coef(logmod)
-        stats[1, 3, j, g] = summary(logmod)$r.squ
         if (min(resp_var) > 0) {
+          stats[1, 1:2, j, g] = coef(expmod)
+          stats[1, 3, j, g] = summary(expmod)$r.squ
           stats[2, 1:2, j, g] = coef(pwrmod)
           stats[2, 3, j, g] = summary(pwrmod)$r.squ
         }  
