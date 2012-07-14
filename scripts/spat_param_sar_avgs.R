@@ -1,5 +1,3 @@
-library(bigmemory)
-
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
@@ -18,8 +16,7 @@ for (s in S) {
     fileName = paste('simulated_comms', fileSuffix, '.txt', sep='')
     if (!(fileName %in% files)) 
       next
-    comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
-                            type='integer', sep=',', descriptor = fileSuffix)
+    comms = read.csv(file.path('./comms', fileName))
     Ns = n_pixels_long(B)
     Ms = n_pixels_wide(B)
     for (j in 1:ncomm) {
@@ -36,22 +33,19 @@ for (s in S) {
                       FUN = quantile, 0.975)
     sarLo = aggregate(cbind(richness, indiv, count) ~ grains, data = sar,
                       FUN = quantile, 0.025)
-    if (!exists('sarOut'))
-      sarOut = data.frame(S = s, N=n, grains = grains, 
+    out = data.frame(S = s, N=n, grains = grains, 
                         sr.lo = sarLo$richness, sr.avg = sarAvg$richness, 
                         sr.hi = sarHi$richness, ind.lo = sarLo$indiv, 
                         ind.avg = sarAvg$indiv, ind.hi = sarHi$indiv, 
                         count = sarAvg$count)
+    if (!exists('sarOut'))
+      sarOut = out
     else
-      sarOut = rbind(sarOut,
-                     data.frame(S = s, N = n, grains = grains, 
-                                sr.lo = sarLo$richness, sr.avg = sarAvg$richness, 
-                                sr.hi = sarHi$richness, ind.lo = sarLo$indiv, 
-                                ind.avg = sarAvg$indiv, ind.hi = sarHi$indiv, 
-                                count = sarAvg$count))
+      sarOut = rbind(sarOut, out)
     write.csv(sarOut, file ='./sar/param_sar_avgs.csv', row.names=FALSE)
     print(paste('S =', s, 'N =', n, 'is done', sep=' '))
     rm(comms)
+    gc()
   }
 }
 write.csv(sarOut, file ='./sar/param_sar_avgs.csv', row.names=FALSE)
