@@ -1,6 +1,6 @@
 library(bigmemory)
 
-setwd('/lustre/scr/d/m/dmcglinn/maxent/spat')
+setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 fileNames = dir('./sar')
@@ -10,10 +10,10 @@ sitename =  c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
               'bigoak')
 
-clArgs = commandArgs()
+clArgs = commandArgs(trailingOnly=TRUE)
 print(paste('clArgs = ', clArgs))
-if (length(clArgs) > 5) {
-  sitename = clArgs[6]
+if (length(clArgs) > 0) {
+  sitename = clArgs[1]
 }
 
 bisect_fine = read.table('./data/bisect_fine.txt')
@@ -64,6 +64,6 @@ for (i in seq_along(sitename)) {
   gc()
 }
 
-if(length(clArgs) == 5)
+if(length(clArgs) == 0)
   write.csv(sarOut, file ='./sar/mete_sar_avgs.csv', row.names=FALSE)
 
