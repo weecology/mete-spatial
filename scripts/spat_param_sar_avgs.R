@@ -17,6 +17,7 @@ for (s in S) {
     if (!(fileName %in% files)) 
       next
     comms = read.csv(file.path('./comms', fileName))
+    comms = as.matrix(comms)
     Ns = n_pixels_long(B)
     Ms = n_pixels_wide(B)
     for (j in 1:ncomm) {
