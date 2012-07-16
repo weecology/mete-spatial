@@ -11,12 +11,22 @@ names(empir) = sub('_empir_sar.csv', '', fileNames[empirFiles])
 for (i in seq_along(empirFiles))
   empir[[i]] = read.csv(paste('./sar/', fileNames[empirFiles[i]], sep=''))
 
-meteFiles = grep('mete_sar', fileNames)
+meteFiles = grep('mete_sar.txt', fileNames)
 mete = vector('list', length(meteFiles))
 names(mete) = sub('_mete_sar.txt', '', fileNames[meteFiles])
-for( i in seq_along(meteFiles)) {
+for (i in seq_along(meteFiles)) {
   mete[[i]] = read.csv(paste('./sar/', fileNames[meteFiles[i]], sep=''))
   mete[[i]]$area = mete[[i]]$area * empir[[i]]$area[1]
+}
+
+meteavgFiles = grep('mete_sar_avgs.csv', fileNames)
+meteavg = vector('list', length(meteavgFiles))
+names(meteavg) = sub('_mete_sar_avgs.csv', '', fileNames[meteavgFiles])
+for (i in seq_along(meteavgFiles)) {
+  meteavg[[i]] = read.csv(paste('./sar/', fileNames[meteavgFiles[i]], sep=''))
+  meteavg[[i]] = meteavg[[i]][ , -1]
+  Amin = empir[[match(names(meteavg)[i], names(empir))]]$area[1]
+  meteavg[[i]]$grains = meteavg[[i]]$grains * Amin
 }
 
 ## average cocoli and sherman plots
@@ -24,27 +34,69 @@ empir$sherman1 = (empir$sherman1 + empir$sherman2) / 2
 empir$cocoli1 = (empir$cocoli1 + empir$cocoli2) / 2
 mete$sherman1 = (mete$sherman1 + mete$sherman2) / 2
 mete$cocoli1 = (mete$cocoli1 + mete$cocoli2) / 2
+meteavg$sherman1 = (meteavg$sherman1 + meteavg$sherman2) / 2
+meteavg$cocoli1 = (meteavg$cocoli1 + meteavg$cocoli2) / 2
 empir = empir[-match(c('sherman2','sherman3','cocoli2'), names(empir))]
 mete = mete[-match(c('sherman2','sherman3','cocoli2'), names(mete))]
+meteavg = meteavg[-match(c('sherman2','cocoli2'), names(meteavg))]
+
+## load expected sars under random placement
+load('./sar/expected_empir_sars.Rdata')
+
+addCI = function(x, y.lo, y.hi, col, data=NULL) {
+  if (!is.null(data)) {
+    x = eval(parse(text=paste(data, '$', x, sep='')))
+    y.lo = eval(parse(text=paste(data, '$', y.lo, sep='')))
+    y.hi = eval(parse(text=paste(data, '$', y.hi, sep='')))
+  }  
+  xvals = c(x, rev(x))
+  yvals = c(y.lo, rev(y.hi))
+  polygon(xvals, yvals, border=NA, col=col)
+}
 
 pdf('./figs/mete_&_empir_sar.pdf', width=7 * 2, height=7 * 2)
   par(mfrow=c(4,4))
   ## arithmetic
   for (i in seq_along(mete)) {
-    plot(sr ~ area, data = mete[[i]], 
+    plot(sr ~ area, data=mete[[i]], 
          ylim=range(c(mete[[i]]$sr, empir[[i]]$richness)),
          xlim=range(c(mete[[i]]$area, empir[[i]]$area)),
-         type='o', main=names(mete)[i], xlab='Area (m2)')
+         type='n', main=names(mete)[i], xlab='Area (m2)')
+    ## mete CI
+    if (names(mete)[i] != 'cross') {
+      dat = meteavg[[match(names(mete)[i], names(meteavg))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(sr.avg ~ grains, data=dat, col='red', type='o')
+    }  
+    ## RP CI
+    dat = srExp[[match(names(mete)[i], names(srExp))]]
+    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='pink')
+    lines(srCol~ grains, data=dat, col='red', type='o')
+    ## analytical mete    
+    lines(sr ~ area, data=mete[[i]], type='o')
+    ## data
     lines(richness ~ area, data = empir[[i]], pch=19, type='o')
     if(i == 1)
       legend('bottomright',c('Empirical','METE'),pch=c(19,1),bty='n',lty=1)
   }
   ## log log
   for (i in seq_along(mete)) {
-    plot(sr ~ area, data = mete[[i]], log='xy',
+    plot(sr ~ area, data=mete[[i]], log='xy',
          ylim=range(c(mete[[i]]$sr, empir[[i]]$richness)),
          xlim=range(c(mete[[i]]$area, empir[[i]]$area)),
-         type='o', main=names(mete)[i], xlab='Area (m2)')
+         type='n', main=names(mete)[i], xlab='Area (m2)')
+    if (names(mete)[i] != 'cross') {
+      dat = meteavg[[match(names(mete)[i], names(meteavg))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(sr.avg ~ grains, data=dat, col='red', type='o')
+    }
+    ## RP CI
+    dat = srExp[[match(names(mete)[i], names(srExp))]]
+    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='pink')
+    lines(srCol~ grains, data=dat, col='red', type='o')
+    ## analytical mete    
+    lines(sr ~ area, data=mete[[i]], type='o')
+    ## data
     lines(richness ~ area, data = empir[[i]], pch=19, type='o')
     if(i == 1)
       legend('bottomright',c('Empirical','METE'),pch=c(19,1),bty='n',lty=1)
@@ -61,6 +113,11 @@ for (i in seq_along(mete)) {
        type='n', main=names(mete)[i], ylab='',xlab='',axes=F)  
   axis(side=1, lwd=4, cex.axis=2)
   axis(side=2, lwd=4, cex.axis=2)
+  if (names(mete)[i] != 'cross') {
+      dat = meteavg[[match(names(mete)[i], names(meteavg))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(sr.avg ~ grains, data=dat, col='red', type='o')
+  }      
   lines(sr ~ area, data = mete[[i]], pch=1, type='o', lwd=3, cex=2)
   lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=2, cex=2)
 }
@@ -73,6 +130,11 @@ for (i in seq_along(mete)) {
        type='n', main=names(mete)[i], ylab='',xlab='',axes=F)  
   axis(side=1, lwd=4, cex.axis=2)
   axis(side=2, lwd=4, cex.axis=2)
+  if (names(mete)[i] != 'cross') {
+      dat = meteavg[[match(names(mete)[i], names(meteavg))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(sr.avg ~ grains, data=dat, col='red', type='o')
+  }        
   lines(sr ~ area, data = mete[[i]], pch=1, type='o', lwd=3, cex=2)
   lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=2, cex=2)
 }
@@ -80,20 +142,7 @@ par(mfrow=c(1,1))
 plot(1:10,1:10,type='n',axes=F,xlab='',ylab='')
 legend('center',c('Empirical','METE'),pch=c(19,1),bty='n',lty=1,lwd=6,cex=3)
 
-#bring in serp mete avg and quantile
-serp = read.csv('./sar/serp_mete_avg.csv')
-par(mfrow=c(1,1))
-plot(mete$serp,type='n',log='xy',ylim=range(list(mete$serp$sr,serp[,2:4])),
-     frame.plot=F,axes=F,xlab='',ylab='')
-axis(side=1,lwd=4,cex.axis=2)
-axis(side=2,lwd=4,cex.axis=2)
-polygon(c(serp$area,rev(serp$area)),c(serp$sLow,rev(serp$sHigh)),border=NA,col='grey')
-points(serp[,1:2],type='l',lwd=2)
-points(mete$serp,cex=1.25)
-points(empir$serp,pch=19,cex=1.25)
-legend('bottomright',c('Empirical','METE analytical','METE simlulated'),
-       bty='n',lty=c(NA,NA,1),lwd=c(NA,NA,4),pch=c(1,19,NA),cex=1.5)
-       
+
 ## plot universal curve
 
 slopes = read.csv('./sar/sar_slopes.csv')
@@ -156,5 +205,21 @@ par(mar=c(0,0,0,0))
 plot(1:10,1:10,type='n',axes=F,xlab='',ylab='')
 legend('center',comms, pch=19, cex=2, col=col, bty='n')
 
-    
+##------------------------------------------------------------------------------
+## examine empirical SAR and averaged METE sar 
+#bring in serp mete avg and quantile
+
+serp = read.csv('./sar/serp_mete_avg.csv')
+par(mfrow=c(1,1))
+plot(mete$serp,type='n',log='xy',ylim=range(list(mete$serp$sr,serp[,2:4])),
+     frame.plot=F,axes=F,xlab='',ylab='')
+axis(side=1,lwd=4,cex.axis=2)
+axis(side=2,lwd=4,cex.axis=2)
+polygon(c(serp$area,rev(serp$area)),c(serp$sLow,rev(serp$sHigh)),border=NA,col='grey')
+points(serp[,1:2],type='l',lwd=2)
+points(mete$serp,cex=1.25)
+points(empir$serp,pch=19,cex=1.25)
+legend('bottomright',c('Empirical','METE analytical','METE simlulated'),
+       bty='n',lty=c(NA,NA,1),lwd=c(NA,NA,4),pch=c(1,19,NA),cex=1.5)
+       
 
