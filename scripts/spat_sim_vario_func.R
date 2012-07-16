@@ -791,7 +791,7 @@ FixUnSamp2<-function(oarray,rarray){
 #####Part III - ANALYZING AND GRAPHING RESULTS#####
 
 ##3.1##
-'getCovFractions' = function(x)
+getCovFractions = function(x)
 {
   ## Purpose: calculates the lower diagonal of a sp covariance matrix
   ## to provide the positive and negative fractions of covariance
@@ -813,11 +813,11 @@ FixUnSamp2<-function(oarray,rarray){
 } 
 
 ##3.2##
-'vario' = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE,
-                   pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
-                   quants=NA, direction = 'omnidirectional',
-                   tolerance = pi/8, unit.angle = c('radians', 'degrees'),
-                   distance.metric = 'euclidean')
+vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE,
+                 pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
+                 quants=NA, direction = 'omnidirectional',
+                 tolerance = pi/8, unit.angle = c('radians', 'degrees'),
+                 distance.metric = 'euclidean')
 {
   ## Purpose: calculates uni- and multi-variate variograms
   ##
@@ -1589,7 +1589,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   if(box)box()
 }}
 
-'mat2psp' = function(x,N=NULL,M=NULL)
+mat2psp = function(x,N=NULL,M=NULL)
 {
   ##place site by species matrix (x) into an S x N x M array where N >= M
   ##a multidimensional array that eases computing 
@@ -1609,7 +1609,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
 }
 
 ##3.8##
-'getSAR' = function(psp, grains, mv_window=FALSE)
+getSAR = function(psp, grains, mv_window=FALSE)
 {
   ## Purpose: to construct spatially explict SAR based upon a
   ## mapped grid of occurances
@@ -1667,7 +1667,7 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
 }  
 
 ##3.9##
-'aggr_comm_matrix' = function(mat, coords, bisec, grain_names=NULL, binary=FALSE){
+aggr_comm_matrix = function(mat, coords, bisec, grain_names=NULL, binary=FALSE){
   ## Purpose: This function generates aggregated community matrices for each
   ## spatial grain that is specified. This function is only approrpriate for 
   ## data from a regular square spatial grid.  If coordinates are not supplied
@@ -1743,74 +1743,131 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
 
 
 ##3.10##
-varExp = function(mat){
-  #first evaulate if pres/abs or abundance matrix
-  spmeans = apply(mat,2,mean)
-  if(sum(mat > 1)) #  for abundance
-   sum(spmeans) 
-  else             #  for occupancy
-   sum(spmeans * (1 - spmeans)) 
+varExp = function(mat) {
+  # first evaulate if pres/abs or abundance matrix
+  spmeans = apply(mat, 2, mean)
+  if (sum(mat > 1) > 0)  # for abundance 
+    sum(spmeans) 
+  else                   # for occupancy
+    sum(spmeans * (1 - spmeans)) 
 }
 
 ##3.11##
-spCommExpPoi = function(a,b,n){
-   sum(apply(sapply(n,function(x) sapply(c(a,b),function(y) 1 - exp(-x*y))),2,prod))
+spCommExpPoi = function(a, b, n) {
+  ## returns the expected species commonality under the Poisson expectation for
+  ## two samples of area a and b and species abundances n
+  ## Plotkin and Muller-Lanadu 2002
+  ## Eq. 10
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## b: proportion of area of a randomly selected sample from a larger total area
+  ## n: the species total abundances across the study site  
+   sum(apply(sapply(n, function(x) 
+                    sapply(c(a, b), function(y) 
+                           1 - exp(-x * y))), 2, prod))
 }
 
 ##3.12##
-spAvgExpPoi = function(a,b,n){
-   .5 * sum(sapply(n,function(x) sapply(c(a,b),function(y) 1 - exp(-x*y))))
+spAvgExpPoi = function(a, b, n) {
+  ## Plotkin and Muller-Lanadu 2002, Eq. 8
+  ## returns the average expected number of species under the Poisson expectation for
+  ## two samples of proportional area a and b and species abundances n
+  ## Note this is an approximation of what Plotkin refers to as the binomial 
+  ## distribution which is also known as the coleman model. These two are 
+  ## very similar when a << 1
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## b: proportion of area of a randomly selected sample from a larger total area
+  ## n: the species total abundances across the study site
+  .5 * sum(sapply(n, function(x) 
+                  sapply(c(a, b), function(y) 
+                         1 - exp(-x * y))))
 }
 
+spAvgExpColeman = function(a, n) {
+  ## Coleman (1981), Eq. 1.12
+  ## returns the average expected number of species under the binomial distr for
+  ## a sample of proportional area a and species abundances n
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## n: the species total abundances across the study site
+  sum(1 - (1 - a) ^ n)
+}
 
+spVarExpColeman = function(a, n) {
+  ## Coleman (1981), Eq. 1.13
+  ## returns the variance in the expected number of species under the binomial 
+  ## distr for a sample of proportional area a and species abundances n
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## n: the species total abundances across the study site
+  sum((1 - a) ^ n) - sum((1 - a) ^ (2 * n))
+}
 ##3.13##
-spCommExpBin = function(a,b,areaTot,numOcc){
-  sum(apply(sapply(numOcc,function(x) sapply(c(a,b),function(y) 1 - (1 - (x/areaTot))^(y*areaTot))),2,prod))
+spCommExpBin = function(a, b, areaTot, numOcc) {
+  ## expected species commonality when pres/abse data is only available
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## b: proportion of area of a randomly selected sample from a larger total area
+  ## areaTot: the total area from which a and b are drawn
+  ## numOcc: the number of occurances in the dataset of each species
+  sum(apply(sapply(numOcc, function(x) 
+                   sapply(c(a, b), function(y) 
+                          1 - (1 - (x / areaTot))^(y * areaTot))), 2, prod))
 }
 
 ##3.14##
-spAvgExpBin= function(a,b,areaTot,numOcc){
-   .5 * sum(sapply(numOcc,function(x) sapply(c(a,b),function(y) 1 - (1 - (x/areaTot))^(y*areaTot))))
+spAvgExpBin = function(a, b, areaTot, numOcc) {
+  ## expected species richness when pres/abse data is only available
+  ## arguments:
+  ## a: proportion of area of a randomly selected sample from a larger total area
+  ## b: proportion of area of a randomly selected sample from a larger total area
+  ## areaTot: the total area from which a and b are drawn
+  ## numOcc: the number of occurances in the dataset of each species
+  .5 * sum(sapply(numOcc, function(x) 
+                  sapply(c(a, b), function(y) 
+                         1 - (1 - (x / areaTot))^(y * areaTot))))
 }
 
 ##3.15##
-sorExp = function(mat,areaSampA,areaSampB=NULL){
+sorExp = function(mat, areaSampA, areaSampB=NULL){
   if(is.null(areaSampB)) 
     areaSampB = areaSampA
   areaTot = nrow(mat)  
   a = areaSampA / areaTot
   b = areaSampB / areaTot
   #first evaulate if pres/abs or abundance matrix
-  if(sum(mat > 1)){ #  for abundance use Poisson expectation
-    n = apply(mat,2,sum)
-    sor = spCommExpPoi(a,b,n) / spAvgExpPoi(a,b,n)
+  if (sum(mat > 1) > 0) { #  for abundance use Poisson expectation
+    n = apply(mat, 2, sum)
+    sor = spCommExpPoi(a, b, n) / spAvgExpPoi(a, b, n)
   }
   else{
-    numOcc = apply(mat,2,sum)
-    sor = spCommExpBin(a,b,areaTot,numOcc) / spAvgExpBin(a,b,areaTot,numOcc)
+    numOcc = apply(mat, 2, sum)
+    sor = spCommExpBin(a, b, areaTot, numOcc) / spAvgExpBin(a, b, areaTot, numOcc)
   }
- return(sor)
+  return(sor)
 }
 
 ##3.16##
-jacExp = function(mat,areaSampA,areaSampB=NULL){
+jacExp = function(mat, areaSampA, areaSampB=NULL){
   if(is.null(areaSampB)) 
     areaSampB = areaSampA
   areaTot = nrow(mat)  
   a = areaSampA / areaTot
   b = areaSampB / areaTot
   #first evaulate if pres/abs or abundance matrix
-  if(sum(mat > 1)){ #  for abundance use Poisson expectation
-    n = apply(mat,2,sum)
-    jac = spCommExpPoi(a,b,n) / (2*spAvgExpPoi(a,b,n) - spCommExpPoi(a,b,n))
+  if (sum(mat > 1) > 0) { #  for abundance use Poisson expectation
+    n = apply(mat, 2, sum)
+    jac = spCommExpPoi(a, b ,n) / (2 * spAvgExpPoi(a, b, n) - spCommExpPoi(a, b, n))
   }
   else{
-    numOcc = apply(mat,2,sum)
+    numOcc = apply(mat, 2, sum)
     areaTot = nrow(mat)
-    jac = spCommExpBin(a,b,areaTot,numOcc) / (2*spAvgExpBin(a,b,areaTot,numOcc) - spCommExpBin(a,b,areaTot,numOcc))
+    jac = spCommExpBin(a, b, areaTot, numOcc) / 
+          (2 * spAvgExpBin(a, b, areaTot, numOcc) - spCommExpBin(a, b, areaTot, numOcc))
 
   }
- return(jac)
+  return(jac)
 }
 
 ##3.17##
@@ -2141,7 +2198,7 @@ n_pixels_wide = function(i_bisec){
 } 
 
 ##3.19 ##
-'make_comm_matrix' = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
+make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
                               grainSuffix=NULL)
 { 
   ## Output: 
@@ -2216,7 +2273,7 @@ n_pixels_wide = function(i_bisec){
   return(comms)
 }
 
-'get_bisection_history' = function(grains, abu) {
+get_bisection_history = function(grains, abu) {
   ## retrives the record of how a species' abunance was bisected in a particular
   ## landscape the input into this function can be generated by the function 
   ## 'make_comm_matrix'
@@ -2254,7 +2311,7 @@ n_pixels_wide = function(i_bisec){
   return(out)
 }
 
-'getResults' = function(names, metric, dataType, simResult=FALSE)
+getResults = function(names, metric, dataType, simResult=FALSE)
 {
   ## Purpose: to import the results of the 'calcMetrics' function
   ## and to load them into a list
@@ -2276,7 +2333,7 @@ n_pixels_wide = function(i_bisec){
   return(results)
 }
 
-'reshapeResults' = function(results, metric, sim.results=FALSE){
+reshapeResults = function(results, metric, sim.results=FALSE){
   ## Purpose: to reshape the results from a nested list to a matrix
   ## of the most important information
   out = vector('list', length=length(results))
@@ -2366,7 +2423,7 @@ avgResults = function(results) {
   return(out)
 }
 
-'merge_drop' = function(results) {
+merge_drop = function(results) {
   result_names = names(results)
   to_drop = unlist(sapply(c('cocoli2','sherman2','sherman3'),
                           function(x) grep(x, result_names)))
@@ -2383,7 +2440,7 @@ avgResults = function(results) {
   return(results)
 }
 
-'get_file_names' = function(path, strings, invert=FALSE) {
+get_file_names = function(path, strings, invert=FALSE) {
   indices = NULL
   for (i in seq_along(strings)) {
     indices = c(indices, unlist(sapply(strings[[i]], function(x) 
@@ -2394,7 +2451,7 @@ avgResults = function(results) {
   return(files)
 }
 
-'loadSimResults' = function(S, N, dirPath, B=12, dataType='abu') {
+loadSimResults = function(S, N, dirPath, B=12, dataType='abu') {
   ## this function is for loading the simulation results associated with the 
   ## parameter space analysis
   ## Arguments:
@@ -2422,7 +2479,7 @@ avgResults = function(results) {
   return(results)
 }
 
-'avgSimResults' = function(results, metric) {
+avgSimResults = function(results, metric) {
   ## This function averages the simulation results over all the different runs
   ## for each parameter combination
   ## Arguments
@@ -2439,7 +2496,7 @@ avgResults = function(results) {
   return(simAvg)
 }
 
-'getSimStats' = function(results, S, N) {
+getSimStats = function(results, S, N) {
   ## computes the slope, intercept, and R2 value for the exponential
   ## and power models across the range of S and N for the simulated results
   ## using Ordinary Least Squares and Weighted regression approaches
@@ -2498,7 +2555,45 @@ avgResults = function(results) {
   return(stats)
 }
 
-'getStats' = function(results, metric='median') {
+getResid = function(obs, exp) {
+  for (i in seq_along(obs)) {
+    resid = matrix(NA, ncol=3, nrow=nrow(obs[[i]]))
+    icol = 1
+    for (metric in c('median', 'average', 'binomial')) {
+      if (metric == 'median') {
+        metric_column_obs = na.omit(match('Metric.50', names(obs[[1]])))[1]
+        metric_column_exp = na.omit(match('Med', names(exp[[1]])))[1]
+      }  
+      if (metric == 'average') {
+        metric_column_obs = na.omit(match('Metric.avg', names(obs[[1]])))[1]
+        metric_column_exp = na.omit(match('Avg', names(exp[[1]])))[1]
+      } 
+      if (metric == 'binomial') {
+        metric_column_obs = na.omit(match('Metric.avg', names(obs[[1]])))[1]
+        metric_column_exp = na.omit(match('Exp', names(obs[[1]])))[1]
+      }
+      obs_var = obs[[i]][ , metric_column_obs]
+      if (metric != 'binomial') {
+        index = grep(names(obs[i]), names(exp))
+        exp_var = exp[[index]][ , metric_column_exp]
+      }
+      else {
+        exp_var = obs[[i]][ , metric_column_exp]
+      }  
+      resid[ , icol] = obs_var - exp_var
+      icol = icol + 1
+    }
+    resid = as.data.frame(resid)
+    names(resid) = c('med.res', 'avg.res', 'exp.res')
+    if (i == 1)
+      out = data.frame(site=names(obs)[i], obs[[i]], resid)
+    else
+      out = rbind(out, data.frame(site=names(obs)[i], obs[[i]], resid))
+  }  
+  return(out)
+}
+
+getStats = function(results, metric='median') {
   ## computes the slope, intercept, and R2 value for the exponential
   ## and power models across the range of S and N for the simulated results
   ## using Ordinary Least Squares and Weighted regression approaches
@@ -2562,7 +2657,7 @@ avgResults = function(results) {
   return(out)
 }
 
-'plotEmpir' = function(results, metric='median', expected=FALSE, log="", 
+plotEmpir = function(results, metric='median', expected=FALSE, log="", 
                        quants=FALSE, ylim=NULL, title=TRUE, sub="", alpha=1/3,
                        add=FALSE, col=NULL, lwd=NULL, ...)
 {
@@ -2654,7 +2749,7 @@ str_clean = function(str) {
   return(str)
 }
 
-'comp_results' = function(site, results, args=NULL, ...) {
+comp_results = function(site, results, args=NULL, ...) {
   plot_names = names(results[[1]])
   if (!is.null(args))
     args = sapply(args, str_clean) 
