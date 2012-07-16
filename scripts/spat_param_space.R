@@ -14,6 +14,8 @@ simSorAbuAvg = avgSimResults(simSorAbu, 'sorensen')
 
 stats = getSimStats(simSorAbuAvg, S, N)
 
+grains = unique(simSorAbuAvg[[1]]$grain)
+
 pdf('./figs/parm_space_r2_sorensen_abu.pdf', width = 7 * 2, height = 7)
   lims = range(as.vector(stats[ ,'r2', , , , ]),na.rm=TRUE)
   nbrks = 12
@@ -62,6 +64,40 @@ for(i in 1:3){
 svals = rep(S, length(N))
 nvals = rep(N, each=length(S))
 
+sar = read.csv('./sar/param_sar_avgs.csv')
+## add the stats information to this flat file
+sar = data.frame(sar, b0=NA, b1=NA)
+meth = 'wtr'
+for (g in seq_along(grains)) {
+  for (s in seq_along(S)) {
+    for (n in seq_along(N)) {
+      true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
+      sar$b0[true] = pwrStats['b0', meth, g, s, n]
+      sar$b1[true] = pwrStats['b1', meth, g, s, n]
+    }
+  }
+}  
+
+
+## put into an array
+sar_array = array(NA, dim=c(2, length(grains), length(S), length(N)))
+dimnames(sar_array)[[1]] = c('sbar', 'nbar')
+dimnames(sar_array)[[2]] = grains
+dimnames(sar_array)[[3]] = S
+dimnames(sar_array)[[4]] = N
+for (g in seq_along(grains)) {
+  for (s in seq_along(S)) {
+    for (n in seq_along(N)) {
+      true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
+      if (sum(true) > 0) {
+        sar_array[1, g, s, n] = sar[true, ]$sr.avg
+        sar_array[2, g, s, n] = sar[true, ]$ind.avg
+      }  
+    }
+  }
+}  
+
+
 pdf('./figs/log_n_over_s_coef_sor_abu_grain1_pwr_wtr.pdf', width = 7 * 2, height = 7)
   ratio = log(nvals / svals)
   ratio = array(ratio, dim=c(length(S), length(N)))
@@ -92,6 +128,7 @@ pdf('./figs/log_n_over_s_coef_sor_abu_3grains_pwr_wtr.pdf', width = 7 * 2,
     height = 7 * 2)
   ratio = log(nvals / svals)
   ratio = array(ratio, dim=c(length(S), length(N)))
+  meth = 'wtr'
   xlab = 'log(N/S)'
   par(mfrow=c(3, 3))
   for (cof in c('b0', 'b1')) {
@@ -114,13 +151,15 @@ pdf('./figs/log_n_over_s_coef_sor_abu_all_grains_overlap_pwr_wtr.pdf',
     width = 7 * 2, height = 7)
   ratio = log(nvals / svals)
   ratio = array(ratio, dim=c(length(S), length(N)))
+  g = 1
+  meth = 'wtr'
   xlab = 'log(N/S)'
   par(mfrow=c(1, 2))
   for (cof in c('b0', 'b1')) {
-    plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n',
+    plot(ratio , pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n',
          ylim = range(pwrStats[cof, meth, , , ], na.rm=T))
       for (g in seq_along(grains)) {
-        points(ratio, pwrStats[cof, meth, g, , ], col=g, pch=1)
+        points(ratio , pwrStats[cof, meth, g, , ], col=g, pch=1)
       }  
     if (cof == 'b0')
       legend('bottomright', legend=c('Grains', grains), col=c(NA, 1:length(grains)),
@@ -129,70 +168,85 @@ pdf('./figs/log_n_over_s_coef_sor_abu_all_grains_overlap_pwr_wtr.pdf',
 dev.off()
 
 
+## scale collapse
+pdf('./figs/scale_collapse.pdf', width = 7 * 2, height = 7)
+  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  xlab = 'log(N/S) / log(Nbar/Sbar)'
+  par(mfrow=c(1, 2))
+  plot(b0 ~ ratio , data=sar, xlab=xlab, ylab='b0', type='n')
+  for (g in seq_along(grains)) 
+    points(b0 ~ ratio, data=sar, subset=grains == grains[g], col=g)
+  legend('topright', legend=c('Grains', grains), col=c(NA, 1:length(grains)),
+          pch=1, bty='n', cex = 2, lwd=3, lty=NA)
+  plot(b1 ~ ratio , data=sar, xlab=xlab, ylab='b1', type='n')
+  for (g in seq_along(grains)) 
+    points(b1 ~ ratio, data=sar, subset=grains == grains[g], col=g)
+dev.off()
 
-## consider log log
-pdf('./figs/log_log_n_over_s_coef_sor_abu_3grains_pwr_wtr.pdf', width = 7 * 2,
+## scale collapse lines
+pdf('./figs/scale_collapse_lines.pdf', width = 7 * 2, height = 7*2)
+  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  xlab = 'log(N/S) / log(Nbar/Sbar)'
+  par(mfrow=c(2, 2))
+  plot(b0 ~ ratio , data=sar, main='S fixed, N varies', xlab=xlab, ylab='b0', type='n')
+  for (g in seq_along(grains)) {
+    for (s in seq_along(S)) 
+      lines(b0 ~ ratio, data=sar, subset=grains == grains[g] & S == S[s], col=g)
+  }
+  plot(b0 ~ ratio , data=sar, main='S varies, N fixed',xlab=xlab, ylab='b0', type='n')
+  for (g in seq_along(grains)) {
+    for (n in seq_along(N)) 
+      lines(b0 ~ ratio, data=sar, subset=grains == grains[g] & N == N[n], col=g)
+  }
+  legend('topright', legend=c('Grains', grains), col=c(NA, 1:length(grains)),
+          pch=1, bty='n', cex = 2, lwd=3, lty=NA)
+  plot(b1 ~ ratio , data=sar, main='S fixed, N varies', xlab=xlab, ylab='b1', type='n')
+  for (g in seq_along(grains)) {
+    for (s in seq_along(S))
+      lines(b1 ~ ratio, data=sar, subset=grains == grains[g] & S == S[s], col=g)
+  }  
+  plot(b1 ~ ratio , data=sar,  main='S varies, N fixed',xlab=xlab, ylab='b1', type='n')
+  for (g in seq_along(grains)) {
+    for (n in seq_along(N))
+      lines(b1 ~ ratio, data=sar, subset=grains == grains[g] & N == N[n], col=g)
+  }  
+dev.off()
+
+## consider 3 of the grains
+pdf('./figs/scale_collapse_3grains_pwr_wtr.pdf', width = 7 * 2,
     height = 7 * 2)
-  ratio = log(log(nvals / svals))
-  ratio = array(ratio, dim=c(length(S), length(N)))
-  xlab = 'log(log(N/S))'
-  par(mfrow=c(3, 3))
-  for (cof in c('b0', 'b1')) {
-    for (g in c(1, 3, 5)) {
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, pch=19,
-           main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(s in seq_along(S))
-        lines(ratio[s, ], pwrStats[cof, meth, g, s, ], col='palevioletred', 
-              lwd=lwd)
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(n in seq_along(N))
-        lines(ratio[ , n],pwrStats[cof, meth, g, , n], col='dodgerblue', lwd=lwd)
-    }  
-  }  
-dev.off()
-
-## log transforms of N
-
-ratio = log(nvals)
-ratio = array(ratio, dim=c(length(S), length(N)))
-xlab = 'log(N)'
-pdf('./figs/logN_coef_sor_abu_3grains_pwr_wtr.pdf', width = 7 * 2, height = 7 * 2)
-  for (cof in c('b0', 'b1')) {
-    par(mfrow=c(3, 3))
-    for (g in c(1, 3, 5)) {
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, pch=19,
-           main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(s in seq_along(S))
-        lines(ratio[s, ], pwrStats[cof, meth, g, s, ], col='palevioletred', 
-              lwd=lwd)
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(n in seq_along(N))
-        lines(ratio[ , n],pwrStats[cof, meth, g, , n], col='dodgerblue', lwd=lwd)
-    }  
-  }  
-dev.off()
-
-## log transforms of S
-
-ratio = log(svals)
-ratio = array(ratio, dim=c(length(S), length(N)))
-xlab = 'log(S)'
-pdf('./figs/logS_coef_sor_abu_3grains_pwr_wtr.pdf', width = 7 * 2, height = 7 * 2)
-  for (cof in c('b0', 'b1')) {
-    par(mfrow=c(3, 3))
-    for (g in c(1, 3, 5)) {
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, pch=19,
-           main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(s in seq_along(S))
-        lines(ratio[s, ], pwrStats[cof, meth, g, s, ], col='palevioletred', 
-              lwd=lwd)
-      plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
-      for(n in seq_along(N))
-        lines(ratio[ , n],pwrStats[cof, meth, g, , n], col='dodgerblue', lwd=lwd)
-    }  
+  ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
+  xlab = 'log(N/S) / log(Nbar/Sbar)'
+  lwd =2
+  par(mfrow=c(3, 2))
+  for (g in c(1, 3, 5)) {
+    plot(b0 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+         xlab=xlab, ylab='b0', 
+         main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
+    for(s in seq_along(S))
+      lines(b0 ~ ratio, data=sar, subset = grains == grains[g] & S == S[s],
+            col='palevioletred', lwd=lwd)
+    plot(b0 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+         xlab=xlab, ylab='b0', 
+         main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))  
+    for(n in seq_along(N))
+      lines(b0 ~ ratio, data=sar, subset = grains == grains[g] & N == N[n],
+            col='dodgerblue', lwd=lwd)
+  }
+  for (g in c(1, 3, 5)) {
+    plot(b1 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+         xlab=xlab, ylab='b1', 
+         main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
+    for(s in seq_along(S))
+      lines(b1 ~ ratio, data=sar, subset = grains == grains[g] & S == S[s],
+            col='palevioletred', lwd=lwd)
+    plot(b1 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+         xlab=xlab, ylab='b1', 
+         main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))  
+    for(n in seq_along(N))
+      lines(b1 ~ ratio, data=sar, subset = grains == grains[g] & N == N[n],
+            col='dodgerblue', lwd=lwd)
   }  
 dev.off()
 
