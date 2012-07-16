@@ -28,6 +28,7 @@ S = as.numeric(S[match(names(dat), shrtnm)])
 
 freq = sapply(1:length(dat),  function(x) as.numeric(dat[[x]]) / N[x])
 names(freq) = names(dat)
+
 pdf('./figs/empirical_rads.pdf', width=7 * 2, height=7)
   col = terrain.colors(8)
   par(mfrow=c(1, 2))
@@ -59,3 +60,20 @@ pdf('./figs/loglograd.pdf')
                        'mixed evergreen', 'grassland'), 
          col=col, lwd=lwd+2, cex=1.25, bty='n')
 dev.off()
+
+col = terrain.colors(8)
+par(mfrow=c(1, 1))
+lwd=3
+plot(1:S[1], as.numeric(freq[[1]]), ylim=range(freq), type='n', log='xy', 
+     xlab='', ylab='', frame.plot=F, axes=F)
+axis(side=1, cex.axis=1.5, lwd=3, padj=.25)
+axis(side=2, cex.axis=1.5, lwd=3)
+for (i in seq_along(dat))
+  lines(1:S[i], as.numeric(freq[[i]]), col=col[habindex[i]], lwd=lwd)
+
+plot(1:10, 1:10, type='n', xlab='', ylab='', axes=F, frame.plot=F)
+legend('center', c('tropical', 'oak-hickory', 'old-field pine', 'oak savanna',
+                     'mixed evergreen', 'grassland'), 
+       col=col, lwd=lwd+4, cex=2, bty='n')
+
+
