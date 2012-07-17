@@ -18,7 +18,9 @@ datnames = c('BCI', rep('Cocoli', 2), 'Crosstimbers', rep('Sherman', 3),
              'Serpentine', 'Oosting', 'FERP', 'Luquillo', 'Graveyard',
              'Landsend', 'Rocky', 'Bormann', 'Wood Bridge', 'Bald Mnt', 
              'Bryan', 'Big Oak')
-
+habitat = c(rep('tropical', 3), 'oak savanna', rep('tropical', 3), 'grassland',
+            'oak-hickory', 'mixed evergreen', 'tropical', rep('pine',2), 
+            rep('oak-hickory', 6))
 shape = c(rep('rectangle', 3), 'square', rep('rectangle', 2), rep('square', 3), 
           rep('rectangle', 2), 'square', 'rectangle', rep('square', 3), 
           rep('rectangle', 3))
@@ -37,7 +39,7 @@ grain_fine = area / 2^bisect_fine * 1e4
 grain_coarse = area / 2^bisect_coarse * 1e4
 
 ## output overall summary
-datSummary = data.frame(datnames, shrtnames, shape, area_ha = area,
+datSummary = data.frame(datnames, shrtnames, habitat, shape, area_ha = area,
                         bisect_fine, bisect_coarse, 
                         grain_fine_m2 = grain_fine,
                         grain_coarse_m2 = grain_coarse,
@@ -57,7 +59,8 @@ write.table(matrix(bisect_coarse, nrow=1), file=file.path('./data', 'bisect_coar
             sep=' ', row.names=FALSE, col.names=FALSE)
 write.table(matrix(grain_fine, nrow=1), file=file.path('./data', 'grain_fine.txt'),
             sep=' ', row.names=FALSE, col.names=FALSE)
-
+write.table(matrix(habitat, nrow=1), file=file.path('./data', 'habitat.txt'),
+            sep=' ', row.names=FALSE, col.names=FALSE)
 
 ## order dat by richness
 to_order = order(sapply(dat, length), decreasing=TRUE)
