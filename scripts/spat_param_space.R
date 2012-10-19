@@ -6,15 +6,29 @@ source('./scripts/spat_sim_vario_func.R')
 S = round(10^seq(log10(10), log10(100), length.out=20))
 N = round(10^seq(log10(120), log10(5e5), length.out=20))
 
-simSorAbu = loadSimResults(S, N, './sorensen/')
-simSorAbuAvg = avgSimResults(simSorAbu, 'sorensen')
-
+#simSorAbu = loadSimResults(S, N, './sorensen/')
+#simSorAbuAvg = avgSimResults(simSorAbu, 'sorensen')
 #save(simSorAbuAvg, file='./sorensen/simSorAbuAvg.Rdata')
-#load('./sorensen/simSorAbuAvg.Rdata')
+
+load('./sorensen/simSorAbuAvg.Rdata')
 
 stats = getSimStats(simSorAbuAvg, S, N)
 
 grains = unique(simSorAbuAvg[[1]]$grain)
+
+## create an example graphic for the simulated pattern
+S[20]
+N[20]
+index = 20 * 20
+tmp = simSorAbuAvg[[index]]
+plot(avg ~ Dist, data=tmp, log='xy', type='n', frame.plot=F, axes=F, xlab='', ylab='')
+axis(side=1, cex.axis=1.5, lwd=2)
+axis(side=2, cex.axis=1.5, lwd=2)
+for (g in seq_along(grains)) {
+  points(avg ~ Dist, data=tmp, subset=grains==grains[g])
+  abline(a=stats['pwr', 'b0', 'wtr', g, 20, 20], 
+         b=stats['pwr', 'b1', 'wtr', g, 20, 20])
+}
 
 pdf('./figs/parm_space_r2_sorensen_abu.pdf', width = 7 * 2, height = 7)
   lims = range(as.vector(stats[ ,'r2', , , , ]),na.rm=TRUE)
@@ -74,25 +88,6 @@ for (g in seq_along(grains)) {
       true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
       sar$b0[true] = pwrStats['b0', meth, g, s, n]
       sar$b1[true] = pwrStats['b1', meth, g, s, n]
-    }
-  }
-}  
-
-
-## put into an array
-sar_array = array(NA, dim=c(2, length(grains), length(S), length(N)))
-dimnames(sar_array)[[1]] = c('sbar', 'nbar')
-dimnames(sar_array)[[2]] = grains
-dimnames(sar_array)[[3]] = S
-dimnames(sar_array)[[4]] = N
-for (g in seq_along(grains)) {
-  for (s in seq_along(S)) {
-    for (n in seq_along(N)) {
-      true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
-      if (sum(true) > 0) {
-        sar_array[1, g, s, n] = sar[true, ]$sr.avg
-        sar_array[2, g, s, n] = sar[true, ]$ind.avg
-      }  
     }
   }
 }  
@@ -249,6 +244,33 @@ pdf('./figs/scale_collapse_3grains_pwr_wtr.pdf', width = 7 * 2,
             col='dodgerblue', lwd=lwd)
   }  
 dev.off()
+
+## scale collapse for presentation
+  col = colorRampPalette(c('dodgerblue', 'red'))(5)
+  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  xlab = 'log(N/S) / log(Nbar/Sbar)'
+  par(mfrow=c(1, 1))
+  plot(10^b0 ~ ratio , data=sar, xlab='', ylab='', type='n',
+       frame.plot=F, axes=F, ylim=c(0, 1))
+  axis(side=1, cex.axis=1.5, lwd=3)
+  axis(side=2, cex.axis=1.5, lwd=3)
+  for (g in seq_along(grains)) { 
+    tmp = subset(sar, grains == grains[g])
+    lines(lowess(tmp$ratio, 10^tmp$b0), col=col[g], lwd=4)
+  }  
+##
+  plot(b1 ~ ratio , data=sar, xlab='', ylab='', type='n',
+       frame.plot=F, axes=F)
+  axis(side=1, cex.axis=1.5, lwd=3)
+  axis(side=2, cex.axis=1.5, lwd=3)  
+  for (g in seq_along(grains)) {
+    tmp = subset(sar, grains == grains[g])
+    lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=4)
+  }  
+
+mk_legend('center', legend=grains, col=col,
+          lty=1, bty='n', cex = 2, lwd=8)
+
 
 ####
 ## create flat file to do visual checks that other plots
