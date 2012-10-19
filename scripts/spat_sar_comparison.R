@@ -54,6 +54,36 @@ addCI = function(x, y.lo, y.hi, col, data=NULL) {
   polygon(xvals, yvals, border=NA, col=col)
 }
 
+## plot an example SAR figure for presentation
+par(mfrow=c(1,3))
+site = 'sherman1'
+purple = rgb(112, 48, 160, maxColorValue=160)
+lightblue = "#1AB2FF"
+
+i = match(site, names(mete))
+    plot(sr ~ area, data=mete[[i]], log='xy',
+         xlim=c(1e1, 1e6), ylim=c(1e1, 1e3),
+         type='n', xlab='', ylab='',frame.plot=F, axes=F,
+         main = site)
+    axis(side=1, at=c(1e1, 1e2, 1e3, 1e4, 1e5, 1e6))
+    axis(side=2, at=c(1e1, 1e2, 1e3))
+    ## mete CI
+#    dat = meteavg[[match(names(mete)[i], names(meteavg))]]
+#    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+#    lines(sr.avg ~ grains, data=dat, col=lightblue, lwd=4, lty=2)
+    ## RP CI
+    dat = srExp[[match(names(mete)[i], names(srExp))]]
+#    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='pink')
+    lines(srCol~ grains, data=dat, type='p', pch=15, col='blue', lwd=4,
+          lty=2, cex=2)
+    ## analytical mete    
+    lines(sr ~ area, data=mete[[i]], type='p', pch=15, col='green3',
+          lwd=4, cex=2)
+    ## data
+    lines(richness ~ area, data = empir[[i]], pch=0, type='p',
+          lwd=2, cex=3)
+
+
 pdf('./figs/mete_&_empir_sar.pdf', width=7 * 2, height=7 * 2)
   par(mfrow=c(4,4))
   ## arithmetic
@@ -142,7 +172,52 @@ par(mfrow=c(1,1))
 plot(1:10,1:10,type='n',axes=F,xlab='',ylab='')
 legend('center',c('Empirical','METE'),pch=c(19,1),bty='n',lty=1,lwd=6,cex=3)
 
+## compare residuals between METE and RP
+## create flat file for easy access
 
+for (i in seq_along(empir)) {
+  site = names(empir)[i]
+  if (site == 'cross')
+    next
+  area = empir[[i]]$area
+  obs.sr = empir[[i]]$richness
+  index = match(site, names(meteavg))
+  mete.sr = meteavg[[index]]$sr.avg
+  mete.res = obs.sr - mete.sr
+  index = match(site, names(srExp))
+  rp.sr = srExp[[index]]$srCol
+  rp.res = obs.sr - rp.sr
+  if (exists('sr_res'))
+    sr_res = rbind(sr_res,
+                   data.frame(site, area, obs.sr, mete.sr, rp.sr, mete.res, rp.res))
+  else
+    sr_res = data.frame(site, area, obs.sr, mete.sr, rp.sr, mete.res, rp.res)
+}
+
+plot(mete.sr ~ obs.sr, data=sr_res)
+points(rp.sr ~ obs.sr, data=sr_res, pch=19)
+abline(a=0, b=1)
+
+plot(mete.res ~ rp.res, data=sr_res)
+abline(a=0, b=1)
+
+sites = unique(sr_res$site)
+plot(mete.res ~ area, data=sr_res, log='x', ylim=c(-40, 40), 
+     type='n', frame.plot=F, axes=F, xlab='', ylab='',
+     xlim = c(0.1, 1e6))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=8,
+     at=10 ^ (-1:6))
+axis(side=2, cex.axis=1.75, lwd=8)
+abline(h=0, lwd=5)
+for (i in seq_along(sites)) {
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  lines(mete.res ~ area, data=sr_res, subset= site == sites[i],
+        lwd=4, col=habcol[habindex])
+  lines(rp.res ~ area, data=sr_res, subset= site == sites[i],
+        lwd=4, col=habcol[habindex], lty=2)
+}
+
+##----------------------------------------------------------------------------
 ## plot universal curve
 
 slopes = read.csv('./sar/sar_slopes.csv')
@@ -189,6 +264,15 @@ pdf('./figs/universal_sar.pdf', width=7 * 1.25, height=7)
 dev.off()
 
 ## for slide
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
+        'grassland')
+col = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
+        "#FF8000")
+pch = c(17, 0, 16, 1, 15, 2)
+pch = rep(19, 6)
+
 par(mfrow=c(1,1))
 plot(predZ ~ logNS, data=slopes, type='n', ylim=c(0,1), axes=F, frame.plot=F,
      xlab='', ylab='')
@@ -196,14 +280,14 @@ axis(side=1,lwd=4,cex.axis=2)
 axis(side=2,lwd=4,cex.axis=2)
 lines(Zsmooth, lwd=4, lty=2)
 comms = unique(slopes$comm)
-col = colorRampPalette(c("blue", "red", "green", "orange"))(length(comms))
-for (i in seq_along(comms))
-  points(obsZ ~ logNS, data=slopes, subset=comm == comms[i], col=col[i], pch=19,
-         cex=1.25)
+for (i in seq_along(comms)) {
+  habindex = match(habitat[match(comms[i], shrtnm)], hab)
+  points(obsZ ~ logNS, data=slopes, subset=comm == comms[i], col=col[habindex], 
+         pch=pch[habindex], cex=1.5, lwd=2)
+}  
 
-par(mar=c(0,0,0,0))
-plot(1:10,1:10,type='n',axes=F,xlab='',ylab='')
-legend('center',comms, pch=19, cex=2, col=col, bty='n')
+plot(1:10, 1:10, type='n', xlab='', ylab='', axes=F, frame.plot=F)
+legend('center', hab, col=col, pch=pch, lwd=6, lty=NA, cex=3, bty='n')
 
 ##------------------------------------------------------------------------------
 ## examine empirical SAR and averaged METE sar 
