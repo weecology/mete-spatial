@@ -2557,6 +2557,9 @@ getSimStats = function(results, S, N) {
 
 getResid = function(obs, exp) {
   for (i in seq_along(obs)) {
+    index = grep(names(obs[i]), names(exp))
+    if (length(index) == 0)
+      next
     resid = matrix(NA, ncol=3, nrow=nrow(obs[[i]]))
     icol = 1
     for (metric in c('median', 'average', 'binomial')) {
@@ -2574,7 +2577,6 @@ getResid = function(obs, exp) {
       }
       obs_var = obs[[i]][ , metric_column_obs]
       if (metric != 'binomial') {
-        index = grep(names(obs[i]), names(exp))
         exp_var = exp[[index]][ , metric_column_exp]
       }
       else {
@@ -2658,8 +2660,8 @@ getStats = function(results, metric='median') {
 }
 
 plotEmpir = function(results, metric='median', expected=FALSE, log="", 
-                       quants=FALSE, ylim=NULL, title=TRUE, sub="", alpha=1/3,
-                       add=FALSE, col=NULL, lwd=NULL, ...)
+                     quants=FALSE, ylim=NULL, title=TRUE, sub="", 
+                     alpha=1/3, add=FALSE, col=NULL, lwd=NULL, ...)
 {
   ## Purpose: to plot the results, expects that the graphical window has been 
   ## setup appropriately 
@@ -2747,6 +2749,12 @@ str_clean = function(str) {
   str = gsub('\n', '', str)
   str = gsub(' ', '', str)
   return(str)
+}
+
+mk_legend = function(...) {
+  par(mfrow=c(1,1))
+  plot(1:10, 1:10, type='n', axes=F, frame.plot=F, xlab='', ylab='')
+  legend(...)
 }
 
 comp_results = function(site, results, args=NULL, ...) {
