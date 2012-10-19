@@ -62,6 +62,25 @@ pdf('./figs/loglograd.pdf')
 dev.off()
 
 col = terrain.colors(8)
+cols2 = c(104,128, 506, 139, 512, 92)
+mcols2 = colors()[cols2]
+col = mcols2
+
+
+col = c('#b5f1b5', '#8bd3b1', '#7ee17e', '#bbeb80', '#66af66', '#749882', '#b6a092',
+        '#facd84', '#faf591', '#d3e5ff', '#a9dff0', '#ebc2e2', '#d0cbf8', '#a1a9d3')
+plot(1:length(col), col=col, pch=19, cex=3)
+text(1:length(col), labels=1:length(col))
+
+## trop, oak-hick, pine, savanna, evergreen, grass
+indices = c(5, 11, 8, 7, 1, 12)
+col = col[indices]
+col =c("#66af66", "#a9dff0", "#facd84", "#b6a092", "#b5f1b5", "#ebc2e2")
+col = c('forestgreen', 'medium purple', rev(colorschemes$Categorical.12[c(2, 4, 5, 8)]))
+col = c("forestgreen", "#1AB2FF", "medium purple",
+        "#B2FF8C", "#FFFF33", "#FF8000")
+col = c("forestgreen", "#1AB2FF", "medium purple", 'saddlebrown', "#B2FF8C", 
+        "#FF8000")
 par(mfrow=c(1, 1))
 lwd=3
 plot(1:S[1], as.numeric(freq[[1]]), ylim=range(freq), type='n', log='xy', 
@@ -72,7 +91,7 @@ for (i in seq_along(dat))
   lines(1:S[i], as.numeric(freq[[i]]), col=col[habindex[i]], lwd=lwd)
 
 plot(1:10, 1:10, type='n', xlab='', ylab='', axes=F, frame.plot=F)
-legend('center', c('tropical', 'oak-hickory', 'old-field pine', 'oak savanna',
+legend('center', c('tropical', 'oak-hickory', 'pine', 'oak savanna',
                      'mixed evergreen', 'grassland'), 
        col=col, lwd=lwd+4, cex=2, bty='n')
 
