@@ -40,8 +40,9 @@ plotEmpir(empirVarAbu,log='x', type='o')
 plotEmpir(empirVarAbu,log='xy', type='o',quants=T)
 
 ##
-commName = 'cocoli1'
-par(mfrow=c(1,2))
+commName = 'serp'
+par(mfrow=c(1,1))
+plotEmpir(empirSorAbu[commName], metric='average', type='o')
 plotEmpir(empirSorAbu[commName],log='xy', type='o', quants=T)
 plotEmpir(empirVarAbu[commName],log='xy', type='o', quants=F)
 
