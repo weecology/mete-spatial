@@ -74,11 +74,111 @@ simVarAbuFixed = merge_drop(simVarAbuFixed)
 ## update shrnames
 shrtnames = shrtnames[-match(c('cocoli2','sherman2', 'sherman3'), shrtnames)] 
 
-## Now bring in empirical Results
+## export results
+save(simSorAbuLogSer, simSorAbuFixed, simSorBinLogSer, simSorBinFixed,
+     simVarAbuLogSer, simVarAbuFixed, simVarBinLogSer, simVarBinFixed,
+     file = './simulated_empirical_results.Rdata')
+
+## load the Results
+load('./simulated_empirical_results.Rdata')
 load('./sorensen/empirSorBin.Rdata') 
 load('./sorensen/empirSorAbu.Rdata') 
 load('./varWithin/empirVarBin.Rdata')
 load('./varWithin/empirVarAbu.Rdata')
+
+## drop ferp last grain
+empirSorBin$ferp = empirSorBin$ferp[-nrow(empirSorBin$ferp),]
+empirSorAbu$ferp = empirSorAbu$ferp[-nrow(empirSorAbu$ferp),]
+empirVarBin$ferp = empirVarBin$ferp[-nrow(empirVarBin$ferp),]
+empirVarAbu$ferp = empirVarAbu$ferp[-nrow(empirVarAbu$ferp),]
+
+
+
+## examine a single simulated distance decay pattern
+tmp = simSorAbuLogSer[14]
+col = colorRampPalette(c('dodgerblue', 'red'))(5)
+range(tmp[[1]]$Avg)
+grains = unique(tmp[[1]]$Comm)
+
+plot(1:10, type='n', xlab='', ylab='', xlim=c(0, 110), 
+     ylim = c(0, 0.3) , frame.plot=F, axes=F, log='')
+axis(side=1, cex.axis=1.25, lwd=2)
+axis(side=2, cex.axis=1.25, lwd=2)
+plotEmpir(tmp, 'average', log='xy', title=F, 
+          quants=F, col=col, lwd=5, add=TRUE, type='p', pch=19)
+for (g in seq_along(grains)) {
+  mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
+           weights = N)
+  lines(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]], exp(predict(mod)),
+        col=col[g], lwd=4)  
+}
+
+###
+plot(1:10, type='n', xlab='', ylab='', xlim=c(1.5, 120), 
+     ylim = c(0.006, 0.40) , frame.plot=F, axes=F, log='xy')
+axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
+axis(side=2, cex.axis=1.75, lwd=8, at=c(0.01, 0.02, 0.05, 0.10, 0.20, 0.40))
+plotEmpir(tmp, 'average', log='xy', title=F, 
+          quants=F, colcol, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
+for (g in seq_along(grains)) {
+  mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
+           weights = N)
+  lines(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]], exp(predict(mod)),
+        col=col[g], lwd=6)  
+}
+##
+plot(log2(Avg) ~ log2(Dist), data=tmp[[1]], type='n', xlab='', ylab='',
+     frame.plot=F, axes=F)
+axis(side=1, cex.axis=1.25, lwd=2)
+axis(side=2, cex.axis=1.25, lwd=2)
+for (g in seq_along(grains)) {
+  mod = lm(log2(Avg) ~ log2(Dist), data=tmp[[1]], subset=Comm == grains[g],
+           weights = N)
+  points(log2(Avg) ~ log2(Dist), data=tmp[[1]], subset=Comm == grains[g],
+         col=col[g], pch=19, lwd=5)
+  lines(log2(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]]), predict(mod),
+        col=col[g], lwd=4)  
+}
+
+##------------------------------------------------------------------------------
+## examine empirical fit for a single dataset
+tmp = empirSorAbu['bigoak']
+plotEmpir(tmp, 'average', log='xy')
+obs = empirSorAbu$'bigoak'
+exp = simSorAbuLogSer$'bigoak'
+grains = unique(obs$Comm)
+
+purple = rgb(112, 48, 160, maxColorValue=160)
+lightblue = "#1AB2FF"
+
+plot(Metric.avg ~ Dist, data=obs,
+     ylim=c(0.02, .5), xlim=c(2,128), type='n', frame.plot=F, axes=F,
+     xlab='', ylab='', log='xy')
+axis(side=1, cex.axis=1.75, lwd=8, padj=.5,
+     at = 2^(1:7))
+axis(side=2, cex.axis=1.75, lwd=8,
+     at= 0.02 * 2^(0:4))
+for (g in 2) {
+  ## add mete  
+  true = exp$Comm == grains[g]
+  tmpexp = exp[true,]
+  xvals = c(tmpexp$Dist, rev(tmpexp$Dist))
+  yvals = c(tmpexp$Avg.lo, rev(tmpexp$Avg.hi))
+  polygon(xvals, yvals, col="grey", border=NA)
+  lines(Avg ~ Dist, data=tmpexp, col=lightblue, lty=2, lwd=4)
+  ## RP
+  lines(Exp ~ Dist, data=obs, subset=Comm == grains[g], lty=2,
+        col=purple, lwd=4)  
+  ## data
+  lines(Metric.avg ~ Dist, data=obs, subset=Comm == grains[g],
+        lty=1, lwd=4, col=1, type='o', pch=19, cex=1.25)  
+}
+
+mk_legend('center', c('Observed', 'METE', 'Random Placement'),
+          col = c(1, lightblue, purple), lwd=3, lty = c(1,2,2),
+          cex=2, bty='n')
+
+##-------------------------------------------------------------------------------
 
 ## export pdf summaries of the empirical and simulated results
 mk_summary = function() {
@@ -185,6 +285,161 @@ pdf(paste('./figs/empir_sim_', metric, '_', dataType, '_comp.pdf', sep=''),
 dev.off()
 ##------------------------------------------------------------------------------
 
+## compute residuals between observed and expected
+resSorAbuFixed = getResid(empirSorAbu, simSorAbuFixed)
+resSorAbuLogSer = getResid(empirSorAbu, simSorAbuLogSer)
+resVarAbuFixed = getResid(empirVarAbu, simVarAbuFixed)
+resVarAbuLogSer = getResid(empirVarAbu, simVarAbuLogSer)
+##
+resSorBinFixed = getResid(empirSorBin, simSorBinFixed)
+resSorBinLogSer = getResid(empirSorBin, simSorBinLogSer)
+resVarBinFixed = getResid(empirVarBin, simVarBinFixed)
+resVarBinLogSer = getResid(empirVarBin, simVarBinLogSer)
+
+plot(med.res ~ Dist, data=resSorAbuFixed, log='x')
+
+dat = resSorAbuFixed
+dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
+sites = unique(dat$site)
+
+avgresid = aggregate(avg.res ~ site, data=dat, function(x) sum(x^2) / length(x))
+avgresid[order(avgresid[ , 2]), ]
+
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
+        'grassland')
+habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
+         "#FF8000")
+
+par(mfrow=c(1,2))
+plot(Metric.avg - avg.res ~ Metric.avg, data=dat,
+     ylim=c(0, 1), type='n')
+for(i in seq_along(sites)) {
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  tmp = subset(dat, site == sites[i])
+  grains = unique(tmp$Comm)
+  for(g in seq_along(grains)) {
+    lines(Metric.avg - avg.res ~ Metric.avg, data=tmp, 
+           subset = Comm == grains[g],
+           pch=15, col=habcol[habindex], lwd=4)  
+    lines(Metric.avg - exp.res ~ Metric.avg, data=tmp, 
+           subset = Comm == grains[g], 
+           pch=16, col=habcol[habindex], lwd=4)
+  }  
+}
+abline(a=0, b=1)
+##
+h = hist(log2(dat$area), breaks=5, plot=F)
+areaFac = cut(log2(dat$area), h$breaks)
+areaFacUni = sort(unique(areaFac))
+col = colorRampPalette(c('dodgerblue', 'red'))(length(areaFacUni))
+plot(Metric.avg - avg.res ~ Metric.avg, data=dat,
+     ylim=c(0, 1), type='n')
+for(i in seq_along(sites)) {
+  tmp = subset(dat, site == sites[i])
+  grains = unique(tmp$area)
+  for(g in seq_along(grains)) {
+    areaFac = cut(log2(grains[g]), h$breaks)
+    areaindex = match(areaFac, areaFacUni)
+    lines(Metric.avg - avg.res ~ Metric.avg, data=tmp,
+           subset = Comm == grains[g],
+           pch=15, col=col[areaindex], lwd=4)  
+    lines(Metric.avg - exp.res ~ Metric.avg, data=tmp,
+           subset = Comm == grains[g],
+           pch=16, col=col[areaindex], lwd=4)
+  } 
+}
+abline(a=0, b=1)
+
+
+par(mfrow=c(1,1))
+plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.5,.5))
+abline(h=0, lty=2, lwd=2)
+for(i in seq_along(sites)) {
+  tmp = subset(dat, site == sites[i])
+  grains = unique(tmp$Comm)
+  col = colorRampPalette(c('dodgerblue', 'red'))(length(grains))
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  for(g in seq_along(grains)) {
+    lines(avg.res ~ Dist, data=tmp, subset=Comm==grains[g],
+          col = habcol[habindex], lwd=2)
+    lines(exp.res ~ Dist, data=tmp, subset=Comm==grains[g],
+          col = habcol[habindex], lwd=2, lty=2)
+  }  
+}
+mod = lm(avg.res ~ log(Dist), data=dat)
+abline(mod)
+summary(mod)
+
+## residuals vs distance
+par(mfrow=c(1,1))
+plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.5,.5))
+abline(h=0, lty=2, lwd=2)
+for(i in seq_along(sites)) {
+  tmp = subset(dat, site == sites[i])
+  grains = unique(tmp$Comm)
+  col = colorRampPalette(c('dodgerblue', 'red'))(length(grains))
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=2)
+  lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=2, lty=2)  
+}
+
+plot(avg.res ~ area, data=dat, log='x', ylim=c(-.5, .5))
+for(i in seq_along(sites)) {
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  lines(avg.res ~ area, data=dat, subset= site == sites[i] ,
+         col=habcol[habindex], pch=1, lwd=2)
+  points(exp.res ~ area, data=dat, subset= site == sites[i],
+         col=habcol[habindex], pch=1, lwd=2)  
+}
+
+## residuals vs area
+plot(avg.res ~ area, data=dat, type='n', log='x', axes=F, frame.plot=F,
+     xlim = c(0.1, 1e5), ylim=c(-.6, .6), xlab='', ylab='')
+axis(side=1, cex.axis=1.75, padj=.5, lwd=8,
+     at=10 ^ (-1:5))
+axis(side=2, cex.axis=1.75, lwd=8)
+abline(h=0, lwd=5)
+for(i in seq_along(sites)) {
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  tmp = subset(dat, site == sites[i])
+  lines(lowess(tmp$area, tmp$avg.res),
+         col=habcol[habindex], pch=1, lwd=4)
+  lines(lowess(tmp$area, tmp$exp.res), lty=2,
+         col=habcol[habindex], pch=1, lwd=4)  
+}
+
+mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
+mk_legend('center', hab, col=habcol, lty=3, lwd=7, cex=2, bty='n')
+
+
+## avg across the distances 
+resMETE  = aggregate(dat$avg.res, 
+                 by=list(site=dat$site, area=dat$area),
+                 FUN=function(x) sum(x^2)/length(x))
+names(resMETE ) = c('site','area','res')
+
+resRP  = aggregate(dat$exp.res, 
+                 by=list(site=dat$site, area=dat$area),
+                 FUN=function(x) sum(x)/length(x))
+names(resRP) = c('site','area','res')
+
+plot(res ~ area, data=resMETE , log='x', type='n',
+     ylim=c(-.4, .3))
+for(i in seq_along(sites)) {
+  tmp = subset(resMETE , )
+  habindex = match(habitat[match(sites[i], shrtnm)], hab)
+  lines(res ~ area, data=resMETE, subset=site == sites[i],
+        col=habcol[habindex], pch=1, lwd=2)
+  lines(res ~ area, data=resRP, subset=site == sites[i],
+        col=habcol[habindex], pch=1, lwd=2, lty=2)
+}
+abline(h=0)
+
+
+mk_legend('center', hab, col=col, pch=19)
+  
 ## compute summary statics for empricial and simualted results
 empirStatsSorAbuMed = getStats(empirSorAbu, 'median')
 empirStatsSorAbuAvg = getStats(empirSorAbu, 'average')
@@ -275,7 +530,7 @@ dev.off()
 
 ## plot summary statistics
 
-pl_coef = function(stats1, stats2, xlim=NULL, ylim=NULL) {
+pl_coef = function(stats1, stats2, stats3=NULL, xlim=NULL, ylim=NULL) {
   if (is.null(xlim))
     xlim = range(unlist(sapply(stats1, function(x) range(x[mod, cof, meth, ], na.rm=T))))
   if (is.null(ylim))
@@ -286,26 +541,35 @@ pl_coef = function(stats1, stats2, xlim=NULL, ylim=NULL) {
   for (i in seq_along(stats1)) {
     site = names(stats1)[i]
     index2 = which(grepl(site, names(stats2)))
-    index3 = which(grepl(site, names(stats3)))
     if (length(index2) > 0)
       points(stats1[[i]][mod, cof, meth, ], 
-             stats2[[index2]][mod, cof, meth, ], col='blue')
-    if (length(index3) > 0)
-      points(stats1[[i]][mod, cof, meth, ], 
-             stats3[[index3]][mod, cof, meth, ], col='red')
+             stats2[[index2]][mod, cof, meth, ], col=col[i], pch=19, cex=1.25, type='o')
+    if (!is.null(stats3)) {
+      index3 = which(grepl(site, names(stats3)))
+      if (length(index3) > 0)
+        points(stats1[[i]][mod, cof, meth, ], 
+               stats3[[index3]][mod, cof, meth, ], col=col[i])
+    }  
   }
   abline(a=0, b=1)
 }
 
-pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*1.5)
+pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*2)
   stats1 = empirStatsSorAbuAvg
   stats2 = simStatsSorAbuFixedAvg
   stats3 = simStatsSorAbuLogSerAvg
+  stats1 = stats1[-grep('serp', names(stats1))]
+  stats2 = stats2[-grep('serp', names(stats2))]
+  stats3 = stats3[-grep('serp', names(stats3))]
+
   par(mfrow=c(2,2))
   mod = 'pwr'
   meth = 'wtr'
   cof = 'b0'
+  #col = terrain.colors(length(stats1) + 2)
+  col = colorRampPalette(c("blue", "red", "green","orange"))(length(stats1))
   pl_coef(stats1, stats2)
+  legend('topleft', names(stats1), cex=2, col=col, pch=19, bty='n')
   #
   cof = 'b1'
   pl_coef(stats1, stats2)
@@ -316,15 +580,34 @@ pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*1.5)
   #
   cof = 'b1'
   pl_coef(stats1, stats2)
+
+
+  pl_coef(stats1, stats2, stats3)
+  #
+  cof = 'b1'
+  pl_coef(stats1, stats2, stats3)
+  ##
+  mod = 'exp'
+  cof = 'b0'
+  pl_coef(stats1, stats2, stats3)
+  #
+  cof = 'b1'
+  pl_coef(stats1, stats2, stats3)
 ##------------------------------
   stats1 = empirStatsSorBinAvg
   stats2 = simStatsSorBinFixedAvg
   stats3 = simStatsSorBinLogSerAvg
+  stats1 = stats1[-grep('serp', names(stats1))]
+  stats2 = stats2[-grep('serp', names(stats2))]
+  stats3 = stats3[-grep('serp', names(stats3))]
+
   par(mfrow=c(2,2))
   mod = 'pwr'
   meth = 'wtr'
   cof = 'b0'
   pl_coef(stats1, stats2)
+  legend('topleft', names(stats1), cex=2, col=col, pch=19, bty='n')
+
   #
   cof = 'b1'
   pl_coef(stats1, stats2)
@@ -335,6 +618,18 @@ pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*1.5)
   #
   cof = 'b1'
   pl_coef(stats1, stats2)
+#####
+  pl_coef(stats1, stats2, stats3)
+  #
+  cof = 'b1'
+  pl_coef(stats1, stats2, stats3)
+  ##
+  mod = 'exp'
+  cof = 'b0'
+  pl_coef(stats1, stats2, stats3)
+  #
+  cof = 'b1'
+  pl_coef(stats1, stats2, stats3)
 dev.off()
 
 ##-----------------------------------------------------------------------------
