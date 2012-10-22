@@ -13,8 +13,33 @@ N = round(10^seq(log10(120), log10(5e5), length.out=20))
 load('./sorensen/simSorAbuAvg.Rdata')
 
 stats = getSimStats(simSorAbuAvg, S, N)
+pwrStats = drop(stats['pwr', , , , ,])
 
 grains = unique(simSorAbuAvg[[1]]$grain)
+svals = rep(S, length(N))
+nvals = rep(N, each=length(S))
+
+ddr = read.csv('./sar/param_sar_avgs.csv')
+## add the stats information to this flat file
+meth = 'wtr'
+for (g in seq_along(grains)) {
+  for (s in seq_along(S)) {
+    for (n in seq_along(N)) {
+      true = ddr$grains == grains[g] & ddr$S == S[s] & ddr$N == N[n]
+      ddr$b0[true] = pwrStats['b0', meth, g, s, n]
+      ddr$b1[true] = pwrStats['b1', meth, g, s, n]
+      ddr$r2[true] = pwrStats['r2', meth, g, s, n]
+    }
+  }
+} 
+
+## write out flat file
+write.csv(ddr, file='./sorensen/param_ddr_wtr_pwr_stats.csv',
+          row.names = FALSE)
+
+##----------------------------------------------------------------------------
+
+
 
 ## create an example graphic for the simulated pattern
 S[20]
@@ -46,8 +71,6 @@ pdf('./figs/parm_space_r2_sorensen_abu.pdf', width = 7 * 2, height = 7)
 dev.off()
 
 
-pwrStats = drop(stats['pwr', , , , ,])
-
 ## plot intercept,slope,and R2 for pwr model of DD at each grain
 
 pdf('./figs/stats_sor_abu_all_grains_pwr_wtr_.pdf', width=7 * 2, height=7)
@@ -75,22 +98,6 @@ for(i in 1:3){
   axis(side=1,at=seq(0,1,length.out=7),labels=x,tick=F,cex.axis=2)
 }
 
-svals = rep(S, length(N))
-nvals = rep(N, each=length(S))
-
-sar = read.csv('./sar/param_sar_avgs.csv')
-## add the stats information to this flat file
-sar = data.frame(sar, b0=NA, b1=NA)
-meth = 'wtr'
-for (g in seq_along(grains)) {
-  for (s in seq_along(S)) {
-    for (n in seq_along(N)) {
-      true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
-      sar$b0[true] = pwrStats['b0', meth, g, s, n]
-      sar$b1[true] = pwrStats['b1', meth, g, s, n]
-    }
-  }
-}  
 
 
 pdf('./figs/log_n_over_s_coef_sor_abu_grain1_pwr_wtr.pdf', width = 7 * 2, height = 7)
