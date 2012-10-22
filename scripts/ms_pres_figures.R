@@ -3,9 +3,15 @@ source('./scripts/spat_sim_vario_func.R')
 
 
 ## Example Simulated Distance Decay
+## the simulated empirical data is used here instead of an example from the
+## parameter space exploration b/c the Sherman simulated points have been binned
+## in an attractive way. The simulated parameter space results are raw results
+## witout binning
 load('./simulated_empirical_results.Rdata')
 
-tmp = simSorAbuLogSer[14]
+## check out the sherman1 plot
+tmp = list(simSorAbuLogSer$sherman1_C200_B13_grid)
+
 col = colorRampPalette(c('dodgerblue', 'red'))(5)
 range(tmp[[1]]$Avg)
 grains = unique(tmp[[1]]$Comm)
@@ -14,6 +20,28 @@ plot(1:10, type='n', xlab='', ylab='', xlim=c(1.5, 120),
      ylim = c(0.006, 0.40) , frame.plot=F, axes=F, log='xy')
 axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
 axis(side=2, cex.axis=1.75, lwd=8, at=c(0.01, 0.02, 0.05, 0.10, 0.20, 0.40))
+plotEmpir(tmp, 'average', log='xy', title=F, 
+          quants=F, col=col, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
+for (g in seq_along(grains)) {
+  mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
+           weights = N)
+  lines(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]], exp(predict(mod)),
+        col=col[g], lwd=6)  
+}
+
+## alternatively check out the bormann plot which is on the same scale as the 
+## simulated 4092 grid cell simulations
+tmp = list(simSorAbuLogSer$bormann_C200_B12_grid)
+col = colorRampPalette(c('dodgerblue', 'red'))(5)
+range(tmp[[1]]$Avg)
+grains = unique(tmp[[1]]$Comm)
+
+tmp[[1]]$Dist = tmp[[1]]$Dist / sqrt(grains[1])
+
+plot(1:10, type='n', xlab='', ylab='', xlim=c(1, 50), 
+     ylim = c(0.02, 0.45) , frame.plot=F, axes=F, log='xy')
+axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
+axis(side=2, cex.axis=1.75, lwd=8, at=c(0.02, 0.05, 0.10, 0.20, 0.40))
 plotEmpir(tmp, 'average', log='xy', title=F, 
           quants=F, col=col, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
 for (g in seq_along(grains)) {
