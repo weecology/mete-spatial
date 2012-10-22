@@ -1,6 +1,13 @@
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
+##------------------------------------------------------------------------------
+## Figure 2 - example Simulated DDR with simulation results
+windows(width=7 * 3, height=7)
+par(mfrow=c(1, 3))
+
+axislwd = 4
+linelwd = 3
 
 ## Example Simulated Distance Decay
 ## the simulated empirical data is used here instead of an example from the
@@ -9,28 +16,6 @@ source('./scripts/spat_sim_vario_func.R')
 ## witout binning
 load('./simulated_empirical_results.Rdata')
 
-## check out the sherman1 plot
-tmp = list(simSorAbuLogSer$sherman1_C200_B13_grid)
-
-col = colorRampPalette(c('dodgerblue', 'red'))(5)
-range(tmp[[1]]$Avg)
-grains = unique(tmp[[1]]$Comm)
-
-plot(1:10, type='n', xlab='', ylab='', xlim=c(1.5, 120), 
-     ylim = c(0.006, 0.40) , frame.plot=F, axes=F, log='xy')
-axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
-axis(side=2, cex.axis=1.75, lwd=8, at=c(0.01, 0.02, 0.05, 0.10, 0.20, 0.40))
-plotEmpir(tmp, 'average', log='xy', title=F, 
-          quants=F, col=col, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
-for (g in seq_along(grains)) {
-  mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
-           weights = N)
-  lines(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]], exp(predict(mod)),
-        col=col[g], lwd=6)  
-}
-
-## alternatively check out the bormann plot which is on the same scale as the 
-## simulated 4092 grid cell simulations
 tmp = list(simSorAbuLogSer$bormann_C200_B12_grid)
 col = colorRampPalette(c('dodgerblue', 'red'))(5)
 range(tmp[[1]]$Avg)
@@ -40,67 +25,47 @@ tmp[[1]]$Dist = tmp[[1]]$Dist / sqrt(grains[1])
 
 plot(1:10, type='n', xlab='', ylab='', xlim=c(1, 50), 
      ylim = c(0.02, 0.45) , frame.plot=F, axes=F, log='xy')
-axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
-axis(side=2, cex.axis=1.75, lwd=8, at=c(0.02, 0.05, 0.10, 0.20, 0.40))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
+axis(side=2, cex.axis=1.75, lwd=axislwd, at=c(0.02, 0.05, 0.10, 0.20, 0.40))
 plotEmpir(tmp, 'average', log='xy', title=F, 
           quants=F, col=col, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
 for (g in seq_along(grains)) {
   mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
            weights = N)
   lines(tmp[[1]]$Dist[tmp[[1]]$Comm == grains[g]], exp(predict(mod)),
-        col=col[g], lwd=6)  
+        col=col[g], lwd=linelwd)  
 }
-##------------------------------------------------------------------------------
-## Scale collapse figures
 
-S = round(10^seq(log10(10), log10(100), length.out=20))
-N = round(10^seq(log10(120), log10(5e5), length.out=20))
-load('./sorensen/simSorAbuAvg.Rdata')
-stats = getSimStats(simSorAbuAvg, S, N)
-grains = unique(simSorAbuAvg[[1]]$grain)
-pwrStats = drop(stats['pwr', , , , ,])
-svals = rep(S, length(N))
-nvals = rep(N, each=length(S))
-sar = read.csv('./sar/param_sar_avgs.csv')
-## add the stats information to this flat file
-sar = data.frame(sar, b0=NA, b1=NA)
-meth = 'wtr'
-for (g in seq_along(grains)) {
-  for (s in seq_along(S)) {
-    for (n in seq_along(N)) {
-      true = sar$grains == grains[g] & sar$S == S[s] & sar$N == N[n]
-      sar$b0[true] = pwrStats['b0', meth, g, s, n]
-      sar$b1[true] = pwrStats['b1', meth, g, s, n]
-    }
-  }
-}  
 ## scale collapse for presentation
-  col = colorRampPalette(c('dodgerblue', 'red'))(5)
-  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
-  xlab = 'log(N/S) / log(Nbar/Sbar)'
-  par(mfrow=c(1, 1))
-  plot(10^b0 ~ ratio , data=sar, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, ylim=c(0, 1), xlim=c(0,80))
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
-  axis(side=2, cex.axis=1.75, lwd=8)
-  for (g in seq_along(grains)) { 
-    tmp = subset(sar, grains == grains[g])
-    lo = lowess(tmp$ratio, 10^tmp$b0)
-    true = lo$y < 1 & lo$y >0
-    lines(lo$x[true], lo$y[true], col=col[g], lwd=6)
-  }  
+## these results were calculated in the script spat_param_space.R
+ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
+col = colorRampPalette(c('dodgerblue', 'red'))(5)
+ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
+xlab = 'log(N/S) / log(Nbar/Sbar)'
+plot(10^b0 ~ ratio , data=ddr, xlab='', ylab='', type='n',
+     frame.plot=F, axes=F, ylim=c(0, 1), xlim=c(0,80))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
+axis(side=2, cex.axis=1.75, lwd=axislwd)
+for (g in seq_along(grains)) { 
+  tmp = subset(ddr, grains == grains[g])
+  lo = lowess(tmp$ratio, 10^tmp$b0)
+#  true = lo$y < 1 & lo$y >0
+#  lines(lo$x[true], lo$y[true], col=col[g], lwd=linelwd)
+  lines(lo$x, lo$y, col=col[g], lwd=linelwd)
+}  
 ##
-  plot(b1 ~ ratio , data=sar, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, xlim=c(0, 80))
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8)
-  axis(side=2, cex.axis=1.75, lwd=8) 
-  for (g in seq_along(grains)) {
-    tmp = subset(sar, grains == grains[g])
-    lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=6)
-  }  
+plot(b1 ~ ratio , data=ddr, xlab='', ylab='', type='n',
+     frame.plot=F, axes=F, xlim=c(0, 80))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
+axis(side=2, cex.axis=1.75, lwd=axislwd) 
+for (g in seq_along(grains)) {
+  tmp = subset(ddr, grains == grains[g])
+  lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=linelwd)
+}  
 
 mk_legend('center', legend=grains, col=col,
           lty=1, bty='n', cex = 2, lwd=8)
+
 ##----------------------------------------------------------------------------
 ## empirical DDR pattern at a single scale
 
