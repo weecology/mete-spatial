@@ -3,8 +3,8 @@ source('./scripts/spat_sim_vario_func.R')
 
 ##------------------------------------------------------------------------------
 ## Figure 2 - example Simulated DDR with simulation results
-windows(width=7 * 2, height=7 * 2)
-par(mfrow=c(2, 2))
+windows(width=7 * 3, height=7)
+par(mfrow=c(1, 3))
 
 axislwd = 4
 linelwd = 3
@@ -36,33 +36,37 @@ for (g in seq_along(grains)) {
         col=col[g], lwd=linelwd)  
 }
 
-## r2 image plot
-#load('./sorensen/simSorAbuAvg.Rdata')
-#stats = getSimStats(simSorAbuAvg, S, N)
-
-meth='wtr'
-dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
-dexp = density(stats['exp', 'r2', meth, , , ], na.rm = TRUE)
-dpwr$x = c(min(dexp$x), dpwr$x)
-dpwr$y = c(0, dpwr$y)
-xlims = range(c(dpwr$x, dexp$x, 1))
-ylims = range(c(dpwr$y, dexp$y))
-
-plot(dpwr$x, dpwr$y, type='l', lwd=linelwd, xlim=xlims, ylim=ylims, col='black',
-     xlab='', ylab='', frame.plot=F, axes=F)
-axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at=c(.7, .8, .9, 1))
-#axis(side=2, cex.axis=1.75, lwd=axislwd)
-par(new=TRUE)
-plot(dexp$x[dexp$x <=1.01], dexp$y[dexp$x <=1.01], type='l', lwd=linelwd, xlim=xlims, ylim=ylims, col='grey',
-     xlab='', ylab='', axes=F)
-
-
 ## these results were calculated in the script spat_param_space.R
 ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
 
 ## scale collapse for presentation
+par(mfrow=c(1,2))
+ddr$ratio = (log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)) * log(grains)
+xlab = 'log(N/S) / log(Nbar/Sbar)'
+plot(10^b0 ~ ratio , data=ddr, xlab='', ylab='', type='n',
+     frame.plot=F, axes=F, ylim=c(0, 1), xlim=range(ddr$ratio))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
+axis(side=2, cex.axis=1.75, lwd=axislwd)
+for (g in seq_along(grains)) { 
+  tmp = subset(ddr, grains == grains[g])
+  lo = lowess(tmp$ratio, 10^tmp$b0)
+#  true = lo$y < 1 & lo$y >0
+#  lines(lo$x[true], lo$y[true], col=col[g], lwd=linelwd)
+  lines(lo$x, lo$y, col=col[g], lwd=linelwd)
+}  
+##
+plot(b1 ~ ratio , data=ddr, xlab='', ylab='', type='n',
+     frame.plot=F, axes=F, xlim=range(ddr$ratio))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
+axis(side=2, cex.axis=1.75, lwd=axislwd) 
+for (g in seq_along(grains)) {
+  tmp = subset(ddr, grains == grains[g])
+  lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=linelwd)
+}  
+###
+
 col = colorRampPalette(c('dodgerblue', 'red'))(5)
-ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
+ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg) / grains
 xlab = 'log(N/S) / log(Nbar/Sbar)'
 plot(10^b0 ~ ratio , data=ddr, xlab='', ylab='', type='n',
      frame.plot=F, axes=F, ylim=c(0, 1), xlim=c(0,80))
@@ -127,6 +131,48 @@ for (g in 2) {
 mk_legend('center', c('Observed', 'METE', 'Random Placement'),
           col = c(1, lightblue, purple), lwd=3, lty = c(1,2,2),
           cex=2, bty='n')
+
+##----------------------------------------------------------------------------
+## Supplemental Figure 1
+## r2 of model fits to simulated results
+#load('./sorensen/simSorAbuAvg.Rdata')
+#stats = getSimStats(simSorAbuAvg, S, N)
+windows(width= 7 * 1, height=7)
+par(mfrow=c(1,1))
+
+meth='ols'
+dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
+dexp = density(stats['exp', 'r2', meth, , , ], na.rm = TRUE)
+dpwr$x = c(.7, dpwr$x)
+dpwr$y = c(0, dpwr$y)
+## drop x values less than 0.7
+dpwr$y = dpwr$y[dpwr$x >= .7]
+dpwr$x = dpwr$x[dpwr$x >= .7]
+dexp$y = dexp$y[dexp$x >= .7]
+dexp$x = dexp$x[dexp$x >= .7]
+
+xlims = range(c(dpwr$x, dexp$x, 1))
+ylims = range(c(dpwr$y, dexp$y))
+
+plot(dpwr$x, dpwr$y, type='l', lty=3, lwd=linelwd, xlim=round(xlims,1), ylim=ylims, col='black',
+     xlab='', ylab='', frame.plot=F, axes=F)
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at=c(.7, .8, .9, 1))
+#axis(side=2, cex.axis=1.75, lwd=axislwd)
+lines(dexp$x[dexp$x <=1.01], dexp$y[dexp$x <=1.01], lty=3, lwd=linelwd, col='grey')
+##
+meth='wtr'
+dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
+dexp = density(stats['exp', 'r2', meth, , , ], na.rm = TRUE)
+dpwr$x = c(min(dexp$x), dpwr$x)
+dpwr$y = c(0, dpwr$y)
+xlims = range(c(dpwr$x, dexp$x, 1))
+ylims = range(c(dpwr$y, dexp$y))
+
+lines(dpwr$x, dpwr$y, lwd=linelwd, col='black')
+lines(dexp$x[dexp$x <=1.01], dexp$y[dexp$x <=1.01], lwd=linelwd, col='grey')
+
+mk_legend('center', c('Exponential, OLS', 'Exponential, WLS', 'Power, OLS', 'Power, WLS'),
+          lty=c(3, 1, 3, 1), lwd=6, bty='n', cex=2, col=c('grey', 'grey', 'black','black'))
 
 ##----------------------------------------------------------------------------
 ## emprical DDR residuals
