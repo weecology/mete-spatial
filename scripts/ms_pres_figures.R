@@ -37,6 +37,15 @@ for (g in seq_along(grains)) {
 }
 
 ## r2 image plot
+lims = range(as.vector(stats[ ,'r2', , , , ]),na.rm=TRUE)
+nbrks = 12
+brks = seq(lims[1], lims[2], length.out=nbrks)
+par(mfrow=c(1, 2))
+hist(stats['pwr', 'r2', meth, , , ], breaks = brks, ylim=c(0, 1.7e3), 
+     add=TRUE, col='blue')
+legend('topleft', c('Exponential Model', 'Power Model'), col=c('red', 'blue'),
+       lwd=8, cex=2, bty='n')
+
 ## these results were calculated in the script spat_param_space.R
 ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
 
