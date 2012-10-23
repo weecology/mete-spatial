@@ -37,27 +37,28 @@ for (g in seq_along(grains)) {
 }
 
 ## r2 image plot
-lims = range(as.vector(stats[ ,'r2', , , , ]),na.rm=TRUE)
-nbrks = 12
-brks = seq(lims[1], lims[2], length.out=nbrks)
-par(mfrow=c(1, 2))
-hist(stats['pwr', 'r2', meth, , , ], breaks = brks, ylim=c(0, 1.7e3), 
-     add=TRUE, col='blue')
-legend('topleft', c('Exponential Model', 'Power Model'), col=c('red', 'blue'),
-       lwd=8, cex=2, bty='n')
+#load('./sorensen/simSorAbuAvg.Rdata')
+#stats = getSimStats(simSorAbuAvg, S, N)
+
+meth='wtr'
+dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
+dexp = density(stats['exp', 'r2', meth, , , ], na.rm = TRUE)
+dpwr$x = c(min(dexp$x), dpwr$x)
+dpwr$y = c(0, dpwr$y)
+xlims = range(c(dpwr$x, dexp$x, 1))
+ylims = range(c(dpwr$y, dexp$y))
+
+plot(dpwr$x, dpwr$y, type='l', lwd=linelwd, xlim=xlims, ylim=ylims, col='black',
+     xlab='', ylab='', frame.plot=F, axes=F)
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at=c(.7, .8, .9, 1))
+#axis(side=2, cex.axis=1.75, lwd=axislwd)
+par(new=TRUE)
+plot(dexp$x[dexp$x <=1.01], dexp$y[dexp$x <=1.01], type='l', lwd=linelwd, xlim=xlims, ylim=ylims, col='grey',
+     xlab='', ylab='', axes=F)
+
 
 ## these results were calculated in the script spat_param_space.R
 ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
-
-## restructure r2 results
-r2array = array(NA, dim = c(20, 20, length(unique(ddr$grain)))) 
-for(i in 1:nrow(ddr)) {
-  r2array[match(ddr$S[i],unique(ddr$S)), 
-          match(ddr$N[i],unique(ddr$N)),
-          match(ddr$grain[i],unique(ddr$grain))] = ddr$r2[i]
-}
-image(log2(unique(ddr$S)), log2(unique(ddr$N)), 
-      r2array[ , ,1], xlab='', ylab='')
 
 ## scale collapse for presentation
 col = colorRampPalette(c('dodgerblue', 'red'))(5)
