@@ -3,8 +3,8 @@ source('./scripts/spat_sim_vario_func.R')
 
 ##------------------------------------------------------------------------------
 ## Figure 2 - example Simulated DDR with simulation results
-windows(width=7 * 3, height=7)
-par(mfrow=c(1, 3))
+windows(width=7 * 2, height=7 * 2)
+par(mfrow=c(2, 2))
 
 axislwd = 4
 linelwd = 3
@@ -36,9 +36,21 @@ for (g in seq_along(grains)) {
         col=col[g], lwd=linelwd)  
 }
 
-## scale collapse for presentation
+## r2 image plot
 ## these results were calculated in the script spat_param_space.R
 ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
+
+## restructure r2 results
+r2array = array(NA, dim = c(20, 20, length(unique(ddr$grain)))) 
+for(i in 1:nrow(ddr)) {
+  r2array[match(ddr$S[i],unique(ddr$S)), 
+          match(ddr$N[i],unique(ddr$N)),
+          match(ddr$grain[i],unique(ddr$grain))] = ddr$r2[i]
+}
+image(log2(unique(ddr$S)), log2(unique(ddr$N)), 
+      r2array[ , ,1], xlab='', ylab='')
+
+## scale collapse for presentation
 col = colorRampPalette(c('dodgerblue', 'red'))(5)
 ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
 xlab = 'log(N/S) / log(Nbar/Sbar)'
