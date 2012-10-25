@@ -28,7 +28,7 @@ plot(1:10, type='n', xlab='', ylab='', xlim=c(1, 50),
 axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
 axis(side=2, cex.axis=1.75, lwd=axislwd, at=c(0.02, 0.05, 0.10, 0.20, 0.40))
 plotEmpir(tmp, 'average', log='xy', title=F, 
-          quants=F, col=col, lwd=5, add=TRUE, type='p', cex=1.5, pch=19)
+          quants=F, col=col, lwd=1, add=TRUE, type='p', cex=2, pch=19)
 for (g in seq_along(grains)) {
   mod = lm(log(Avg) ~ log(Dist), data=tmp[[1]], subset=Comm == grains[g],
            weights = N)
@@ -36,6 +36,23 @@ for (g in seq_along(grains)) {
         col=col[g], lwd=linelwd)  
 }
 
+## these results were calculated in the script spat_param_space.R
+ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
+
+## scale collapse for presentation
+ddr$ratio = (log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)) * log(grains)
+plot(10^b0 ~ ratio, data=ddr, subset=grains == 1, col='dodgerblue', pch=19,
+     cex = 1.5, xlab='', ylab='', frame.plot=F, axes=F, xlim=c(0, 200))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at = c(0, 50, 100, 150, 200))
+axis(side=2, cex.axis=1.75, lwd=axislwd)
+##
+plot(b1 ~ ratio , data=ddr, subset=grains == 1, col='dodgerblue', pch=19,
+     cex = 1.5, xlab='', ylab='', frame.plot=F, axes=F, xlim=c(0, 200))
+axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at = c(0, 50, 100, 150, 200))
+axis(side=2, cex.axis=1.75, lwd=axislwd) 
+
+##----------------------------------------------------------------------------
+## Suplemental scale collapse figure with all grains
 ## these results were calculated in the script spat_param_space.R
 ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
 
@@ -63,32 +80,7 @@ for (g in seq_along(grains)) {
   tmp = subset(ddr, grains == grains[g])
   lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=linelwd)
 }  
-###
-
-col = colorRampPalette(c('dodgerblue', 'red'))(5)
-ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg) / grains
-xlab = 'log(N/S) / log(Nbar/Sbar)'
-plot(10^b0 ~ ratio , data=ddr, xlab='', ylab='', type='n',
-     frame.plot=F, axes=F, ylim=c(0, 1), xlim=c(0,80))
-axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
-axis(side=2, cex.axis=1.75, lwd=axislwd)
-for (g in seq_along(grains)) { 
-  tmp = subset(ddr, grains == grains[g])
-  lo = lowess(tmp$ratio, 10^tmp$b0)
-#  true = lo$y < 1 & lo$y >0
-#  lines(lo$x[true], lo$y[true], col=col[g], lwd=linelwd)
-  lines(lo$x, lo$y, col=col[g], lwd=linelwd)
-}  
 ##
-plot(b1 ~ ratio , data=ddr, xlab='', ylab='', type='n',
-     frame.plot=F, axes=F, xlim=c(0, 80))
-axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd)
-axis(side=2, cex.axis=1.75, lwd=axislwd) 
-for (g in seq_along(grains)) {
-  tmp = subset(ddr, grains == grains[g])
-  lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=linelwd)
-}  
-
 mk_legend('center', legend=grains, col=col,
           lty=1, bty='n', cex = 2, lwd=8)
 
