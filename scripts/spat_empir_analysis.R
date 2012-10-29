@@ -15,7 +15,8 @@ if (length(clArgs) > 1) {
   dataType = clArgs[3]
 }
 if (length(clArgs) == 0) {
-  stop('Must specify commName, metricsToCalc, & dataType at command line')
+  stop('Must specify commName, metricsToCalc, dataType, nperm, and npar at
+       command line')
   q('no')
 }
 
@@ -36,6 +37,11 @@ if (!any(spat_breaks$comm == commName)) {
 ## specify quantiles to examine variogram at
 quants = c(0.25, 0.50, 0.75)
 
+## specify permutation arguments
+nperm = ifelse(dataType == "abu", 500, 0)
+npar = ifelse(dataType == "abu", 8, 0)
+
 ## compute Dist Decay statistics
 metrics = calcMetrics(comms, metricsToCalc, dataType, breaks=breaks, 
-                      quants=quants, writeToFile=TRUE, fileSuffix=commName)
+                      quants=quants, nperm=nperm, npar=npar,
+                      writeToFile=TRUE, fileSuffix=commName)
