@@ -20,6 +20,14 @@ do
   do
     for k in $dataType
     do
+      if [ $k == abu ]
+      then
+        nperm="500"
+        npar="8"
+      else
+        nperm="NULL"
+        npar="1"
+      fi
       for m in $metrics
       do
         if [ $1 == unc ]
@@ -30,7 +38,8 @@ do
             -o ./log_files/error_sim_analysis_${names[$i]}_$j.log\
             Rscript spat_analysis.R ${S[$i]} ${N[$i]} 200\
             ${bisect_fine[$i]} ${bisect_coarse[$i]}\
-            ${grain_fine[$i]} False $k $m NA NA ${names[$i]} TRUE 
+            ${grain_fine[$i]} False $k $m NA NA ${names[$i]} TRUE\
+            $nperm $npar
           fi
           if [ $j == empirSAD ]
           then
@@ -38,7 +47,8 @@ do
             -o ./log_files/error_sim_analysis_${names[$i]}_$j.log\
             Rscript spat_analysis.R ${S[$i]} ${N[$i]} 200\
             ${bisect_fine[$i]} ${bisect_coarse[$i]}\
-            ${grain_fine[$i]} False $k $m NA NA ${names[$i]}_$j TRUE  
+            ${grain_fine[$i]} False $k $m NA NA ${names[$i]}_$j TRUE\
+            $nperm $npar  
           fi
         fi
         if [ $1 == usu ]
@@ -48,6 +58,7 @@ do
             Rscript spat_analysis.R ${S[$i]} ${N[$i]} 200\ 
             ${bisect_fine[$i]} ${bisect_coarse[$i]}\
             ${grain_fine[$i]} False $k $m NA NA ${names[$i]} TRUE\
+            $nperm $npar\
             > log_files/error_sim_analysis_${names[$i]}_$j.log 2>&1 &
           fi
           if [ $j == empirSAD ]
@@ -55,6 +66,7 @@ do
             Rscript spat_analysis.R ${S[$i]} ${N[$i]} 200\ 
             ${bisect_fine[$i]} ${bisect_coarse[$i]}\
             ${grain_fine[$i]} False $k $m NA NA ${names[$i]}_$j TRUE\
+            $nperm $npar\
             > log_files/error_sim_analysis_${names[$i]}_$j.log 2>&1 &
           fi
         fi

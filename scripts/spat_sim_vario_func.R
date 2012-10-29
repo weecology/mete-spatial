@@ -1875,7 +1875,7 @@ jacExp = function(mat, areaSampA, areaSampB=NULL){
 ##3.17##
 calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, 
                        hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
-                       tolerance=NA, nperm=NULL, npar, RPargs=NULL,
+                       tolerance=NA, nperm=NULL, npar=1, RPargs=NULL,
                        writeToFile=FALSE,fileSuffix=NULL) {
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
