@@ -1099,6 +1099,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
   direction = as.numeric(vobject$parms$direction)
  tolerance = vobject$parms$tolerance
  unit.angle = as.character(vobject$parms$unit.angle)
+ distance.metric = as.character(vobject$parms$distance.metric)
  hmax<-vobject$parms$hmax
  if(class(x)=='sim'){
   coords<-x$coords
@@ -1184,7 +1185,8 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
    }
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
    rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-             direction=direction,tolerance=tolerance,unit.angle=unit.angle)$vario
+             direction=direction,tolerance=tolerance,unit.angle=unit.angle,
+             distance.metric=distance.metric)$vario
    if(pos.neg){
     if(all){
      if(median)
@@ -1874,7 +1876,7 @@ jacExp = function(mat, areaSampA, areaSampB=NULL){
 calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, 
                        hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
                        tolerance=NA, nperm=NULL, npar, RPargs=NULL,
-                       writeToFile=FALSE,fileSuffix=NULL){
+                       writeToFile=FALSE,fileSuffix=NULL) {
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -1897,18 +1899,18 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
   ## writeToFile: if True an .Rdata file is written for each metric calculated
   ## fileSuffix: add a file identifying string here
   if(metricsToCalc == 'all')
-    metricsToCalc = c('varWithin','varBetween','jaccard','sorensen')
-  if(writeToFile){
+    metricsToCalc = c('varWithin', 'varBetween', 'jaccard', 'sorensen')
+  if(writeToFile) {
     if(direction != 'omnidirectional')
-      fileSuffix = paste(fileSuffix,'_',direction,'deg',sep='') 
+      fileSuffix = paste(fileSuffix,'_', direction, 'deg', sep='') 
   }
   grains = unique(comms[,1])
   if (is.na(hmin[1]))
-    hmin_vals = sqrt(grains)
+     hmin_vals = sqrt(grains)
   else
-    hmin_vals = hmin
-  out = vector('list',length(grains))
-  names(out) = paste('comm',grains,sep='')
+     hmin_vals = hmin
+  out = vector('list', length(grains))
+  names(out) = paste('comm', grains,sep='')
   for (i in seq_along(grains)) {
     true = comms[ , 1] == grains[i]
     if (log2(sum(true)) %% 2 == 1) {
@@ -1949,46 +1951,46 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       varWithin[[i]] = list(varWithinObs=varWithinObs,varWithinNull=varWithinNull,
                             varWithinExp=varWithinExp)
     }
-    if(any('varBetween' %in% metricsToCalc)){
-      if(i == 1){
+    if (any('varBetween' %in% metricsToCalc)) {
+      if (i == 1) {
         varBetween = vector('list', length(grains))      
         names(varBetween) = grains
       }  
       varBetweenObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=TRUE,
                             quants=quants,direction=direction,tolerance=tolerance,
                             unit.angle='degrees') 
-      if(!is.null(nperm)){ 
+      if (!is.null(nperm)) { 
         varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
                                     meth='randpat',RPargs=RPargs,npar=npar)
       }
-      else{
+      else {
         varBetweenNull = NULL
       }   
       varBetween[[i]] = list(varBetweenObs=varBetweenObs,
                              varBetweenNull=varBetweenNull)
     }
-    if(any('jaccard' %in% metricsToCalc)){
-      if(i == 1){
+    if (any('jaccard' %in% metricsToCalc)) {
+      if (i == 1) {
         jaccard = vector('list', length(grains))  
         names(jaccard) = grains
       }  
       jaccardObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
-                           unit.angle='degrees') 
+                          unit.angle='degrees') 
       jaccardNull = NULL
-      jaccardExp = 1 - jacExp(mat,1) #  to convert into a dissimiarlity
-      if(dataType == 'abu'){
-        jaccardExpAbuToBinary = 1 - jacExp(mat > 0,1)
-      }
-      else{
-        jaccardExpAbuToBinary = NULL
+      if (!is.null(nperm)) {
+        jaccardNull = null.perms(mat, jaccardObs, nperm, coords=coords,
+                                 meth='random', npar=npar)
+      }        
+      jaccardExp = NULL
+      if(dataType == 'binary') {
+        jaccardExp = 1 - jacExp(mat, 1) #  to convert into a dissimiarlity
       } 
       jaccard[[i]] = list(jaccardObs=jaccardObs,jaccardNull=jaccardNull,
-                          jaccardExp=jaccardExp,
-                          jaccardExpAbuToBinary=jaccardExpAbuToBinary)
+                          jaccardExp=jaccardExp)
     }
-    if(any('sorensen' %in% metricsToCalc)){
-      if(i == 1){
+    if (any('sorensen' %in% metricsToCalc)) {
+      if (i == 1) {
         sorensen = vector('list', length(grains))
         names(sorensen) = grains
       }  
@@ -1997,38 +1999,38 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees') 
       sorensenNull = NULL
-      sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
-      if(dataType == 'abu'){
-        sorensenExpAbuToBinary = 1 - sorExp(mat > 0,1)
-      }
-      else{
-        sorensenExpAbuToBinary = NULL
+      if (!is.null(nperm)) {
+          sorensenNull = null.perms(mat, sorensenObs, nperm, coords=coords,
+                                    meth='random', npar=npar)
+      }    
+      sorensenExp = NULL
+      if (dataType == 'binary') {
+        sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
       } 
       sorensen[[i]] = list(sorensenObs=sorensenObs, sorensenNull=sorensenNull,
-                           sorensenExp=sorensenExp,
-                           sorensenExpAbuToBinary=sorensenExpAbuToBinary)
+                           sorensenExp=sorensenExp)
     }
     out[[i]] = list()
-    for(j in metricsToCalc){ 
+    for (j in metricsToCalc) { 
       out[[i]][[j]] = eval(parse(text=paste(j,'[[',i,']]')))
     }
-    if(writeToFile){      
+    if (writeToFile) {      
       ## update result files as loop proceeds
-      if(any('varWithin' %in% metricsToCalc)){
-        save(varWithin,file=paste('./varWithin/varWithin_',
-             fileSuffix,'_',dataType,'.Rdata',sep=''))  
+      if (any('varWithin' %in% metricsToCalc)) {
+        save(varWithin, file=paste('./varWithin/varWithin_',
+             fileSuffix, '_', dataType, '.Rdata', sep=''))  
       }
-      if(any('varBetween' %in% metricsToCalc)){
-        save(varBetween,file=paste('./varBetween/varBetween_',
-             fileSuffix,'_',dataType,'.Rdata',sep=''))
+      if (any('varBetween' %in% metricsToCalc)) {
+        save(varBetween, file=paste('./varBetween/varBetween_',
+             fileSuffix, '_', dataType, '.Rdata', sep=''))
       }
-      if(any('jaccard' %in% metricsToCalc)){
-        save(jaccard,file=paste('./jaccard/jaccard_',
-             fileSuffix,'_',dataType,'.Rdata',sep=''))
+      if (any('jaccard' %in% metricsToCalc)) {
+        save(jaccard, file=paste('./jaccard/jaccard_',
+             fileSuffix, '_', dataType, '.Rdata', sep=''))
       }
-      if(any('sorensen' %in% metricsToCalc)){
-        save(sorensen,file=paste('./sorensen/sorensen_',
-             fileSuffix,'_',dataType,'.Rdata',sep=''))
+      if (any('sorensen' %in% metricsToCalc)) {
+        save(sorensen, file=paste('./sorensen/sorensen_',
+             fileSuffix, '_', dataType, '.Rdata', sep=''))
       }             
     }
   }
