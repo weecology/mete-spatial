@@ -1064,7 +1064,8 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
 }
 
 ##3.3##
-null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,snap=NULL,npar=1,linux=FALSE,RPargs=FALSE){
+null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
+                     snap=NULL,npar=1,linux=FALSE,RPargs=FALSE, breaks=NA){
  ##Purpose: to generate statistical null expectations for the variograms
  ##Arguments:
  ##"x" is either an output of class 'sim' that is the output of 'sim.neut.uni' OR an site x species matrix
@@ -1087,6 +1088,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
  ##"linux" if TRUE then function assumes you are on a linux cluster and therefore exports a different compiled code
  ##"RPargs" is a vector of arguments that are needed to perform the Random Patterns spatial null model
  ###see the notes associated with the function 'null.gen' that indicate how "RPargs" should be parameterized
+ ##"breaks" gives either the number or the position of the breaks for the function vario
  ##Note: "meth" and "sp" are arguments to randomization function "SpatPerm2D"
  dists<-vobject$vario$Dist
  grain = vobject$parms$grain
@@ -1186,7 +1188,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
    rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
              direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-             distance.metric=distance.metric)$vario
+             distance.metric=distance.metric,breaks=breaks)$vario
    if(pos.neg){
     if(all){
      if(median)
@@ -1224,7 +1226,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,s
   require(snowfall)
   sfInit(parallel=TRUE, cpus=npar, type="SOCK")
   sfClusterSetupRNG()
-  sfExport("pop", "vobject", "coords", "meth", "all", "sp", "RPargs", "RandPatPar", "RandPat", "FixUnSamp","FixUnSamp2", "SpatPerm2D", "SpatPerm2D.str", "vario", "getCovFractions", "null.gen")
+  sfExport("pop", "vobject", "coords", "meth", "all", "sp", "RPargs", "breaks", "RandPatPar", "RandPat", "FixUnSamp","FixUnSamp2", "SpatPerm2D", "SpatPerm2D.str", "vario", "getCovFractions", "null.gen")
   if(linux)
    sfClusterEval(dyn.load("danspkg.so"))
   else{
@@ -1980,7 +1982,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       jaccardNull = NULL
       if (!is.null(nperm)) {
         jaccardNull = null.perms(mat, jaccardObs, nperm, coords=coords,
-                                 meth='random', npar=npar)
+                                 meth='random', npar=npar, breaks=brks)
       }        
       jaccardExp = NULL
       if(dataType == 'binary') {
@@ -2001,7 +2003,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       sorensenNull = NULL
       if (!is.null(nperm)) {
           sorensenNull = null.perms(mat, sorensenObs, nperm, coords=coords,
-                                    meth='random', npar=npar)
+                                    meth='random', npar=npar, breaks=brks)
       }    
       sorensenExp = NULL
       if (dataType == 'binary') {
