@@ -1314,6 +1314,7 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
   direction = as.numeric(vobject$parms$direction)
  tolerance = vobject$parms$tolerance
  unit.angle = as.character(vobject$parms$unit.angle)
+ distance.metric = as.character(vobject$parms$distance.metric)
  if(all){
   rmat<-apply(pop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
   rv<-vobject$vario
