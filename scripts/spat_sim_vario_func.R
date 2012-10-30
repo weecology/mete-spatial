@@ -1232,7 +1232,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
   else{
    sfLibrary(danspkg)
   }
-  out<- unlist(sfLapply(1:nperm,function(...)null.gen(pop=pop,vobject=vobject,coords=coords,meth=meth,sp=sp,all=all,RPargs=RPargs)))
+  out<- unlist(sfLapply(1:nperm,function(...)null.gen(pop=pop,vobject=vobject,coords=coords,meth=meth,sp=sp,all=all,RPargs=RPargs,breaks=breaks)))
   sfStop()
   if(pos.neg){
    if(all){
@@ -1278,7 +1278,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
 } 
 
 ##3.4##
-null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALSE){
+null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALSE,breaks=NA){
  ##Purpose: to mediate the generation of statistical null values for the variograms 
  ##to be used in a parrallel processing loop which will generate a population of null values
  ##Arguments:
@@ -1299,6 +1299,7 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
  ###1)'allRP' if TRUE & 'all' = TRUE, then Random Patterns algo used as the spatial null
  ###2)'nstrata',3)'mtrials1',4)'mtrials2',5)'alpha',6)'npar'
  ##'median' if TRUE then means and medians are calculated
+ ##"breaks" gives either the number or the position of the breaks for the function vario
  ##Note: "meth" and "sp" are arguments to randomization function "SpatPerm2D"
  S<-dim(pop)[1]
  n<-dim(pop)[2]
@@ -1348,7 +1349,8 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
    }
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
    rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-             direction=direction,tolerance=tolerance,unit.angle=unit.angle)$vario
+             direction=direction,tolerance=tolerance,unit.angle=unit.angle,
+             breaks=breaks)$vario
    if(pos.neg){
     if(median)
      r.vals[,,j] <- as.matrix(rv[,c(5,7:11)])
@@ -1373,7 +1375,8 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
   }
   rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
   rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-            direction=direction,tolerance=tolerance,unit.angle=unit.angle)$vario
+            direction=direction,tolerance=tolerance,unit.angle=unit.angle,
+            breaks=breaks)$vario
   if(pos.neg){
    if(median)
     r.vals <- as.matrix(rv[,c(5,7:11)])
