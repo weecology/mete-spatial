@@ -1350,7 +1350,7 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
    rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
              direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-             breaks=breaks)$vario
+             distance.metric=distance.metric,breaks=breaks)$vario
    if(pos.neg){
     if(median)
      r.vals[,,j] <- as.matrix(rv[,c(5,7:11)])
@@ -1376,7 +1376,7 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
   rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
   rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
             direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-            breaks=breaks)$vario
+            distance.metric=distance.metric,breaks=breaks)$vario
   if(pos.neg){
    if(median)
     r.vals <- as.matrix(rv[,c(5,7:11)])
