@@ -39,7 +39,7 @@ quants = c(0.25, 0.50, 0.75)
 
 ## specify permutation arguments
 nperm = ifelse(dataType == "abu", 500, 0)
-npar = ifelse(dataType == "abu", 8, 0)
+npar = ifelse(dataType == "abu", 12, 0)
 
 ## compute Dist Decay statistics
 metrics = calcMetrics(comms, metricsToCalc, dataType, breaks=breaks, 
