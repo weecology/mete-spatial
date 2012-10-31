@@ -940,7 +940,8 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
         stop('Specification of breaks using a character string must be log, log2, 
              or log10')
       incre = (hmax - hmin) / as.numeric(breaks[2])
-      hmax = hmax + incre
+      if (round(hmax,2) == round(maxDist / 2, 2))
+        hmax = hmax + incre
       breaks = eval(parse(text = paste(base, '(seq(', breaks[1], '(hmin),', 
                                        breaks[1], '(hmax), length.out=', 
                                        breaks[2], '))', sep='')))
@@ -963,7 +964,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
     N = nrow(x)
   } 
   vobject = list()
-  vobject$parms = data.frame(grain, hmax, S=S, N=N, pos.neg, median, direction,
+  vobject$parms = data.frame(grain, hmin, hmax, S=S, N=N, pos.neg, median, direction,
                              tolerance, unit.angle, distance.metric, 
                              quants = ifelse(is.na(quants[1]), NA, 
                                              paste(quants* 100, collapse=", ")))
@@ -1092,6 +1093,7 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
  ##Note: "meth" and "sp" are arguments to randomization function "SpatPerm2D"
  dists<-vobject$vario$Dist
  grain = vobject$parms$grain
+ hmin = vobject$parms$hmin
  hmax = vobject$parms$hmax
  pos.neg = vobject$parms$pos.neg
  median = vobject$parms$median
@@ -1102,7 +1104,6 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
  tolerance = vobject$parms$tolerance
  unit.angle = as.character(vobject$parms$unit.angle)
  distance.metric = as.character(vobject$parms$distance.metric)
- hmax<-vobject$parms$hmax
  if(class(x)=='sim'){
   coords<-x$coords
   if(is.null(snap)) snap <- length(x$snaps)
@@ -1186,9 +1187,9 @@ null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
     rpop<-FixUnSamp2(pop,rpop)
    }
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
-   rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-             direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-             distance.metric=distance.metric,breaks=breaks)$vario
+   rv<-vario(x=rmat,coord=coords,grain=grain,breaks=breaks,hmin=hmin,hmax=hmax,
+             pos.neg=pos.neg,median=median,direction=direction,tolerance=tolerance,
+             unit.angle=unit.angle,distance.metric=distance.metric)$vario
    if(pos.neg){
     if(all){
      if(median)
@@ -1305,6 +1306,7 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
  n<-dim(pop)[2]
  n2<-n+2
  grain = vobject$parms$grain
+ hmin = vobject$parms$hmin
  hmax = vobject$parms$hmax
  pos.neg = vobject$parms$pos.neg
  median = vobject$parms$median
@@ -1349,9 +1351,9 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
     rpop<-FixUnSamp2(pop,rpop)
    }
    rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
-   rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-             direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-             distance.metric=distance.metric,breaks=breaks)$vario
+   rv<-vario(x=rmat,coord=coords,grain=grain,breaks=breaks,hmin=hmin,hmax=hmax,
+             pos.neg=pos.neg,median=median,direction=direction,tolerance=tolerance,
+             unit.angle=unit.angle,distance.metric=distance.metric)$vario
    if(pos.neg){
     if(median)
      r.vals[,,j] <- as.matrix(rv[,c(5,7:11)])
@@ -1375,9 +1377,9 @@ null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALS
    rpop<-FixUnSamp2(pop,rpop)
   }
   rmat<-apply(rpop,1,as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
-  rv<-vario(x=rmat,coord=coords,grain=grain,hmax=hmax,pos.neg=pos.neg,median=median,
-            direction=direction,tolerance=tolerance,unit.angle=unit.angle,
-            distance.metric=distance.metric,breaks=breaks)$vario
+  rv<-vario(x=rmat,coord=coords,grain=grain,breaks=breaks,hmin=hmin,hmax=hmax,
+            pos.neg=pos.neg,median=median,direction=direction,tolerance=tolerance,
+            unit.angle=unit.angle,distance.metric=distance.metric)$vario
   if(pos.neg){
    if(median)
     r.vals <- as.matrix(rv[,c(5,7:11)])
