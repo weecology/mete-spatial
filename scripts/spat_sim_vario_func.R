@@ -921,7 +921,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   }
   else {
     if (is.na(hmin))
-      hmin = 1
+      hmin = min(Dist)  ## potentially this should be set when breaks is NA as well
     if (is.na(hmax))
       hmax = maxDist / 2
     H = Dist
@@ -1913,21 +1913,18 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       fileSuffix = paste(fileSuffix,'_', direction, 'deg', sep='') 
   }
   grains = unique(comms[,1])
-  if (is.na(hmin[1]))
-     hmin_vals = sqrt(grains)
-  else
-     hmin_vals = hmin
   out = vector('list', length(grains))
   names(out) = paste('comm', grains,sep='')
   for (i in seq_along(grains)) {
     true = comms[ , 1] == grains[i]
     if (log2(sum(true)) %% 2 == 1) {
+      ## plot is rectangular
       coords = as.matrix(comms[true, 2]) * sqrt(grains[i] / 2 )
       coords = cbind(coords, 
                      as.matrix(comms[true, 3]) * 2 * sqrt(grains[i] / 2))
     }
     else  
-      coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
+      coords = as.miatrix(comms[true, 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[true, -c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
@@ -1937,7 +1934,6 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
     }
     else
       brks = NA
-    hmin = hmin_vals[i]
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
@@ -1945,7 +1941,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
         varWithin = vector('list', length(grains))      
         names(varWithin) = grains
       }  
-      varWithinObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=FALSE,
+      varWithinObs = vario(mat,coords,grain,brks,hmin_val,hmax,pos.neg=FALSE,
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees')
       if(!is.null(nperm)){ 
