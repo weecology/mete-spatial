@@ -1924,7 +1924,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
                      as.matrix(comms[true, 3]) * 2 * sqrt(grains[i] / 2))
     }
     else  
-      coords = as.miatrix(comms[true, 2:3]) * sqrt(grains[i])
+      coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[true, -c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
