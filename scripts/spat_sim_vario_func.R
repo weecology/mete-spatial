@@ -1917,14 +1917,8 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
   names(out) = paste('comm', grains,sep='')
   for (i in seq_along(grains)) {
     true = comms[ , 1] == grains[i]
-    if (log2(sum(true)) %% 2 == 1) {
-      ## plot is rectangular
-      coords = as.matrix(comms[true, 2]) * sqrt(grains[i] / 2 )
-      coords = cbind(coords, 
-                     as.matrix(comms[true, 3]) * 2 * sqrt(grains[i] / 2))
-    }
-    else  
-      coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
+    ## because we only consider grains that are perfect squares 
+    coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[true, -c(1:3)])
     if (!is.na(breaks[1])) {
       if (is.list(breaks))
@@ -2339,30 +2333,53 @@ getResults = function(names, metric, dataType, simResult=FALSE)
   return(results)
 }
 
-reshapeResults = function(results, metric, sim.results=FALSE){
+reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
   ## Purpose: to reshape the results from a nested list to a matrix
   ## of the most important information
+  ## Arguements:
+  ## results: a list of results loaded by getResults
+  ## metric: which metric were the results computed for
+  ## perm_null: boolean, TRUE means that permutation null models were 
+  ##            carried out
+  ## sim_results: boolean, TRUE means that the results are from simulated
+  ##            communities
   out = vector('list', length=length(results))
   names(out) = names(results)
   for (i in seq_along(results)) { ## the datset
     if (is.null(results[[i]]))
       next
-    vExp = vector('list',length=length(results[[i]]))
+    vExp = vector('list', length=length(results[[i]]))
     Dist = vExp
     n = vExp
     rpExp = vExp 
-    for(j in seq_along(results[[i]])){ ## the grain/community
-      if(is.null(results[[i]][[j]]))
+    for (j in seq_along(results[[i]])) { ## the grain/community
+      if (is.null(results[[i]][[j]]))
         next
-      if (sim.results) {
+      if (sim_results) {
         vobject = results[[i]][[j]][[1]][[1]]$vario
         quants = !is.na(results[[i]][[j]][[1]][[1]]$parms$quants)
-        rpExp[[j]] = rep(results[[i]][[j]][[1]][[3]], nrow(vobject))
+        if (perm_null) {
+          rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, mean),
+                               apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, quantile,
+                                     c(.025, .5, .975))))
+          colnames(rpExp[[j]]) = c('avg', 'exp.qt.25', 'exp.qt.50', 'exp.qt.75')
+        }
+        else {
+          rpExp[[j]] =  data.frame(Exp.avg = rep(results[[i]][[j]][[1]][[3]], nrow(vobject)))
+        }  
       }
       else {
         vobject = results[[i]][[j]][[1]]$vario
         quants = !is.na(results[[i]][[j]][[1]]$parms$quants)
-        rpExp[[j]] = rep(results[[i]][[j]][[3]], nrow(vobject))
+        if (perm_null) {
+          rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, mean),
+                               apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, quantile,
+                                     c(.025, .5, .975))))
+          colnames(rpExp[[j]]) = c('avg', 'exp.qt.25', 'exp.qt.50', 'exp.qt.75')
+        }
+        else {
+          rpExp[[j]] = data.frame(Exp.avg = rep(results[[i]][[j]][[3]], nrow(vobject)))
+        }  
       }
       Dist[[j]] = vobject$Dist 
       n[[j]] = vobject$n
@@ -2376,20 +2393,27 @@ reshapeResults = function(results, metric, sim.results=FALSE){
         vExp[[j]] = 1 - vExp[[j]]
         rpExp[[j]] = 1 - rpExp[[j]]
       }  
-      if (j == 1) 
+      if (j == 1) {
         vExp_dat = vExp[[j]]
-      else
+        rpExp_dat = rpExp[[j]]
+      }  
+      else {
         vExp_dat = rbind(vExp_dat, vExp[[j]])
+        rpExp_dat = rbind(rpExp_dat, rpExp[[j]])
+      }  
     }
-    if(is.null(names(results[[i]])))
+    if (is.null(names(results[[i]])))
       commNames = 1:length(results[[i]])
     else
       commNames = names(results[[i]])
-    names(vExp_dat) = sub('exp.qt.','',names(vExp_dat))
-    if (any(metric %in% c('sorensen','jaccard'))) 
+    names(vExp_dat) = sub('exp.qt.','', names(vExp_dat))
+    names(rpExp_dat) = sub('exp.qt.','', names(rpExp_dat))
+    if (any(metric %in% c('sorensen','jaccard'))) {
       names(vExp_dat[ , -1]) = rev(names(vExp_dat[ , -1]))
+      names(rpExp_dat[ , -1]) = rev(names(rpExp_dat[ , -1]))
+    }  
     out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
-                          Exp = unlist(rpExp), N = unlist(n))
+                          Exp = rpExp_dat, N = unlist(n))
     out[[i]] = data.frame(out[[i]],
                Comm = unlist(mapply(rep,commNames,each=sapply(n, length),
                                        SIMPLIFY=FALSE)))
@@ -2433,7 +2457,6 @@ merge_drop = function(results) {
   result_names = names(results)
   to_drop = unlist(sapply(c('cocoli2','sherman2','sherman3'),
                           function(x) grep(x, result_names)))
-  to_avg = c('Metric.avg', 'Metric.25', 'Metric.50', 'Metric.75', 'Exp', 'N')
   cocoli_results = (subset(results$cocoli1, select= -Comm) + 
                     subset(results$cocoli2, select= -Comm)) / 2
   cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
