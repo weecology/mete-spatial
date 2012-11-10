@@ -13,11 +13,17 @@ if (length(clArgs) > 1) {
   commName = clArgs[1]
   metricsToCalc = clArgs[2]
   dataType = clArgs[3]
+  nperm = as.numeric(clArgs[4])
+  npar = as.numeric(clArgs[5])
 }
 if (length(clArgs) == 0) {
   stop('Must specify commName, metricsToCalc, dataType, nperm, and npar at
        command line')
   q('no')
+}
+if (is.na(nperm)) {
+  nperm = NULL
+  npar = 1
 }
 
 ## read in comms file 
@@ -36,10 +42,6 @@ if (!any(spat_breaks$comm == commName)) {
 
 ## specify quantiles to examine variogram at
 quants = c(0.25, 0.50, 0.75)
-
-## specify permutation arguments
-nperm = ifelse(dataType == "abu", 500, 0)
-npar = ifelse(dataType == "abu", 12, 0)
 
 ## compute Dist Decay statistics
 metrics = calcMetrics(comms, metricsToCalc, dataType, breaks=breaks, 
