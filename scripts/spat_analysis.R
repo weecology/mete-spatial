@@ -24,8 +24,6 @@ if (length(clArgs) > 1) {
   tolerance = clArgs[11]
   name = clArgs[12]
   big = clArgs[13]
-  nperm = clArgs[14]
-  npar = clArgs[15]
 }
 if (!exists(as.character(substitute(S)))) {
   S = 10
@@ -41,8 +39,6 @@ if (!exists(as.character(substitute(S)))) {
   tolerance = 'NA'
   name = 'NA'
   big = FALSE
-  nperm = NULL
-  npar = 1
 }
 
 direction = ifelse(direction == 'NA', 'omnidirectional', as.numeric(direction))
@@ -103,7 +99,7 @@ for (i in seq_along(comm_ids)) {
   comms_aggr = aggr_comm_matrix(mat, coords, bisec, grain_names)
   metrics[[i]] = calcMetrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
                         quants=quants, direction=direction, tolerance=tolerance,
-                        nperm=nperm, npar=npar, writeToFile=FALSE)
+                        writeToFile=FALSE)
   ## update save file as loop progresses
   save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
                            fileSuffix, '_', dataType, '.Rdata', sep=''))
