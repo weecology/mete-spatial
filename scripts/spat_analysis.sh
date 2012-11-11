@@ -3,8 +3,8 @@ indices=$2
 ## arguments for job
 S=( `cat ../data/S_vals.txt`)
 N=( `cat ../data/N_vals.txt`)
-bisec_fine=( `cat ../data/bisect_fine.txt`)
-bisec_coarse( `cat ../data/bisect_coarse.txt`)
+bisect_fine=( `cat ../data/bisect_fine.txt`)
+bisect_coarse=( `cat ../data/bisect_coarse.txt`)
 grain_fine=( `cat ../data/grain_fine.txt`)
 names=( `cat ../data/shrtnames.txt`)
 
@@ -12,7 +12,7 @@ sadType="meteSAD empirSAD"
 
 dataType="abu binary"
 
-metrics="sorensen varWithin"
+metrics="sorensen"
 
 for i in $indices
 do

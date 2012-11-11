@@ -16,7 +16,7 @@ if (length(clArgs) > 1) {
   ncomm = clArgs[3]
   bisec_fine = as.numeric(clArgs[4])
   bisec_coarse = as.numeric(clArgs[5])
-  grain_fine = as.numeric(clArgs[6]))
+  grain_fine = as.numeric(clArgs[6])
   transect = clArgs[7]
   dataType = clArgs[8]
   metricsToCalc = clArgs[9]
