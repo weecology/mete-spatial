@@ -68,6 +68,8 @@ if (!big)
 gc()
 
 ## specify how to bin the spatial lags
+## first fix dataset name
+name = sub('_empirSAD', '', name)
 spat_breaks = read.csv('./data/nbreaks.csv')
 spat_breaks$nbreaks = spat_breaks$nbreaks + 1
 if (any(spat_breaks$comm == name)) {
