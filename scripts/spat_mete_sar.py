@@ -11,13 +11,13 @@ import os
 
 import mete
 
-if 'sar' not in os.listdir('..'):
-    os.mkdir('../sar')
-
-site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-              'bigoak']
+if len(sys.argv) > 1:
+    site_names = [sys.argv[1]]
+else:
+    site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
+                  'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+                  'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+                  'bigoak']
 
 for shrt_name in site_names:
     datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
