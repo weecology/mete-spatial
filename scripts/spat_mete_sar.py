@@ -49,23 +49,38 @@ for shrt_name in site_names:
     sar_down_iterative = mete.downscale_sar(Amax, S0, N0, Amin)
     Avals = sar_down_iterative[0][ : ]
     
-    sar_down_noniterative = mete.sar_noniterative(Avals, Amax, S0, N0)
+    try:
+        sar_down_noniterative = mete.sar_noniterative(Avals, Amax, S0, N0)
+        sar_noniterative_worked = True
+    except ValueError:
+        print "Downscaling non-iterative SAR failed"
+        sar_noniterative_worked = False
     
     # add values at Amax
     sar_down_iterative[0].append(Amax)
     sar_down_iterative[1].append(S0)
     
     # Make an array so that the data is easier to output
-    out = np.empty((len(sar_down_iterative[0]), 3)) 
+    if sar_noniterative_worked:    
+        out = np.empty((len(sar_down_iterative[0]), 3)) 
+    else:
+        out = np.empty((len(sar_down_iterative[0]), 2))       
+  
     for i in range(0, 2):
         out[ : , i] = sar_down_iterative[i] 
-    
-    out[ : , 2] = sar_down_noniterative[1]
-    
+   
+    if sar_noniterative_worked:
+        out[ : , 2] = sar_down_noniterative[1]
+
     filename = '../sar/' + shrt_name + '_mete_sar.txt'
     writer = open(filename, 'wb') 
     datawriter = csv.writer(writer)
-    datawriter.writerow(['area', 'sr_iter', 'sr_noniter'])
+
+    if sar_noniterative_worked:
+        datawriter.writerow(['area', 'sr_iter', 'sr_noniter'])
+    else:
+        datawriter.writerow(['area', 'sr_iter', 'sr_noniter'])
+
     for i in range(0, np.shape(out)[0]):
         datawriter.writerow(out[i, ])
     
