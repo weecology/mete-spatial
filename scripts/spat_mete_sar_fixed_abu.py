@@ -33,11 +33,6 @@ for shrt_name in site_names:
 
     site_data = [map(float, x) for x in site_data]
 
-    # enforce a minimum individual density of 2
-    indices = mete.which([site_data[i][2] > 2 for i in range(0, len(site_data))])
-
-    site_data = [site_data[i] for i in indices]
-
     site_data = np.array(site_data)
 
     # read in SAD information
