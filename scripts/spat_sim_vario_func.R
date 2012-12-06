@@ -3349,6 +3349,14 @@ addCI = function(x, y.lo, y.hi, col, data=NULL) {
   polygon(xvals, yvals, border=NA, col=col)
 }
 
+addAxis1 = function(...) {
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=4, ...)
+}
+addAxis2 = function(...) {
+  axis(side=2, cex.axis=1.75, lwd=4, ...)
+}
+
+
 get_beta_sad_mle = function(S, N) {
   ## edited version of the function get_lambda_sad_mle by Xiao Xiao
   ## edits are only stylistic to improve readibility
@@ -3417,3 +3425,5 @@ get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
   }
   return(data.frame(site, area, res))
 }  
+
+
