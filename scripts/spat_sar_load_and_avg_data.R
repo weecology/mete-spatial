@@ -1,5 +1,7 @@
-setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+## this script assumes the working directory is
+## '~/maxent/spat'
+## and that the script ./scripts/spat_sim_vario_func.R has
+## been sourced
 
 fileNames = dir('./sar')
 
