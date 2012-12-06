@@ -17,6 +17,8 @@ for (i in seq_along(dat))
 shrtnm = read.table('./data/shrtnames.txt', colClasses='character')
 bisect = read.table('./data/bisect_fine.txt')
 grain_fine = read.table('./data/grain_fine.txt')
+S0 = sapply(dat, length)
+N0 = sapply(dat, sum)
 grains = vector("list", length=length(shrtnames))
 names(grains) = shrtnames
 for (i in seq_along(grains)) {
@@ -30,13 +32,17 @@ srExp = vector("list", length=length(grains))
 names(srExp) = shrtnames
 for (i in seq_along(srExp)) {
   maxA = max(grains[[i]])
-  srCol = sapply(grains[[i]], function(g) 
-                 spAvgExpColeman(g / maxA, dat[[i]]))
-  sdCol = sapply(grains[[i]], function(g) 
-                 sqrt(spVarExpColeman(g / maxA, dat[[i]]))) 
-  sr.lo = srCol - sdCol
-  sr.hi = srCol + sdCol
-  srExp[[i]]  = data.frame(grains = grains[[i]], srCol, sr.lo, sr.hi)
+  S_binom = sapply(grains[[i]], function(g) 
+                   exp_S_binom(g, maxA, dat[[i]]))
+  sd_S_binom = sapply(grains[[i]], function(g) 
+                      sqrt(exp_Svar_binom(g, maxA, dat[[i]]))) 
+  S_lo = S_binom - sd_S_binom
+  S_hi = S_binom + sd_S_binom
+  if (names(srExp)[i] != 'cross')
+    S_logser_binom = sar_logser_binom(grains[[i]], maxA, S0[[i]], N0[[i]])
+  else
+    S_logser_binom = NA
+  srExp[[i]]  = data.frame(grains = grains[[i]], S_binom, S_lo, S_hi, S_logser_binom)
 }
 
 save(srExp, file='./sar/expected_empir_sars.Rdata')
@@ -44,7 +50,7 @@ save(srExp, file='./sar/expected_empir_sars.Rdata')
 plot(srCol ~ grains, data=srExp[[1]], type='o', log='xy')
 lines(sr.lo ~ grains, data=srExp[[1]], col='red')
 lines(sr.hi ~ grains, data=srExp[[1]], col='red')
-
+lines(sr_logser_binom ~ grains, data=srExp[[1]], col='blue')
 
 
   
