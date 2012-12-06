@@ -2,7 +2,7 @@ setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 ## Figure 2 - example Simulated DDR with simulation results---------------------
-windows(width=7 * 3, height=7)
+window(width=7 * 3, height=7)
 par(mfrow=c(1, 3))
 
 axislwd = 4
@@ -51,13 +51,79 @@ axis(side=1, cex.axis=1.75, padj=.5, lwd=axislwd, at = c(0, 50, 100, 150, 200))
 axis(side=2, cex.axis=1.75, lwd=axislwd) 
 
 
+## Figure 3: 6 panel SAR & DDR graphic------------------------------------------
+## A) example SAR, B) SAR METE residuals, C) SAR RP residuals
+## D) exampld DDR, E) DDR METE residuals, F) DDR RP residuals
+#####
+window(width=7*3, height=7*2)
+par(mfrow=c(2,3))
+## panel A) example SAR pattern
+## load sar data and compute residuals
+source('./scripts/spat_sar_load_and_avg_data.R')
+## set up graphic parameters 
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
+        'grassland')
+col = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
+        "#FF8000")
+axiswd = 1.75
 
-## empirical DDR pattern at a single scale--------------------------------------
+## plot sar results
+site = 'bigoak'
+purple = rgb(112, 48, 160, maxColorValue=160)
+lightblue = "#1AB2FF"
+
+i = match(site, names(meteEmpirSAD))
+  ## log-log
+    plot(sr_iter ~ area, data=meteEmpirSAD[[i]], 
+         ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
+         xlim=range(c(meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
+         type='n', main=names(meteEmpirSAD)[i], ylab='SR', xlab='Area (m2)')
+    ## meteEmpirSAD CI
+    dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
+    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey')
+    ## RP CI
+    dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
+    lines(S_binom ~ grains, data=dat, col='red', lwd=3)
+    ## analytical meteEmpirSAD    
+    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
+    ## data
+    lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
+    legend('bottomright', c('Empirical','RP','meteEmpirSAD sim', 'meteEmpirSAD noniter'),
+           pch=c(19, rep(NA, 3)), col=c(1, 'red', 'grey', 'dodgerblue'),
+           bty='n', lwd=3)
+
+## panels C & D: empirical SAR residuals
+  sites = unique(sar_res$site)
+  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter sim')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='RP')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_rp ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex], lty=1)
+  }
+
+## panel D) empirical DDR pattern at a single scale
 load('./sorensen/empirSorAbu.Rdata')
 load('simulated_empirical_results.Rdata')
 ## start with a good fit for slope by METE
 tmp = empirSorAbu['bigoak']
-plotEmpir(tmp, 'average', log='xy')
 obs = empirSorAbu$'bigoak'
 exp = simSorAbuLogSer$'bigoak'
 grains = unique(obs$Comm)
@@ -86,68 +152,40 @@ for (g in 2) {
         lty=1, lwd=4, col=1, type='o', pch=19, cex=1.25)
 }
 
-mk_legend('center', c('Observed', 'METE', 'Random Placement'),
-          col = c(1, lightblue, purple), lwd=3, lty = c(1,2,2),
-          cex=2, bty='n')
+#mk_legend('center', c('Observed', 'METE', 'Random Placement'),
+#          col = c(1, lightblue, purple), lwd=3, lty = c(1,2,2),
+#          cex=2, bty='n')
 
-
-## emprical DDR residuals-------------------------------------------------------
-load('./sorensen/empirSorAbu.Rdata') 
-## drop ferp last grain
-empirSorAbu$ferp = empirSorAbu$ferp[-nrow(empirSorAbu$ferp),]
-resSorAbuFixed = getResid(empirSorAbu, simSorAbuFixed)
-resSorAbuLogSer = getResid(empirSorAbu, simSorAbuLogSer)
+## panels E & F) emprical DDR residuals
+resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
 
 dat = resSorAbuFixed
 dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
 sites = unique(dat$site)
 
-shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
-habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
-hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
-        'grassland')
-habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
-         "#FF8000")
-
-## residuals vs distance
-par(mfrow=c(1,1))
-plot(avg.res ~ Dist, data=dat, log='x', axes=F, frame.plot=F,
-     type='n', ylim=c(-.5,.5), xlab='', ylab='')
-axis(side=1, cex.axis=1.75, padj=.5, lwd=8,
-     at= .5 * 10^(0:3))
-axis(side=2, cex.axis=1.75, lwd=8)
-abline(h=0, lwd=6)
-for(i in seq_along(sites)) {
-  tmp = subset(dat, site == sites[i])
-  grains = unique(tmp$Comm)
-  col = colorRampPalette(c('dodgerblue', 'red'))(length(grains))
-  habindex = match(habitat[match(sites[i], shrtnm)], hab)
-  lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=4)
-  lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=4, lty=2)  
-}
-
-## residuals vs area
-plot(avg.res ~ area, data=dat, type='n', log='x', axes=F, frame.plot=F,
-     xlim = c(0.1, 1e5), ylim=c(-.6, .6), xlab='', ylab='')
-axis(side=1, cex.axis=1.75, padj=.5, lwd=8,
-     at=10 ^ (-1:5))
-axis(side=2, cex.axis=1.75, lwd=8)
-abline(h=0, lwd=5)
-for(i in seq_along(sites)) {
-  habindex = match(habitat[match(sites[i], shrtnm)], hab)
-  tmp = subset(dat, site == sites[i])
-  lines(lowess(tmp$area, tmp$avg.res),
-         col=habcol[habindex], pch=1, lwd=4)
-  lines(lowess(tmp$area, tmp$exp.res), lty=2,
-         col=habcol[habindex], pch=1, lwd=4)  
-}
-
-mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
-mk_legend('center', hab, col=habcol, lty=3, lwd=7, cex=2, bty='n')
+  for(j in 1:2){
+    if(j == 1)
+      main = 'METE'
+    else
+      main = 'RP'
+    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4), main=main)
+    abline(h=0, lty=2, lwd=2)
+    for(i in seq_along(sites)) {
+      tmp = subset(dat, site == sites[i])
+      grains = unique(tmp$Comm)
+      habindex = match(habitat[match(sites[i], shrtnm)], hab)
+      if(j == 1) {
+          lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=2)
+      }
+      else {
+          lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=2)  
+      }  
+    }  
+  }  
+#mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
 
 ## METE DDR scale colapse with data---------------------------------------------
 empirStatsSorAbuAvg = getStats(empirSorAbu, 'average')
-empirStatsSorAbuAvg$ferp = empirStatsSorAbuAvg$ferp[,,,-6]
 
 fileNames = dir('./sar')
 empirFiles = grep('empir_sar.csv', fileNames)
@@ -223,82 +261,6 @@ par(mfrow=c(1,2))
            col=habcol[habindex], lwd=4)
   }
 
-
-## empirical SAR pattern--------------------------------------------------------
-
-## load data
-source('./scripts/spat_sar_load_and_avg_data.R')
-
-par(mfrow=c(1,1))
-site = 'bigoak'
-purple = rgb(112, 48, 160, maxColorValue=160)
-lightblue = "#1AB2FF"
-
-i = match(site, names(meteEmpirSAD))
-  ## log-log
-    plot(sr_iter ~ area, data=meteEmpirSAD[[i]], 
-         ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
-         xlim=range(c(meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
-         type='n', main=names(meteEmpirSAD)[i], ylab='SR', xlab='Area (m2)')
-    ## meteEmpirSAD CI
-    dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
-#    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
-    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey')
-    ## RP CI
-    dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
-#    addCI('grains', 'S_lo', 'S_hi', data='dat', col='pink')
-    lines(S_binom ~ grains, data=dat, col='red', lwd=3)
-    ## analytical meteEmpirSAD    
-    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
-    ## data
-    lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
-    legend('bottomright', c('Empirical','RP','meteEmpirSAD sim', 'meteEmpirSAD noniter'),
-           pch=c(19, rep(NA, 3)), col=c(1, 'red', 'grey', 'dodgerblue'),
-           bty='n', lwd=3)
-
-## empirical SAR residuals------------------------------------------------------
-shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
-habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
-hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
-        'grassland')
-col = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
-        "#FF8000")
-  sites = unique(sar_res$site)
-  par(mfrow=c(1,3))
-  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
-       type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), main='METE noniter')
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
-  axis(side=2, cex.axis=1.75, lwd=8)
-  abline(h=0, lwd=5)
-  for (i in seq_along(sites)) {
-    habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_noniter ~ area, data=sar_res, subset= site == sites[i],
-          lwd=4, col=col[habindex])
-  }
-  legend('bottomright', hab, col=col, lwd=2, bty='n')
-  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
-       type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), main='METE iter sim')
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
-  axis(side=2, cex.axis=1.75, lwd=8)
-  abline(h=0, lwd=5)
-  for (i in seq_along(sites)) {
-    habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
-          lwd=4, col=col[habindex])
-  }
-  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
-       type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), main='RP')
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
-  axis(side=2, cex.axis=1.75, lwd=8)
-  abline(h=0, lwd=5)
-  for (i in seq_along(sites)) {
-    habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_rp ~ area, data=sar_res, subset= site == sites[i],
-          lwd=4, col=col[habindex], lty=1)
-  }
 
 
 ## Supplemental Figure 1--------------------------------------------------------
