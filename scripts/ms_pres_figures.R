@@ -54,9 +54,7 @@ axis(side=2, cex.axis=1.75, lwd=axislwd)
 ## Figure 3: 6 panel SAR & DDR graphic------------------------------------------
 ## A) example SAR, B) SAR METE residuals, C) SAR RP residuals
 ## D) exampld DDR, E) DDR METE residuals, F) DDR RP residuals
-#####
-window(width=7*3, height=7*2)
-par(mfrow=c(2,3))
+##
 ## panel A) example SAR pattern
 ## load sar data and compute residuals
 source('./scripts/spat_sar_load_and_avg_data.R')
@@ -65,58 +63,56 @@ shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character')
 habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
 hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
         'grassland')
-col = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
+habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
         "#FF8000")
-axiswd = 1.75
+window(width=7*3, height=7*2)
+par(mfrow=c(2,3))
 
 ## plot sar results
 site = 'bigoak'
-purple = rgb(112, 48, 160, maxColorValue=160)
-lightblue = "#1AB2FF"
-
 i = match(site, names(meteEmpirSAD))
   ## log-log
-    plot(sr_iter ~ area, data=meteEmpirSAD[[i]], 
+    plot(sr_iter ~ area, data=meteEmpirSAD[[i]], axes=F,
          ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
-         xlim=range(c(meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
-         type='n', main=names(meteEmpirSAD)[i], ylab='SR', xlab='Area (m2)')
+         xlim=range(c(1, meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
+         type='n', ylab='', xlab='')
+    addAxis1()
+    addAxis2()
     ## meteEmpirSAD CI
     dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
-    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey')
+    lines(sr.avg ~ grains, data=dat, lwd=3, lty=2, col=1)
     ## RP CI
     dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
-    lines(S_binom ~ grains, data=dat, col='red', lwd=3)
+    lines(S_binom ~ grains, data=dat, col=1, lty=3, lwd=3)
     ## analytical meteEmpirSAD    
-    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
+#    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
     ## data
-    lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
-    legend('bottomright', c('Empirical','RP','meteEmpirSAD sim', 'meteEmpirSAD noniter'),
-           pch=c(19, rep(NA, 3)), col=c(1, 'red', 'grey', 'dodgerblue'),
-           bty='n', lwd=3)
+    lines(richness ~ area, data = empir[[i]], type='o', pch=19, lwd=3)
+
 
 ## panels C & D: empirical SAR residuals
   sites = unique(sar_res$site)
   plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), main='METE iter sim')
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
-  axis(side=2, cex.axis=1.75, lwd=8)
+       xlim = c(0.1, 1e6))
+  addAxis1(at=10 ^ (-1:6))
+  addAxis2()
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
     lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
-          lwd=4, col=col[habindex])
+          lwd=4, col=habcol[habindex])
   }
   plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), main='RP')
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
-  axis(side=2, cex.axis=1.75, lwd=8)
+       xlim = c(0.1, 1e6))
+  addAxis1(at=10 ^ (-1:6))
+  addAxis2()
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
     lines(empirsad_rp ~ area, data=sar_res, subset= site == sites[i],
-          lwd=4, col=col[habindex], lty=1)
+          lwd=4, col=habcol[habindex], lty=1)
   }
 
 ## panel D) empirical DDR pattern at a single scale
@@ -128,29 +124,24 @@ obs = empirSorAbu$'bigoak'
 exp = simSorAbuLogSer$'bigoak'
 grains = unique(obs$Comm)
 
-purple = rgb(112, 48, 160, maxColorValue=160)
-lightblue = "#1AB2FF"
-
 plot(Metric.avg ~ Dist, data=obs,
      ylim=c(0.02, .5), xlim=c(2,128), type='n', frame.plot=F, axes=F,
      xlab='', ylab='', log='xy')
-axis(side=1, cex.axis=1.75, lwd=8, padj=.5,
-     at = 2^(1:7))
-axis(side=2, cex.axis=1.75, lwd=8,
-     at= 0.02 * 2^(0:4))
-for (g in 2) {
+addAxis1(at = 2^(1:7))
+addAxis2(at= 0.02 * 2^(0:4))
+g = 2
   ## add mete  
   true = exp$Comm == grains[g]
   tmpexp = exp[true,]
-  addCI('Dist', 'Avg.lo', 'Avg.hi', col='grey', data='tmpexp')
-  lines(Avg ~ Dist, data=tmpexp, col=lightblue, lty=2, lwd=4)
+#  addCI('Dist', 'Avg.lo', 'Avg.hi', col='grey', data='tmpexp')
+  lines(Avg ~ Dist, data=tmpexp, col=1, lty=2, lwd=3)
   ## RP
-  lines(Exp.avg ~ Dist, data=obs, subset=Comm == grains[g], lty=2,
-        col=purple, lwd=4)  
+  lines(Exp.avg ~ Dist, data=obs, subset=Comm == grains[g], lty=3,
+        col=1, lwd=3)  
   ## data
   lines(Metric.avg ~ Dist, data=obs, subset=Comm == grains[g],
-        lty=1, lwd=4, col=1, type='o', pch=19, cex=1.25)
-}
+        lty=1, lwd=3, col=1, type='o', pch=19, cex=1)
+
 
 #mk_legend('center', c('Observed', 'METE', 'Random Placement'),
 #          col = c(1, lightblue, purple), lwd=3, lty = c(1,2,2),
@@ -168,17 +159,19 @@ sites = unique(dat$site)
       main = 'METE'
     else
       main = 'RP'
-    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4), main=main)
-    abline(h=0, lty=2, lwd=2)
+    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4),
+         xlab='', ylab='', axes=F, frame.plot=F)
+    addAxis1()
+    addAxis2()
     for(i in seq_along(sites)) {
       tmp = subset(dat, site == sites[i])
       grains = unique(tmp$Comm)
       habindex = match(habitat[match(sites[i], shrtnm)], hab)
       if(j == 1) {
-          lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=2)
+          lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=3)
       }
       else {
-          lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=2)  
+          lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=3)  
       }  
     }  
   }  
