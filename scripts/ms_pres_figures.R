@@ -2,7 +2,7 @@ setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 ## Figure 2 - example Simulated DDR with simulation results---------------------
-window(width=7 * 3, height=7)
+windows(width=7 * 3, height=7)
 par(mfrow=c(1, 3))
 
 axislwd = 4
@@ -65,7 +65,7 @@ hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
         'grassland')
 habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
         "#FF8000")
-window(width=7*3, height=7*2)
+windows(width=7*3, height=7*2)
 par(mfrow=c(2,3))
 
 ## plot sar results
@@ -73,29 +73,30 @@ site = 'bigoak'
 i = match(site, names(meteEmpirSAD))
   ## log-log
     plot(sr_iter ~ area, data=meteEmpirSAD[[i]], axes=F,
-         ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
+         ylim=range(c(60, meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
          xlim=range(c(1, meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
          type='n', ylab='', xlab='')
     addAxis1()
-    addAxis2()
+    addAxis2(at = 2^(-1:5))
     ## meteEmpirSAD CI
     dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
-    lines(sr.avg ~ grains, data=dat, lwd=3, lty=2, col=1)
+    lines(sr.avg ~ grains, data=dat, lwd=3, lty=1, col=1)
     ## RP CI
     dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
-    lines(S_binom ~ grains, data=dat, col=1, lty=3, lwd=3)
+    lines(S_binom ~ grains, data=dat, col='grey', lty=1, lwd=3)
     ## analytical meteEmpirSAD    
 #    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
     ## data
-    lines(richness ~ area, data = empir[[i]], type='o', pch=19, lwd=3)
-
+    lines(richness ~ area, data = empir[[i]], type='p', pch=19, lwd=3, cex=2)
+    legend('bottomright', c('Observed', 'METE', 'RP'), pch=c(19, NA, NA), lwd=c(NA,5,5),
+           col=c(1, 1, 'grey'), cex=2, bty='n')
 
 ## panels C & D: empirical SAR residuals
   sites = unique(sar_res$site)
   plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
        xlim = c(0.1, 1e6))
-  addAxis1(at=10 ^ (-1:6))
+  addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
@@ -103,10 +104,12 @@ i = match(site, names(meteEmpirSAD))
     lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=habcol[habindex])
   }
+#  legend('bottomright', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
+  ##
   plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
        xlim = c(0.1, 1e6))
-  addAxis1(at=10 ^ (-1:6))
+  addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
@@ -134,13 +137,13 @@ g = 2
   true = exp$Comm == grains[g]
   tmpexp = exp[true,]
 #  addCI('Dist', 'Avg.lo', 'Avg.hi', col='grey', data='tmpexp')
-  lines(Avg ~ Dist, data=tmpexp, col=1, lty=2, lwd=3)
+  lines(Avg ~ Dist, data=tmpexp, col=1, lty=1, lwd=3)
   ## RP
-  lines(Exp.avg ~ Dist, data=obs, subset=Comm == grains[g], lty=3,
-        col=1, lwd=3)  
+  lines(Exp.avg ~ Dist, data=obs, subset=Comm == grains[g], lty=1,
+        col='grey', lwd=3)  
   ## data
   lines(Metric.avg ~ Dist, data=obs, subset=Comm == grains[g],
-        lty=1, lwd=3, col=1, type='o', pch=19, cex=1)
+        lty=1, lwd=3, col=1, type='p', pch=19, cex=2)
 
 
 #mk_legend('center', c('Observed', 'METE', 'Random Placement'),
@@ -159,9 +162,9 @@ sites = unique(dat$site)
       main = 'METE'
     else
       main = 'RP'
-    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4),
+    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4), xlim=c(.5,512),
          xlab='', ylab='', axes=F, frame.plot=F)
-    addAxis1()
+    addAxis1(at=2^seq(-1, 9, 2))
     addAxis2()
     for(i in seq_along(sites)) {
       tmp = subset(dat, site == sites[i])
