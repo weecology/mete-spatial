@@ -52,10 +52,6 @@ for shrt_name in site_names:
     
     sar_down_noniterative = mete.sar_noniterative_fixed_abu(Avals, Amax, n0vals)
 
-    # add values at Amax
-    sar_down_iterative[0].append(Amax)
-    sar_down_iterative[1].append(len(n0vals))
-    
     # Make an array so that the data is easier to output
     out = np.empty((len(sar_down_iterative[0]), 3)) 
     for i in range(0, 2):
