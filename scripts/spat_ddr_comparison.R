@@ -94,47 +94,7 @@ hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
 habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
          "#FF8000")
 
-par(mfrow=c(1,2))
-plot(Metric.avg - avg.res ~ Metric.avg, data=dat,
-     ylim=c(0, 1), type='n')
-for(i in seq_along(sites)) {
-  habindex = match(habitat[match(sites[i], shrtnm)], hab)
-  tmp = subset(dat, site == sites[i])
-  grains = unique(tmp$Comm)
-  for(g in seq_along(grains)) {
-    lines(Metric.avg - avg.res ~ Metric.avg, data=tmp, 
-           subset = Comm == grains[g],
-           pch=15, col=habcol[habindex], lwd=4)  
-    lines(Metric.avg - exp.res ~ Metric.avg, data=tmp, 
-           subset = Comm == grains[g], 
-           pch=16, col=habcol[habindex], lwd=4)
-  }  
-}
-abline(a=0, b=1)
-##
-h = hist(log2(dat$area), breaks=5, plot=F)
-areaFac = cut(log2(dat$area), h$breaks)
-areaFacUni = sort(unique(areaFac))
-col = colorRampPalette(c('dodgerblue', 'red'))(length(areaFacUni))
-plot(Metric.avg - avg.res ~ Metric.avg, data=dat,
-     ylim=c(0, 1), type='n')
-for(i in seq_along(sites)) {
-  tmp = subset(dat, site == sites[i])
-  grains = unique(tmp$area)
-  for(g in seq_along(grains)) {
-    areaFac = cut(log2(grains[g]), h$breaks)
-    areaindex = match(areaFac, areaFacUni)
-    lines(Metric.avg - avg.res ~ Metric.avg, data=tmp,
-           subset = Comm == grains[g],
-           pch=15, col=col[areaindex], lwd=4)  
-    lines(Metric.avg - exp.res ~ Metric.avg, data=tmp,
-           subset = Comm == grains[g],
-           pch=16, col=col[areaindex], lwd=4)
-  } 
-}
-abline(a=0, b=1)
-
-
+## residuals vs distance each grain has its own line
 par(mfrow=c(1,1))
 plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.1,.6))
 abline(h=0, lty=2, lwd=2)
@@ -154,7 +114,7 @@ mod = lm(avg.res ~ log(Dist), data=dat)
 abline(mod)
 summary(mod)
 
-## residuals vs distance
+## residuals vs distance summarized per dataset via lowess lines
 pdf('./figs/sor_abu_fixed_residuals.pdf', width = 7 *2 , height=7)
 par(mfrow=c(1,2))
 for(k in 1:2){
@@ -188,22 +148,13 @@ for(k in 1:2){
 mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
 dev.off()
 
-plot(avg.res ~ area, data=dat, log='x', ylim=c(-.5, .5))
-for(i in seq_along(sites)) {
-  habindex = match(habitat[match(sites[i], shrtnm)], hab)
-  lines(avg.res ~ area, data=dat, subset= site == sites[i] ,
-         col=habcol[habindex], pch=1, lwd=2)
-  points(exp.res ~ area, data=dat, subset= site == sites[i],
-         col=habcol[habindex], pch=1, lwd=2)  
-}
-
 ## residuals vs area
+par(mfrow=c(1,1))
 plot(avg.res ~ area, data=dat, type='n', log='x', axes=F, frame.plot=F,
-     xlim = c(0.1, 1e5), ylim=c(-.6, .6), xlab='', ylab='')
+     xlim = c(0.1, 1e5), ylim=c(0, .6), xlab='', ylab='')
 axis(side=1, cex.axis=1.75, padj=.5, lwd=8,
      at=10 ^ (-1:5))
 axis(side=2, cex.axis=1.75, lwd=8)
-abline(h=0, lwd=5)
 for(i in seq_along(sites)) {
   habindex = match(habitat[match(sites[i], shrtnm)], hab)
   tmp = subset(dat, site == sites[i])
@@ -212,9 +163,7 @@ for(i in seq_along(sites)) {
   lines(lowess(tmp$area, tmp$exp.res), lty=2,
          col=habcol[habindex], pch=1, lwd=4)  
 }
-
 mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
-mk_legend('center', hab, col=habcol, lty=3, lwd=7, cex=2, bty='n')
 
 
 ## avg across the distances 
@@ -243,12 +192,9 @@ abline(h=0)
 
 mk_legend('center', hab, col=col, pch=19)
   
-## compute summary statics for empricial and simualted results
+## compute summary statics for empricial and simualted results-------------------
 empirStatsSorAbuMed = getStats(empirSorAbu, 'median')
 empirStatsSorAbuAvg = getStats(empirSorAbu, 'average')
-
-empirStatsSorAbuMed$ferp = empirStatsSorAbuMed$ferp[,,,-6]
-empirStatsSorAbuAvg$ferp = empirStatsSorAbuAvg$ferp[,,,-6]
   
 simStatsSorAbuFixedMed = getStats(simSorAbuFixed, 'median')
 simStatsSorAbuFixedAvg = getStats(simSorAbuFixed, 'average')
@@ -260,9 +206,6 @@ simStatsSorAbuLogSerAvg = getStats(simSorAbuLogSer, 'average')
 empirStatsVarAbuMed = getStats(empirVarAbu, 'median')
 empirStatsVarAbuAvg = getStats(empirVarAbu, 'average')
 
-empirStatsVarAbuMed$ferp = empirStatsVarAbuMed$ferp[,,,-6]
-empirStatsVarAbuAvg$ferp = empirStatsVarAbuAvg$ferp[,,,-6]
-  
 simStatsVarAbuFixedMed = getStats(simVarAbuFixed, 'median')
 simStatsVarAbuFixedAvg = getStats(simVarAbuFixed, 'average')
 
@@ -274,9 +217,6 @@ simStatsVarAbuLogSerAvg = getStats(simVarAbuLogSer, 'average')
 empirStatsSorBinMed = getStats(empirSorBin, 'median')
 empirStatsSorBinAvg = getStats(empirSorBin, 'average')
 
-empirStatsSorBinMed$ferp = empirStatsSorBinMed$ferp[,,,-6]
-empirStatsSorBinAvg$ferp = empirStatsSorBinAvg$ferp[,,,-6]
-  
 simStatsSorBinFixedMed = getStats(simSorBinFixed, 'median')
 simStatsSorBinFixedAvg = getStats(simSorBinFixed, 'average')
 
@@ -287,15 +227,11 @@ simStatsSorBinLogSerAvg = getStats(simSorBinLogSer, 'average')
 empirStatsVarBinMed = getStats(empirVarBin, 'median')
 empirStatsVarBinAvg = getStats(empirVarBin, 'average')
 
-empirStatsVarBinMed$ferp = empirStatsVarBinMed$ferp[,,,-6]
-empirStatsVarBinAvg$ferp = empirStatsVarBinAvg$ferp[,,,-6]
-  
 simStatsVarBinFixedMed = getStats(simVarBinFixed, 'median')
 simStatsVarBinFixedAvg = getStats(simVarBinFixed, 'average')
 
 simStatsVarBinLogSerMed = getStats(simVarBinLogSer, 'median')
 simStatsVarBinLogSerAvg = getStats(simVarBinLogSer, 'average')
-
 
 ## generate pdfs of r2 values, exponential or pwr function better
 pl_r2 = function() {
@@ -311,17 +247,17 @@ pl_r2 = function() {
   }    
 }
 
-stats = list(empirStatsSorAbuAvg,  simStatsSorAbuLogSerAvg)
+stats = list(empirStatsSorAbuAvg,  simStatsSorAbuFixedAvg)
 pdf('./figs/exp_vs_pwr_avg_sor_abu_empirical.pdf', width= 7 * 2, height=7) 
   pl_r2()
 dev.off()  
 ##----------------------------------------------------------------------------
-stats = list(empirStatsSorBinAvg,  simStatsSorBinLogSerAvg)
+stats = list(empirStatsSorBinAvg,  simStatsSorBinFixedAvg)
 pdf('./figs/exp_vs_pwr_avg_sor_bin_empirical.pdf', width= 7 * 2, height=7) 
   pl_r2()
 dev.off()  
 ##----------------------------------------------------------------------------
-stats = list(empirStatsSorAbuMed,  simStatsSorAbuLogSerMed)
+stats = list(empirStatsSorAbuMed,  simStatsSorFixedMed)
 pdf('./figs/exp_vs_pwr_med_sor_abu_empirical.pdf', width= 7 * 2, height=7) 
   pl_r2()
 dev.off()  
@@ -336,7 +272,7 @@ pdf('./figs/exp_vs_pwr_med_var_abu_empirical.pdf', width= 7 * 2, height=7)
   pl_r2()
 dev.off()  
 
-## plot summary statistics
+## plot summary statistics------------------------------------------------------
 
 pl_coef = function(stats1, stats2, stats3=NULL, xlim=NULL, ylim=NULL) {
   if (is.null(xlim))
@@ -364,11 +300,9 @@ pl_coef = function(stats1, stats2, stats3=NULL, xlim=NULL, ylim=NULL) {
 
 pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*2)
   stats1 = empirStatsSorAbuAvg
-  #stats2 = simStatsSorAbuFixedAvg
-  stats2 = simStatsSorAbuLogSerAvg
+  stats2 = simStatsSorAbuFixedAvg
   stats1 = stats1[-grep('serp', names(stats1))]
   stats2 = stats2[-grep('serp', names(stats2))]
-  #stats3 = stats3[-grep('serp', names(stats3))]
 
   par(mfrow=c(2,2))
   mod = 'pwr'
@@ -389,25 +323,11 @@ pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*2)
   cof = 'b1'
   pl_coef(stats1, stats2)
 
-
-  pl_coef(stats1, stats2, stats3)
-  #
-  cof = 'b1'
-  pl_coef(stats1, stats2, stats3)
-  ##
-  mod = 'exp'
-  cof = 'b0'
-  pl_coef(stats1, stats2, stats3)
-  #
-  cof = 'b1'
-  pl_coef(stats1, stats2, stats3)
 ##------------------------------
   stats1 = empirStatsSorBinAvg
-#  stats2 = simStatsSorBinFixedAvg
-  stats2 = simStatsSorBinLogSerAvg
+  stats2 = simStatsSorBinFixedAvg
   stats1 = stats1[-grep('serp', names(stats1))]
   stats2 = stats2[-grep('serp', names(stats2))]
-#  stats3 = stats3[-grep('serp', names(stats3))]
 
   par(mfrow=c(2,2))
   mod = 'pwr'
@@ -426,18 +346,6 @@ pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*2)
   #
   cof = 'b1'
   pl_coef(stats1, stats2)
-#####
-  pl_coef(stats1, stats2, stats3)
-  #
-  cof = 'b1'
-  pl_coef(stats1, stats2, stats3)
-  ##
-  mod = 'exp'
-  cof = 'b0'
-  pl_coef(stats1, stats2, stats3)
-  #
-  cof = 'b1'
-  pl_coef(stats1, stats2, stats3)
 dev.off()
 
 ##-----------------------------------------------------------------------------
@@ -481,183 +389,3 @@ pdf('./figs/coef_one_to_one_var_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*1.5)
   pl_coef(stats1, stats2)
 dev.off()  
 
-################ Abu Sorensen
-pdf('./figs/empir_sim_sor_arith.pdf')
-par(mfrow=c(4,4))
-ylims = rbind(c(0.001,.4),c(.001,.05),c(.001,.05),c(.001,.4),
-              c(.001,.7),c(.001,.05),c(.001,.05),c(.001,.05))
-for (i in seq_along(shrtnames)) {
-  results1 = eval(parse(text=paste('empirSorAbu$', shrtnames[i], sep='')))           
-  results2 = eval(parse(text=paste('simSorAbuLogSer$', shrtnames[i], sep=''))) 
-  results3 = eval(parse(text=paste('simSorAbuFixed$', shrtnames[i], sep=''))) 
-  unigrains = unique(results1$Comm)
-  plot(Metric.50 ~ Dist, data = results1, ylim=c(0, 1), type='n', main=shrtnames[i])
-  for (j in seq_along(unigrains)) {
-    lines(Metric.50 ~ Dist, data = results1, subset= Comm == unigrains[j], 
-         col=j, lty=1, lwd=2, type='o')
-    lines(Med ~ Dist, data = results3, subset= Comm == unigrains[j],
-          col=j, lty=2, lwd=2, type='l')
-    if (shrtnames[i] != 'cross')
-      lines(Med ~ Dist, data = results2, subset= Comm == unigrains[j],
-            col=j, lty=3, lwd=2, type='l')
-  }
-}
-
-################ Binary Sorensen
-par(mfrow=c(2,4))
-results1 = empirSorBin
-results2 = simSorBinLogSer
-#results3 = simSorBinFixed
-ylims = rbind(c(0.001,.4),c(.001,.05),c(.001,.05),c(.001,.6),
-              c(.3,1),c(.001,.05),c(.001,.05),c(.001,.05))
-for(i in seq_along(shrtnames)){
-  plot(Metric.avg ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l',
-       ylim=ylims[i,],main=shrtnames[i])
-  lines(Metric.avg ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
-        type='l')
-#  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
-#   lwd=2,type='l')
-}
-dev.off()
-################ Abu varWithin
-par(mfrow=c(2,4))
-results1 = empirVarAbu
-results2 = simVarAbuLogSer
-results3 = simVarAbuFixed
-ylims = rbind(c(35,2000),c(.001,.05),c(.001,.05),c(.001,.4),
-              c(.3,.7),c(.001,.05),c(.001,.05),c(.001,.05))
-for(i in seq_along(shrtnames)){
-  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l')
-#       ylim=ylims[i,],main=shrtnames[i])
-  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
-        type='l')
-  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
-        lwd=2,type='l')
-}
-
-################ binary varWithin
-par(mfrow=c(2,4))
-results1 = empirVarBin
-results2 = simVarBinLogSer
-results3 = simVarBinFixed
-for(i in seq_along(shrtnames)){
-  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='l')
-#       ylim=ylims[i,],main=shrtnames[i])
-  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
-        type='l')
-  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='dodgerblue',
-        lwd=2,type='l')
-}
-
-dev.off()
-############################################ log -log
-################ Abu Sorensen
-pdf('empir_sim_sor_loglog.pdf')
-par(mfrow=c(2,4))
-results1 = empirSorAbu
-results2 = simSorAbuLogSer
-results3 = simSorAbuFixed
-ylims = rbind(c(0.02,1),c(.001,1),c(.001,1),c(.02,.4),
-              c(.1,1),c(.003,1),c(.003,1),c(.003,1))
-for(i in seq_along(shrtnames)){
-  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
-       ylim=ylims[i,],main=shrtnames[i],log='xy')
-  tmp = results2[[i]]
-  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
-          col='palegreen')
-  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='green3',lwd=2,
-        type='l')
-  tmp = results3[[i]]
-  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
-          col='dodgerblue')
-  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='blue',
-        lwd=2,type='l')
-  lines(Exp ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
-        type='l')
-  points(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,pch=19)
-}
-
-################ Binary Sorensen
-par(mfrow=c(2,4))
-results1 = empirSorBin
-results2 = simSorBinLogSer
-results3 = simSorBinFixed
-ylims = rbind(c(0.05,1),c(.001,1),c(.001,1),c(.03,.8),
-              c(.2,1),c(.003,1),c(.003,1),c(.003,1))
-for(i in seq_along(shrtnames)){
-  plot(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,lwd=2,type='n',
-       ylim=ylims[i,],main=shrtnames[i],log='xy')
-  tmp = results2[[i]]
-  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
-          col='palegreen')
-  lines(Metric ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='green3',lwd=2,
-        type='l')
-  tmp = results3[[i]]
-  polygon(c(tmp$Dist,rev(tmp$Dist)),c(tmp$MetricHi,rev(tmp$MetricLo)),border=NA,
-          col='dodgerblue')
-  lines(Metric ~ Dist,data = results3[[i]],subset= Comm == 1|Comm == 10,col='blue',
-        lwd=2,type='l')
-  lines(Exp ~ Dist,data = results2[[i]],subset= Comm == 1|Comm == 10,col='red',lwd=2,
-        type='l')
-  points(Metric ~ Dist,data = results1[[i]],subset= Comm == 1 |Comm == 10,col=1,pch=19)
-}
-dev.off()
-
-par(mfrow=c(1,1))
-plot(1:10,1:10,frame.plot=F,axes=F,xlab='',ylab='',type='n')
-legend('center',c('Empirical','METE','METE fixed abu','RP'),col=c('black','green3',
-       'blue','red'),cex=2,pch=c(19,rep(NA,3)),lty=c(NA,rep(1,3)),lwd=c(NA,rep(2,4)),bty='n')
-
-
-
-################ Abu varWithin
-par(mfrow=c(2,3))
-results1 = empirVarAbuAvg
-results2 = simVarAbuLogSer
-results3 = simVarAbuFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(35,2000),main='bci',log='xy')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,1),main='cocoli',log='xy')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.1,4),main='sherman1',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(1,4),main='sherman2',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(1e3,6e4),main='serp',log='xy')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-
-################ binary varWithin
-par(mfrow=c(2,3))
-results1 = empirVarBinAvg
-results2 = simVarBinLogSer
-results3 = simVarBinFixed
-plot(Metric ~ Dist,data = results1[[1]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(4,13),main='bci',log='xy')
-lines(Metric ~ Dist,data = results2[[1]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[1]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[2]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.35,.55),main='cocoli',log='xy')
-lines(Metric ~ Dist,data = results2[[2]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[2]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(.6,1),main='sherman1',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[3]],subset= Comm == 13,col=1,lwd=2,type='l',ylim=c(1,1.6),main='sherman2',log='xy')
-lines(Metric ~ Dist,data = results2[[3]],subset= Comm == 2,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[3]],subset= Comm == 2,col='dodgerblue',lwd=2,type='l')
-#
-plot(Metric ~ Dist,data = results1[[4]],subset= Comm == 1,col=1,lwd=2,type='l',ylim=c(1,4),main='serp',log='xy')
-lines(Metric ~ Dist,data = results2[[4]],subset= Comm == 1,col='red',lwd=2,type='l')
-lines(Metric ~ Dist,data = results3[[4]],subset= Comm == 1,col='dodgerblue',lwd=2,type='l')
-
-dev.off()
