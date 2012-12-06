@@ -1778,14 +1778,16 @@ spCommExpPoi = function(a, b, n) {
 }
 
 ##3.12##
-spAvgExpPoi = function(a, b, n) {
+exp_S_poi = function(a, b, n) {
+  ## old name: spAvgExpPoi()
   ## Plotkin and Muller-Lanadu 2002, Eq. 8
-  ## returns the average expected number of species under the Poisson expectation for
+  ## Returns:
+  ## the average expected number of species under the Poisson expectation for
   ## two samples of proportional area a and b and species abundances n
   ## Note this is an approximation of what Plotkin refers to as the binomial 
   ## distribution which is also known as the coleman model. These two are 
   ## very similar when a << 1
-  ## arguments:
+  ## Arguments:
   ## a: proportion of area of a randomly selected sample from a larger total area
   ## b: proportion of area of a randomly selected sample from a larger total area
   ## n: the species total abundances across the study site
@@ -1794,25 +1796,68 @@ spAvgExpPoi = function(a, b, n) {
                          1 - exp(-x * y))))
 }
 
-spAvgExpColeman = function(a, n) {
-  ## Coleman (1981), Eq. 1.12
-  ## returns the average expected number of species under the binomial distr for
-  ## a sample of proportional area a and species abundances n
-  ## arguments:
-  ## a: proportion of area of a randomly selected sample from a larger total area
+exp_S_binom = function(A, A0, n) {
+  ## old name: spAvgExpColeman()
+  ## Expected number of species from Coleman (1981), Eq. 1.12
+  ## See Eq. 3.11 for an alternative formultaion using the SAD
+  ## Arguments:
+  ## A: area of a randomly selected sample from a larger total area
+  ## A0: the total area of the site  
   ## n: the species total abundances across the study site
-  sum(1 - (1 - a) ^ n)
+  ## Returns:
+  ## the average expected number of species under the binomial distr for
+  ## a sample of area A out of A0 and species abundances n
+  S = sum(1 - (1 - (A/A0)) ^ n)
+  return(S)
 }
 
-spVarExpColeman = function(a, n) {
+exp_Svar_binom = function(A, A0, n) {
+  ## old name: spVarExpColeman()
   ## Coleman (1981), Eq. 1.13
-  ## returns the variance in the expected number of species under the binomial 
-  ## distr for a sample of proportional area a and species abundances n
-  ## arguments:
+  ## See Eq. 3.12 for an alternative formulation using the SAD
+  ## Arguments:
   ## a: proportion of area of a randomly selected sample from a larger total area
   ## n: the species total abundances across the study site
-  sum((1 - a) ^ n) - sum((1 - a) ^ (2 * n))
+  ## Returns:
+  ## the variance in the expected number of species under the binomial 
+  ## distr for a sample of proportional area a and species abundances n
+  a = A / A0
+  Svar = sum((1 - a) ^ n) - sum((1 - a) ^ (2 * n))
+  return(Svar)
 }
+
+exp_S_logser_binom = function(A, A0, S0, N0, version='harte') {
+  ## version == 'coleman' returns Coleman 1981 equ. 3.11
+  ## version == 'harte' returns expectation following Harte 2011 equ 3.13
+  joint_prob = rep(NA, N0)
+  beta_sad = as.numeric(get_beta_sad_mle(S0, N0)[2])
+  for (n in 1:N0) {
+    prob_not_occur = (1 - (A/A0))^n
+    prob_occur = 1 - prob_not_occur
+    prob_of_n = exp(-beta_sad * n) / (n * log(beta_sad^-1))
+    if (version == 'harte')
+      joint_prob[n] = prob_occur * prob_of_n 
+    if (version == 'coleman')
+      joint_prob[n] = prob_not_occur * prob_of_n 
+  }  
+  if (version == 'harte')
+    S = S0 * sum(joint_prob)
+  if (version == 'coleman')
+    S = S0 * (1 -  sum(joint_prob))
+  return(S)
+}
+
+sar_logser_binom = function(Avals, A0, S0, N0, both=FALSE) {
+  if (both) {
+    Sexp = matrix(NA, ncol=2, nrow= length(Avals))
+    Sexp[ , 1] = sapply(Avals, function(A) exp_S_logser_binom(A, A0, S0, N0, 'harte'))
+    Sexp[ , 2] = sapply(Avals, function(A) exp_S_logser_binom(A, A0, S0, N0, 'coleman'))
+  }
+  else
+    Sexp = sapply(Avals, function(A) exp_S_logser_binom(A, A0, S0, N0, 'harte'))
+  return(Sexp)
+}
+
 ##3.13##
 spCommExpBin = function(a, b, areaTot, numOcc) {
   ## expected species commonality when pres/abse data is only available
@@ -1849,7 +1894,7 @@ sorExp = function(mat, areaSampA, areaSampB=NULL){
   #first evaulate if pres/abs or abundance matrix
   if (sum(mat > 1) > 0) { #  for abundance use Poisson expectation
     n = apply(mat, 2, sum)
-    sor = spCommExpPoi(a, b, n) / spAvgExpPoi(a, b, n)
+    sor = spCommExpPoi(a, b, n) / exp_S_poi(a, b, n)
   }
   else{
     numOcc = apply(mat, 2, sum)
@@ -1868,7 +1913,7 @@ jacExp = function(mat, areaSampA, areaSampB=NULL){
   #first evaulate if pres/abs or abundance matrix
   if (sum(mat > 1) > 0) { #  for abundance use Poisson expectation
     n = apply(mat, 2, sum)
-    jac = spCommExpPoi(a, b ,n) / (2 * spAvgExpPoi(a, b, n) - spCommExpPoi(a, b, n))
+    jac = spCommExpPoi(a, b ,n) / (2 * exp_S_poi(a, b, n) - spCommExpPoi(a, b, n))
   }
   else{
     numOcc = apply(mat, 2, sum)
@@ -2229,7 +2274,7 @@ make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
     for (i in seq_along(n_quadrats)) {
       if (log2(n_quadrats[i]) %% 2 == 1) {
         ## if # of bisections is odd then arbitrarily 
-        ##make x dimension have more cells
+        ## make x dimension have more cells
         xlengths[i] = xdiff / n_pixels_long(log2(n_quadrats[i]))
         ylengths[i] = ydiff / n_pixels_wide(log2(n_quadrats[i]))
       }  
@@ -2249,8 +2294,8 @@ make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
     ybreaks = seq(domain[3], domain[4], ylengths[i]) 
     for (x in 1:(length(xbreaks) - 1)) {
       for (y in 1:(length(ybreaks) - 1)) {
-        inQuad =  xbreaks[x] <= coords[,1] & coords[,1] < xbreaks[x + 1] & 
-                  ybreaks[y] <= coords[,2] & coords[,2] < ybreaks[y + 1]
+        inQuad =  xbreaks[x] <= coords[ , 1] & coords[ , 1] < xbreaks[x + 1] & 
+                  ybreaks[y] <= coords[ , 2] & coords[ , 2] < ybreaks[y + 1]
         if (is.null(grainSuffix)) {
           comms[irow, c(1:3)] = c(paste(round(xlengths[i] * ylengths[i], 2), sep=''),
                                   x, y)
@@ -2311,7 +2356,7 @@ get_bisection_history = function(grains, abu) {
   return(out)
 }
 
-getResults = function(names, metric, dataType, simResult=FALSE)
+getResults = function(names, metric, dataType, sim_result=FALSE)
 {
   ## Purpose: to import the results of the 'calcMetrics' function
   ## and to load them into a list
@@ -2319,13 +2364,13 @@ getResults = function(names, metric, dataType, simResult=FALSE)
   ## names: the short names that were used in the naming of the output files
   ## metric: the metric calculated, see 'calcMetrics' for options
   ## dataType: the data type of interest, 'binary' or 'abu'
-  ## simResult: specifies if the object is a simulation result
+  ## sim_result: specifies if the object is a simulation result
   results = vector('list', length=length(names))
   names(results) = names
   for (i in seq_along(results)) {
     load(paste('./', metric, '/' ,metric, '_', names[i], '_', dataType, '.Rdata',
                sep=''))
-    if (simResult)
+    if (sim_result)
       results[[i]] = metrics
     else
       results[[i]] = eval(parse(text=metric))
@@ -2333,7 +2378,8 @@ getResults = function(names, metric, dataType, simResult=FALSE)
   return(results)
 }
 
-reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
+reshapeResults = function(results, metric, null=TRUE, perm_null=FALSE,
+                          sim_result=FALSE){
   ## Purpose: to reshape the results from a nested list to a matrix
   ## of the most important information
   ## Arguements:
@@ -2341,7 +2387,7 @@ reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
   ## metric: which metric were the results computed for
   ## perm_null: boolean, TRUE means that permutation null models were 
   ##            carried out
-  ## sim_results: boolean, TRUE means that the results are from simulated
+  ## sim_result: boolean, TRUE means that the results are from simulated
   ##            communities
   out = vector('list', length=length(results))
   names(out) = names(results)
@@ -2351,34 +2397,37 @@ reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
     vExp = vector('list', length=length(results[[i]]))
     Dist = vExp
     n = vExp
-    rpExp = vExp 
+    if (null)
+      rpExp = vExp 
     for (j in seq_along(results[[i]])) { ## the grain/community
       if (is.null(results[[i]][[j]]))
         next
-      if (sim_results) {
+      if (sim_result) {
         vobject = results[[i]][[j]][[1]][[1]]$vario
         quants = !is.na(results[[i]][[j]][[1]][[1]]$parms$quants)
-        if (perm_null) {
-          rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, mean),
-                               apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, quantile,
-                                     c(.025, .5, .975))))
-          colnames(rpExp[[j]]) = c('avg', 'exp.qt.25', 'exp.qt.50', 'exp.qt.75')
-        }
-        else {
-          rpExp[[j]] =  data.frame(Exp.avg = rep(results[[i]][[j]][[1]][[3]], nrow(vobject)))
+        if (null) {
+          if (perm_null) {
+            rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, mean),
+                                 apply(results[[i]][[j]][[1]][[2]]$vario[ , 1, -1], 1, quantile,
+                                       c(.25, .5, .75))))
+            colnames(rpExp[[j]]) = c('avg', '25', '50', '75')
+          }  
+          else 
+            rpExp[[j]] =  data.frame(Exp.avg = rep(results[[i]][[j]][[1]][[3]], nrow(vobject)))
         }  
       }
       else {
         vobject = results[[i]][[j]][[1]]$vario
         quants = !is.na(results[[i]][[j]][[1]]$parms$quants)
-        if (perm_null) {
-          rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, mean),
-                               apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, quantile,
-                                     c(.025, .5, .975))))
-          colnames(rpExp[[j]]) = c('avg', 'exp.qt.25', 'exp.qt.50', 'exp.qt.75')
-        }
-        else {
-          rpExp[[j]] = data.frame(Exp.avg = rep(results[[i]][[j]][[3]], nrow(vobject)))
+        if (null) {
+          if (perm_null) {
+            rpExp[[j]] = t(rbind(apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, mean),
+                                 apply(results[[i]][[j]][[2]]$vario[ , 1, -1], 1, quantile,
+                                     c(.25, .5, .75))))
+            colnames(rpExp[[j]]) = c('avg', '25', '50', '75')
+          }
+          else
+            rpExp[[j]] = data.frame(Exp.avg = rep(results[[i]][[j]][[3]], nrow(vobject)))
         }  
       }
       Dist[[j]] = vobject$Dist 
@@ -2391,15 +2440,18 @@ reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
       if (any(metric %in% c('sorensen','jaccard'))) {
         ## convert the values into similarity measures
         vExp[[j]] = 1 - vExp[[j]]
-        rpExp[[j]] = 1 - rpExp[[j]]
+        if (null)
+          rpExp[[j]] = 1 - rpExp[[j]]
       }  
       if (j == 1) {
         vExp_dat = vExp[[j]]
-        rpExp_dat = rpExp[[j]]
+        if (null)
+          rpExp_dat = rpExp[[j]]
       }  
       else {
         vExp_dat = rbind(vExp_dat, vExp[[j]])
-        rpExp_dat = rbind(rpExp_dat, rpExp[[j]])
+        if (null)
+          rpExp_dat = rbind(rpExp_dat, rpExp[[j]])
       }  
     }
     if (is.null(names(results[[i]])))
@@ -2407,13 +2459,17 @@ reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
     else
       commNames = names(results[[i]])
     names(vExp_dat) = sub('exp.qt.','', names(vExp_dat))
-    names(rpExp_dat) = sub('exp.qt.','', names(rpExp_dat))
     if (any(metric %in% c('sorensen','jaccard'))) {
       names(vExp_dat[ , -1]) = rev(names(vExp_dat[ , -1]))
-      names(rpExp_dat[ , -1]) = rev(names(rpExp_dat[ , -1]))
+      if (null)
+        names(rpExp_dat[ , -1]) = rev(names(rpExp_dat[ , -1]))
     }  
-    out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
-                          Exp = rpExp_dat, N = unlist(n))
+    if (null)
+      out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
+                            Exp = rpExp_dat, N = unlist(n))
+    else
+      out[[i]] = data.frame(Dist = unlist(Dist), Metric = vExp_dat,
+                            N = unlist(n))
     out[[i]] = data.frame(out[[i]],
                Comm = unlist(mapply(rep,commNames,each=sapply(n, length),
                                        SIMPLIFY=FALSE)))
@@ -2421,7 +2477,7 @@ reshapeResults = function(results, metric, perm_null=FALSE, sim_results=FALSE){
   return(out)
 }  
 
-avgResults = function(results) {
+avgResults = function(results, null=TRUE) {
   ## convert to flat file for averaging
   N = length(results)
   for (i in seq_along(results)) {
@@ -2434,17 +2490,31 @@ avgResults = function(results) {
   uniComms = unique(flat$Comm)
   for (i in seq_along(uniComms)) {
     true = flat$Comm == uniComms[i]
-    avgs = apply(flat[true, c('Dist', 'N', 'Metric.50', 'Metric.avg', 'Exp')],
-                 2, function(x) tapply(x, round(flat$Dist[true], 4), mean))
-    qts_lo = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp')], 2, function(x)
-                   tapply(x, round(flat$Dist[true], 4), quantile, 0.025))
-    qts_hi = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp')], 2, function(x)
-                   tapply(x, round(flat$Dist[true], 4), quantile, 0.975))
-    dat = data.frame(grain = as.numeric(sub('comm','',uniComms[i])),
+    if (null) {
+      avgs = apply(flat[true, c('Dist', 'N', 'Metric.50', 'Metric.avg', 'Exp.avg')],
+                   2, function(x) tapply(x, round(flat$Dist[true], 4), mean))
+      qts_lo = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp.avg')], 2, function(x)
+                     tapply(x, round(flat$Dist[true], 4), quantile, 0.025))
+      qts_hi = apply(flat[true, c('Metric.50', 'Metric.avg', 'Exp.avg')], 2, function(x)
+                     tapply(x, round(flat$Dist[true], 4), quantile, 0.975))
+      dat = data.frame(grain = as.numeric(sub('comm','',uniComms[i])),
                        Dist = avgs[,1], N = avgs[,2], 
                        med.lo = qts_lo[,1], med = avgs[,3], med.hi = qts_hi[,1], 
                        avg.lo = qts_lo[,2], avg = avgs[,4], avg.hi = qts_hi[,2],
                        exp.lo = qts_lo[,3], exp = avgs[,5], exp.hi = qts_hi[,3])
+    }
+    else {
+      avgs = apply(flat[true, c('Dist', 'N', 'Metric.50', 'Metric.avg')],
+                   2, function(x) tapply(x, round(flat$Dist[true], 4), mean))
+      qts_lo = apply(flat[true, c('Metric.50', 'Metric.avg')], 2, function(x)
+                     tapply(x, round(flat$Dist[true], 4), quantile, 0.025))
+      qts_hi = apply(flat[true, c('Metric.50', 'Metric.avg')], 2, function(x)
+                     tapply(x, round(flat$Dist[true], 4), quantile, 0.975))
+      dat = data.frame(grain = as.numeric(sub('comm','',uniComms[i])),
+                       Dist = avgs[,1], N = avgs[,2], 
+                       med.lo = qts_lo[,1], med = avgs[,3], med.hi = qts_hi[,1], 
+                       avg.lo = qts_lo[,2], avg = avgs[,4], avg.hi = qts_hi[,2])
+    }
     if (i == 1)
       out = dat
     else
@@ -2508,7 +2578,7 @@ loadSimResults = function(S, N, dirPath, B=12, dataType='abu') {
   return(results)
 }
 
-avgSimResults = function(results, metric) {
+avgSimResults = function(results, metric, null=TRUE, perm_null=FALSE) {
   ## This function averages the simulation results over all the different runs
   ## for each parameter combination
   ## Arguments
@@ -2519,8 +2589,8 @@ avgSimResults = function(results, metric) {
   for (i in seq_along(results)) {
     if (is.null(results[[i]]))
       next
-    simRaw = reshapeResults(results[[i]], metric, TRUE)
-    simAvg[[i]] = avgResults(simRaw)
+    simRaw = reshapeResults(results[[i]], metric, null, perm_null, sim_result=TRUE)
+    simAvg[[i]] = avgResults(simRaw, null)
   }
   return(simAvg)
 }
@@ -2584,7 +2654,10 @@ getSimStats = function(results, S, N) {
   return(stats)
 }
 
-getResid = function(obs, exp) {
+get_ddr_resid = function(obs, exp) {
+  ## computes distance decay relationship residuals
+  ## this function is not very generic
+  ## will only work for the METE spatial project data results
   for (i in seq_along(obs)) {
     index = grep(names(obs[i]), names(exp))
     if (length(index) == 0)
@@ -2602,7 +2675,7 @@ getResid = function(obs, exp) {
       } 
       if (metric == 'binomial') {
         metric_column_obs = na.omit(match('Metric.avg', names(obs[[1]])))[1]
-        metric_column_exp = na.omit(match('Exp', names(obs[[1]])))[1]
+        metric_column_exp = na.omit(match('Exp.avg', names(obs[[1]])))[1]
       }
       obs_var = obs[[i]][ , metric_column_obs]
       if (metric != 'binomial') {
@@ -2695,7 +2768,7 @@ plotEmpir = function(results, metric='median', expected=FALSE, log="",
   ## Purpose: to plot the results, expects that the graphical window has been 
   ## setup appropriately 
   ## Arguments
-  ## results: a list from which the results should be ploted
+  ## results: a list from which the results should be plotted
   ## metric: the metric of interest: median or average
   ## log: which axes are to be log transformed
   ## quants: if TRUE will plot quantiles as well
@@ -2711,6 +2784,8 @@ plotEmpir = function(results, metric='median', expected=FALSE, log="",
     metric_column = na.omit(match(c('Avg', 'Metric.avg'), names(results[[1]])))[1]
   else
     stop('metric agruments should be either "median" or "average"')
+  if (expected)
+    expected_column = na.omit(match(c('Exp','Exp.avg'), names(results[[1]])))[1]
   y_is_log = regexpr('y', log)[1] != -1
   if (y_is_log) { 
     mins = unlist(lapply(results, function(x) min(x[ , metric_column])))
@@ -2767,9 +2842,11 @@ plotEmpir = function(results, metric='median', expected=FALSE, log="",
         lines(resp_var ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lwd=lwd, ...)
       else
         lines(resp_var ~ Dist, data = dat, col=col[j], lwd=lwd, ...)
-      if (expected)
-        lines(Exp ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lty=2, lwd=lwd,
-              ...)
+      if (expected) {
+        exp_var = dat[ , expected_column]
+        lines(exp_var ~ Dist, data = dat, subset=resp_var > 0, col=col[j], lty=2,
+              lwd=lwd, ...)
+      }  
     }  
   }
 }
@@ -2781,7 +2858,6 @@ str_clean = function(str) {
 }
 
 mk_legend = function(...) {
-  par(mfrow=c(1,1))
   plot(1:10, 1:10, type='n', axes=F, frame.plot=F, xlab='', ylab='')
   legend(...)
 }
@@ -3260,6 +3336,84 @@ Empir.fit<-function(stcrds,n,sim.array,meth='avg',on='desktop'){
  output
 }
 
+addCI = function(x, y.lo, y.hi, col, data=NULL) {
+  ## if data is not null then all of the arguments
+  ## including data itself must be text strings
+  if (!is.null(data)) {
+    x = eval(parse(text=paste(data, '$', x, sep='')))
+    y.lo = eval(parse(text=paste(data, '$', y.lo, sep='')))
+    y.hi = eval(parse(text=paste(data, '$', y.hi, sep='')))
+  }  
+  xvals = c(x, rev(x))
+  yvals = c(y.lo, rev(y.hi))
+  polygon(xvals, yvals, border=NA, col=col)
+}
 
+get_beta_sad_mle = function(S, N) {
+  ## edited version of the function get_lambda_sad_mle by Xiao Xiao
+  ## edits are only stylistic to improve readibility
+  if (N <= 0) {
+    print("Error: N must be greater than 0.")
+    return(NA)
+  }
+  else if (S <= 0) {
+    print("Error: S must be greater than 0.")
+    return(NA)
+  }
+  else if (S / N >= 1) {
+    print("Error: N must be greater than S.")
+    return(NA)
+  }
+  else {
+    ## Solve for lambda 1 in Harte et al. 2009 based on (3)
+    m = seq(1 : N)  
+    b = 10^-99
+#    y = function(x) N / x - S / sum(x^m / m) * (1 - x^N) / (1 - x)
+#    y = function(x) sum(x ^ m / N * S) - sum(x^m / m)
+    y = function(x) sum(x ^ m) / sum(x^m / m) - (N / S)
+    
+    bound=10^-15  ## Define lower bound for x
+    ## If same sign at both ends
+    if (y(bound) * y(1 - bound) >= 0) {  
+      ## Parameter for log-series
+      p = uniroot(y, lower=bound, upper=1.1 - bound,
+                  tol=.Machine$double.eps^0.5)$root
+    }
+    else{
+      p = uniroot(y, lower=bound, upper=1 - bound,
+                  tol=.Machine$double.eps^0.5)$root   
+    }
+    beta_sad = -log(p)
+    return(list(p=p, beta=beta_sad))
+  }
+}
 
+avg_site_results = function(dat, site_names) {
+  indices = match(site_names, names(dat))
+  name_sum = paste(paste('dat$', site_names, sep=''), collapse='+')
+  dat[[indices[1]]] = eval(parse(text=paste('(',name_sum, ') /', length(site_names), sep='')))
+  dat = dat[-indices[-1]]
+  return(dat)
+}
 
+get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
+  site = NULL
+  area = NULL
+  res = NULL
+  for (i in seq_along(obs_dat)) {
+    site_nm = names(obs_dat)[i]
+    site = c(site, rep(site_nm, nrow(obs_dat[[i]])))
+    area = c(area, obs_dat[[i]]$area)
+    obs_sr = eval(parse(text = paste('obs_dat[[i]]$', obs_field, sep='')))
+    if (site_nm %in% names(pred_dat)) {
+      index = match(site_nm, names(pred_dat))
+      pred_sr = eval(parse(text = paste('pred_dat[[index]]$', pred_field, sep='')))
+      len_diff = length(obs_sr) - length(pred_sr)
+      pred_sr = c(rep(NA, len_diff), pred_sr)
+      res = c(res, obs_sr - pred_sr)
+    }
+    else
+      res = c(res, rep(NA, length(obs_sr)))
+  }
+  return(data.frame(site, area, res))
+}  
