@@ -7,10 +7,11 @@ shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
               'bigoak')
 
-empirBin = getResults(shrtnames,'sorensen','binary')
-empirAbu = getResults(shrtnames,'sorensen','abu')
-empirSorBin = reshapeResults(empirBin,'sorensen')
-empirSorAbu = reshapeResults(empirAbu,'sorensen')
+empirBin = getResults(shrtnames, 'sorensen', 'binary')
+empirAbu = getResults(shrtnames, 'sorensen', 'abu')
+empirSorBin = reshapeResults(empirBin, 'sorensen')
+empirSorAbu = reshapeResults(empirAbu, 'sorensen', perm_null=TRUE)
+
 ## Average cocoli1 & 2 and sherman 1 & 2 and drop sherman3
 empirSorBin = merge_drop(empirSorBin)
 empirSorAbu = merge_drop(empirSorAbu)
@@ -30,7 +31,7 @@ save(empirVarBin, file='./varWithin/empirVarBin.Rdata')
 save(empirVarAbu, file='./varWithin/empirVarAbu.Rdata')
 
 ## examine results
-par(mfrow=c(4,4))
+par(mfrow=c(2,4))
 plotEmpir(empirSorAbu, type='o')
 plotEmpir(empirSorAbu, log='xy', type='o')
 plotEmpir(empirSorAbu,log='xy', type='o',quants=T)
