@@ -72,7 +72,3 @@ for (i in seq_along(sitename)) {
     gc()
   }  
 }
-
-if(length(clArgs) == 0)
-  write.csv(sarOut, file ='./sar/mete_sar_avgs.csv', row.names=FALSE)
-
