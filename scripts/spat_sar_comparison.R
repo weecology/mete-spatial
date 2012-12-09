@@ -21,13 +21,14 @@ i = match(site, names(meteEmpirSAD))
     ## meteEmpirSAD CI
     dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
 #    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
-    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey')
+    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey', lty=2)
     ## RP CI
     dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
 #    addCI('grains', 'S_lo', 'S_hi', data='dat', col='pink')
     lines(S_binom ~ grains, data=dat, col='red', lwd=3)
     ## analytical meteEmpirSAD    
     lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
+    lines(sr_iter ~ area, data=meteEmpirSAD[[i]], col='grey', lwd=3, lty=1)
     ## data
     lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
     legend('bottomright', c('Empirical','RP','meteEmpirSAD sim', 'meteEmpirSAD noniter'),
@@ -150,51 +151,78 @@ as.matrix(sort(apply(abs(sar_res[!is.na(sar_res[,4]), 3:10]), 2, mean, na.rm=T))
 ## this keeps sites with lots of spatial scales from dominating
 ## the residuals
 
-avg_sar_res = aggregate(sar_res[ , -(1:2)], by=list(sar_res$site), 
+avg_sar_res = aggregate(sar_res[ , -c(1:2, 11:12)] / sar_res$richness, by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x, na.rm=T) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:8)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean, na.rm=T)
+res_avg = apply(avg_sar_res[ , -1], 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
-                   res_avg
-empirsad_avg     0 44.68045
-empirsad_iter    0 59.86338
-empirsad_noniter 6 27.78716
-empirsad_rp      1 13.26835
-logser_avg       3 15.75582
-logser_iter      2 44.67802
-logser_noniter   2  3.40553
-logser_rp        2 28.08008
+                    res_avg
+empirsad_avg     0 15.75582
+empirsad_iter    0 54.45989
+empirsad_noniter 6  3.40553
+empirsad_rp      1 28.08008
+logser_avg       3 44.68045
+logser_iter      2 59.86338
+logser_noniter   2 27.78716
+logser_rp        2 13.26835
 
 ## compare only at the empirical SAD models
-avg_sar_res = aggregate(sar_res[ , -(1:6)], by=list(sar_res$site), 
+avg_sar_res = aggregate(sar_res[ , 7:10] / sar_res$richness, by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)
+res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
                      res_avg
-empirsad_avg      4 15.75582
-empirsad_iter     0 44.67802
+empirsad_avg      3 15.75582
+empirsad_iter     1 54.45989
 empirsad_noniter 10  3.40553
 empirsad_rp       2 28.08008
 
+## normalized by Savg
+                        res_avg
+empirsad_avg      0 0.041606515
+empirsad_iter     1 0.066459792
+empirsad_noniter 14 0.007523939
+empirsad_rp       1 0.032704148
+
+
 ## compare only at the empirical SAD models simulated iterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')],
+avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] ,
                         by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)
+res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
                  res_avg
 empirsad_avg 12 15.75582
 empirsad_rp   4 28.08008
 
-## plot residuals
-pdf('./figs/sar_residuals.pdf', width=7 * 3, height=7)
+## normalized by Savg
+                   res_avg
+empirsad_avg  4 0.04160652
+empirsad_rp  12 0.03270415
+
+
+## compare empirical analytical iterative and rp
+avg_sar_res = aggregate(sar_res[ , c('empirsad_iter','empirsad_rp')],
+                        by=list(sar_res$site), 
+                        FUN = function(x) mean(x^2, na.rm=T))
+indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
+wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
+res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
+cbind(wins, res_avg)
+                 res_avg
+empirsad_iter  6 54.45989
+empirsad_rp   10 28.08008
+
+
+## plot residuals---------------------------------------------------------------
+pdf('./figs/sar_residuals.pdf', width=7 * 2, height=7 * 2)
   sites = unique(sar_res$site)
-  par(mfrow=c(1,3))
+  par(mfrow=c(2,2))
   plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
        xlim = c(0.1, 1e6), main='METE noniter')
@@ -207,6 +235,17 @@ pdf('./figs/sar_residuals.pdf', width=7 * 3, height=7)
           lwd=4, col=col[habindex])
   }
   legend('bottomright', hab, col=col, lwd=2, bty='n')
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_iter ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
   plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
        xlim = c(0.1, 1e6), main='METE iter sim')
@@ -230,6 +269,163 @@ pdf('./figs/sar_residuals.pdf', width=7 * 3, height=7)
           lwd=4, col=col[habindex], lty=1)
   }
 dev.off()
+
+## plot normalized residuals----------------------------------------------------
+pdf('./figs/sar_norm_residuals.pdf', width=7 * 2, height=7 * 2)
+  sites = unique(sar_res$site)
+  par(mfrow=c(2,2))
+  ylims = c(-.6, .6)  
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE noniter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_noniter / richness ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  legend('bottomright', hab, col=col, lwd=2, bty='n')
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_iter / richness ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter sim')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_avg / richness ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='RP')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_rp / richness ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex], lty=1)
+  }
+dev.off()
+
+## plot log residuals----------------------------------------------------
+pdf('./figs/sar_log_diff_residuals.pdf', width=7 * 2, height=7 * 2)
+  sites = unique(sar_res$site)
+  par(mfrow=c(2,2))
+  ylims = c(-.7, .7)  
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE noniter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(log(richness / (-empirsad_noniter + richness)) ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  legend('bottomright', hab, col=col, lwd=2, bty='n')
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(log(richness / (-empirsad_iter + richness)) ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter sim')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(log(richness / (-empirsad_avg + richness)) ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='RP')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(log(richness / (-empirsad_rp + richness)) ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex], lty=1)
+  }
+dev.off()
+
+## plot studentized residuals----------------------------------------------------
+pdf('./figs/sar_stud_residuals.pdf', width=7 * 2, height=7 * 2)
+  sites = unique(sar_res$site)
+  par(mfrow=c(2,2))
+  ylims = c(-6, 6)  
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE noniter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_noniter / std ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  legend('bottomright', hab, col=col, lwd=2, bty='n')
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims,
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_iter / std ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='METE iter sim')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_avg / std ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex])
+  }
+  plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6), main='RP')
+  axis(side=1, cex.axis=1.75, padj=.5, lwd=8, at=10 ^ (-1:6))
+  axis(side=2, cex.axis=1.75, lwd=8)
+  abline(h=0, lwd=5)
+  for (i in seq_along(sites)) {
+    habindex = match(habitat[match(sites[i], shrtnm)], hab)
+    lines(empirsad_rp / std ~ area, data=sar_res, subset= site == sites[i],
+          lwd=4, col=col[habindex], lty=1)
+  }
+dev.off()
+
 
 ## plot universal curve --------------------------------------------------------
 
@@ -295,22 +491,4 @@ for (i in seq_along(comms)) {
 
 plot(1:10, 1:10, type='n', xlab='', ylab='', axes=F, frame.plot=F)
 legend('center', hab, col=col, pch=pch, lwd=6, lty=NA, cex=3, bty='n')
-
-##------------------------------------------------------------------------------
-## examine empirical SAR and averaged METE sar 
-#bring in serp mete avg and quantile
-
-serp = read.csv('./sar/serp_mete_avg.csv')
-par(mfrow=c(1,1))
-plot(mete$serp,type='n',log='xy',ylim=range(list(mete$serp$sr,serp[,2:4])),
-     frame.plot=F,axes=F,xlab='',ylab='')
-axis(side=1,lwd=4,cex.axis=2)
-axis(side=2,lwd=4,cex.axis=2)
-polygon(c(serp$area,rev(serp$area)),c(serp$sLow,rev(serp$sHigh)),border=NA,col='grey')
-points(serp[,1:2],type='l',lwd=2)
-points(mete$serp,cex=1.25)
-points(empir$serp,pch=19,cex=1.25)
-legend('bottomright',c('Empirical','METE analytical','METE simlulated'),
-       bty='n',lty=c(NA,NA,1),lwd=c(NA,NA,4),pch=c(1,19,NA),cex=1.5)
-       
 
