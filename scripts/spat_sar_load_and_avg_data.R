@@ -102,3 +102,12 @@ sar_res = data.frame(site = meteLogSer_avg_res$site, area = meteLogSer_avg_res$a
                      empirsad_iter = meteEmpirSAD_iter_res$res,
                      empirsad_noniter = meteEmpirSAD_noniter_res$res,
                      empirsad_rp = rpEmpirSAD_res$res)
+
+## Add richness and individual density to residual data.frame
+sar_data = read.csv('./sar/empir_sars.csv')
+sar_res = merge(sar_res, 
+                sar_data[ , c('site', 'area', 'richness', 'std', 'indiv')],
+                all.x=TRUE)
+## sort sar_res so that its in a reasonable order
+sar_res = sar_res[order(sar_res$site, sar_res$area), ]
+
