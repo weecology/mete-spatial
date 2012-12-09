@@ -1638,6 +1638,7 @@ getSAR = function(psp, grains, mv_window=FALSE)
   lenM = n_pixels_wide(log2(grains))
   sr = rep(0, length(grains))
   ind = rep(0, length(grains))
+  std = rep(0, length(grains))
   cs = rep(0, length(grains))
   N = dim(psp)[2]
   M = dim(psp)[3]
@@ -1648,6 +1649,7 @@ getSAR = function(psp, grains, mv_window=FALSE)
   for (l in seq_along(grains)) {
     if (grains[l] == 1) {  # if area=1
       sr[l] = sum(psp > 0)
+      std[l] = sd(as.vector(psp > 0))
       ind[l] = sum(psp)
       cs[l] = N * M
     }
@@ -1660,19 +1662,22 @@ getSAR = function(psp, grains, mv_window=FALSE)
         brksN = seq(1, N, lenN[l])
         brksM = seq(1, M, lenM[l])
       }  
+      sr_vec = NULL
       for (n in brksN) {
         for (m in brksM) {
-          sr[l] = sr[l] + sum(apply(psp[ , n:(n + (lenN[l] - 1)),
-                                           m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0)
+          sr_vec= c(sr_vec, sum(apply(psp[ , n:(n + (lenN[l] - 1)),
+                                           m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0))
           ind[l] = ind[l] + sum(apply(psp[ , n:(n + (lenN[l] - 1)),
                                              m:(m + (lenM[l] - 1))], 1, sum))
           cs[l] = cs[l] + 1
         }
       }
+      sr[l] = sum(sr_vec)
+      std[l] = sd(sr_vec)
     }
   }
-  out = cbind(grains, sr / cs, ind / cs, cs)  
-  colnames(out) = c('grains', 'richness', 'indiv', 'count')
+  out = cbind(grains, sr / cs, std, ind / cs, cs)  
+  colnames(out) = c('grains', 'richness', 'std', 'indiv', 'count')
   return(out)
 }  
 
