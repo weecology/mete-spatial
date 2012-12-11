@@ -3361,6 +3361,14 @@ addAxis2 = function(...) {
   axis(side=2, cex.axis=1.75, lwd=4, ...)
 }
 
+addxlab = function(...) {
+  mtext(side=1, cex=2, ...)
+}
+
+addylab = function(...) {
+  mtext(side=2, cex=2, padj=-2, ...)
+}
+
 
 get_beta_sad_mle = function(S, N) {
   ## edited version of the function get_lambda_sad_mle by Xiao Xiao
