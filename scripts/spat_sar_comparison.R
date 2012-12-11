@@ -492,3 +492,19 @@ for (i in seq_along(comms)) {
 plot(1:10, 1:10, type='n', xlab='', ylab='', axes=F, frame.plot=F)
 legend('center', hab, col=col, pch=pch, lwd=6, lty=NA, cex=3, bty='n')
 
+## compute z-values for analytical iterative curve
+sar = read.csv('./sar/param_sar_avgs.csv')
+sar$z = NA
+for (i in 1:nrow(sar)){
+  if (sar$grains[i] < 256)
+    sar$z[i] = log(sar$sr.avg[i+1] / sar$sr.avg[i]) / log(4)
+}
+
+pdf('./figs/param_sar_scale_collapse.pdf', width=7 * 2, height=7)
+ par(mfrow=c(1,2))
+ plot(log(sar$N/sar$S) , sar$z)
+ lines(Zsmooth)
+ plot(log(sar$N/sar$S) / log(4096 / sar$grains), sar$z)
+ ## x-axis divided by two here b/c 2 bisections rel to anchor scale
+ lines(Zsmooth$x / 2, Zsmooth$y) 
+dev.off()
