@@ -77,6 +77,14 @@ abline(a=0,b=0)
 ## choose which simulated result is of most interest
 dat = resSorAbuFixed
 dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
+sar_data = read.csv('./sar/empir_sars.csv')
+sar_data$area = round(sar_data$area, 2)
+dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
+## subset so that has at least 20 individuals
+dat = subset(dat, indiv >= 20)
+## normalize by S
+#dat[, 14:16] = dat[ , 14:16]  / dat$richness
+
 sites = unique(dat$site)
 
 avgresid = aggregate(avg.res ~ site, data=dat, function(x) sum(x^2) / length(x))
@@ -116,6 +124,7 @@ summary(mod)
 
 ## residuals vs distance summarized per dataset via lowess lines
 pdf('./figs/sor_abu_fixed_residuals.pdf', width = 7 *2 , height=7)
+ylims = c(-.05,.6) #c(-.05, .3)
 par(mfrow=c(1,2))
 for(k in 1:2){
   for(j in 1:2){
@@ -123,7 +132,7 @@ for(k in 1:2){
       main = 'METE'
     else
       main = 'RP'
-    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4), main=main)
+    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=ylims , main=main)
     abline(h=0, lty=2, lwd=2)
     for(i in seq_along(sites)) {
       tmp = subset(dat, site == sites[i])
