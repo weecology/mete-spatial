@@ -172,106 +172,106 @@ dev.off()
 
 ## scale collapse
 pdf('./figs/scale_collapse.pdf', width = 7 * 2, height = 7)
-  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
   xlab = 'log(N/S) / log(Nbar/Sbar)'
   par(mfrow=c(1, 2))
-  plot(b0 ~ ratio , data=sar, xlab=xlab, ylab='b0', type='n')
+  plot(b0 ~ ratio , data=ddr, xlab=xlab, ylab='b0', type='n')
   for (g in seq_along(grains)) 
-    points(b0 ~ ratio, data=sar, subset=grains == grains[g], col=g)
+    points(b0 ~ ratio, data=ddr, subset=grains == grains[g], col=g)
   legend('topright', legend=c('Grains', grains), col=c(NA, 1:length(grains)),
           pch=1, bty='n', cex = 2, lwd=3, lty=NA)
-  plot(b1 ~ ratio , data=sar, xlab=xlab, ylab='b1', type='n')
+  plot(b1 ~ ratio , data=ddr, xlab=xlab, ylab='b1', type='n')
   for (g in seq_along(grains)) 
-    points(b1 ~ ratio, data=sar, subset=grains == grains[g], col=g)
+    points(b1 ~ ratio, data=ddr, subset=grains == grains[g], col=g)
 dev.off()
 
 ## scale collapse lines
 pdf('./figs/scale_collapse_lines.pdf', width = 7 * 2, height = 7*2)
-  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
   xlab = 'log(N/S) / log(Nbar/Sbar)'
   par(mfrow=c(2, 2))
-  plot(b0 ~ ratio , data=sar, main='S fixed, N varies', xlab=xlab, ylab='b0', type='n')
+  plot(b0 ~ ratio , data=ddr, main='S fixed, N varies', xlab=xlab, ylab='b0', type='n')
   for (g in seq_along(grains)) {
     for (s in seq_along(S)) 
-      lines(b0 ~ ratio, data=sar, subset=grains == grains[g] & S == S[s], col=g)
+      lines(b0 ~ ratio, data=ddr, subset=grains == grains[g] & S == S[s], col=g)
   }
-  plot(b0 ~ ratio , data=sar, main='S varies, N fixed',xlab=xlab, ylab='b0', type='n')
+  plot(b0 ~ ratio , data=ddr, main='S varies, N fixed',xlab=xlab, ylab='b0', type='n')
   for (g in seq_along(grains)) {
     for (n in seq_along(N)) 
-      lines(b0 ~ ratio, data=sar, subset=grains == grains[g] & N == N[n], col=g)
+      lines(b0 ~ ratio, data=ddr, subset=grains == grains[g] & N == N[n], col=g)
   }
   legend('topright', legend=c('Grains', grains), col=c(NA, 1:length(grains)),
           pch=1, bty='n', cex = 2, lwd=3, lty=NA)
-  plot(b1 ~ ratio , data=sar, main='S fixed, N varies', xlab=xlab, ylab='b1', type='n')
+  plot(b1 ~ ratio , data=ddr, main='S fixed, N varies', xlab=xlab, ylab='b1', type='n')
   for (g in seq_along(grains)) {
     for (s in seq_along(S))
-      lines(b1 ~ ratio, data=sar, subset=grains == grains[g] & S == S[s], col=g)
+      lines(b1 ~ ratio, data=ddr, subset=grains == grains[g] & S == S[s], col=g)
   }  
-  plot(b1 ~ ratio , data=sar,  main='S varies, N fixed',xlab=xlab, ylab='b1', type='n')
+  plot(b1 ~ ratio , data=ddr,  main='S varies, N fixed',xlab=xlab, ylab='b1', type='n')
   for (g in seq_along(grains)) {
     for (n in seq_along(N))
-      lines(b1 ~ ratio, data=sar, subset=grains == grains[g] & N == N[n], col=g)
+      lines(b1 ~ ratio, data=ddr, subset=grains == grains[g] & N == N[n], col=g)
   }  
 dev.off()
 
 ## consider 3 of the grains
 pdf('./figs/scale_collapse_3grains_pwr_wtr.pdf', width = 7 * 2,
     height = 7 * 2)
-  ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
   plot(ratio, pwrStats[cof, meth, g, , ], xlab=xlab, ylab=cof, type='n')
   xlab = 'log(N/S) / log(Nbar/Sbar)'
   lwd =2
   par(mfrow=c(3, 2))
   for (g in c(1, 3, 5)) {
-    plot(b0 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+    plot(b0 ~ ratio, data=ddr, subset = grains == grains[g], type='n',
          xlab=xlab, ylab='b0', 
          main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
     for(s in seq_along(S))
-      lines(b0 ~ ratio, data=sar, subset = grains == grains[g] & S == S[s],
+      lines(b0 ~ ratio, data=ddr, subset = grains == grains[g] & S == S[s],
             col='palevioletred', lwd=lwd)
-    plot(b0 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+    plot(b0 ~ ratio, data=ddr, subset = grains == grains[g], type='n',
          xlab=xlab, ylab='b0', 
          main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))  
     for(n in seq_along(N))
-      lines(b0 ~ ratio, data=sar, subset = grains == grains[g] & N == N[n],
+      lines(b0 ~ ratio, data=ddr, subset = grains == grains[g] & N == N[n],
             col='dodgerblue', lwd=lwd)
   }
   for (g in c(1, 3, 5)) {
-    plot(b1 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+    plot(b1 ~ ratio, data=ddr, subset = grains == grains[g], type='n',
          xlab=xlab, ylab='b1', 
          main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))
     for(s in seq_along(S))
-      lines(b1 ~ ratio, data=sar, subset = grains == grains[g] & S == S[s],
+      lines(b1 ~ ratio, data=ddr, subset = grains == grains[g] & S == S[s],
             col='palevioletred', lwd=lwd)
-    plot(b1 ~ ratio, data=sar, subset = grains == grains[g], type='n',
+    plot(b1 ~ ratio, data=ddr, subset = grains == grains[g], type='n',
          xlab=xlab, ylab='b1', 
          main = paste('Grain is', grains[g], 'of', 2^12, sep=' '))  
     for(n in seq_along(N))
-      lines(b1 ~ ratio, data=sar, subset = grains == grains[g] & N == N[n],
+      lines(b1 ~ ratio, data=ddr, subset = grains == grains[g] & N == N[n],
             col='dodgerblue', lwd=lwd)
   }  
 dev.off()
 
 ## scale collapse for presentation
   col = colorRampPalette(c('dodgerblue', 'red'))(5)
-  sar$ratio = log(sar$N / sar$S) / log(sar$ind.avg / sar$sr.avg)
+  ddr$ratio = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
   xlab = 'log(N/S) / log(Nbar/Sbar)'
   par(mfrow=c(1, 1))
-  plot(10^b0 ~ ratio , data=sar, xlab='', ylab='', type='n',
+  plot(10^b0 ~ ratio , data=ddr, xlab='', ylab='', type='n',
        frame.plot=F, axes=F, ylim=c(0, 1))
   axis(side=1, cex.axis=1.5, lwd=3)
   axis(side=2, cex.axis=1.5, lwd=3)
   for (g in seq_along(grains)) { 
-    tmp = subset(sar, grains == grains[g])
+    tmp = subset(ddr, grains == grains[g])
     lines(lowess(tmp$ratio, 10^tmp$b0), col=col[g], lwd=4)
   }  
 ##
-  plot(b1 ~ ratio , data=sar, xlab='', ylab='', type='n',
+  plot(b1 ~ ratio , data=ddr, xlab='', ylab='', type='n',
        frame.plot=F, axes=F)
   axis(side=1, cex.axis=1.5, lwd=3)
   axis(side=2, cex.axis=1.5, lwd=3)  
   for (g in seq_along(grains)) {
-    tmp = subset(sar, grains == grains[g])
+    tmp = subset(ddr, grains == grains[g])
     lines(lowess(tmp$ratio, tmp$b1, f= 1/3), col=col[g], lwd=4)
   }  
 
