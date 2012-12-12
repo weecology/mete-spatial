@@ -202,7 +202,7 @@ S = round(10^seq(log10(10), log10(100), length.out=20))
 N = round(10^seq(log10(120), log10(5e5), length.out=20))
 #stats = getSimStats(simSorAbuAvg, S, N)
 
-#pdf('./figs/sup_fig1_r2_simulated_ddr.pdf', width = 7, height= 7)
+#pdf('./figs/sup_fig1_r2_sim_&_empir_ddr.pdf', width = 7 * 2, height= 7)
 #windows(width= 7 * 2, height=7)
 
 meth='wtr'
