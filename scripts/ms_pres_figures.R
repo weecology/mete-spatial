@@ -203,7 +203,7 @@ N = round(10^seq(log10(120), log10(5e5), length.out=20))
 #stats = getSimStats(simSorAbuAvg, S, N)
 
 #pdf('./figs/sup_fig1_r2_simulated_ddr.pdf', width = 7, height= 7)
-#windows(width= 7, height=7)
+#windows(width= 7 * 2, height=7)
 
 meth='wtr'
 dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
@@ -220,18 +220,53 @@ ypwr = c(0, dpwr$y / sum(hpwr$density) * dpwr$n)
 xlims = range(c(xpwr, xexp, 1))
 ylims = range(c(ypwr, yexp))
 
-par(mfrow=c(1,1))
+linelwd = 3
+
+par(mfrow=c(1,2))
 
 plot(xpwr, ypwr, type='l', lty=3, lwd=linelwd, xlim=round(xlims,1), ylim=ylims, col='black',
      xlab='', ylab='', frame.plot=F, axes=F)
+mtext(side=3, 'METE parameter space', cex=2)
 addAxis1(at=c(.7, .8, .9, 1))
 addAxis2()
-addxlab(expression('Coefficient of Determination, ' * italic(R^2)))
+addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
+        padj=2)
+addylab('Freqency')
+lines(xpwr, ypwr,  lwd=linewd, col='black')
+lines(xexp, yexp, lwd=linelwd, col='grey')
+
+##
+load('./sorensen/empirSorAbu.Rdata') 
+empir_stats = getStats(empirSorAbu, 'average')
+
+r2pwr = unlist(sapply(empir_stats, function(x) x['pwr', 'r2', 'wtr',]))
+r2exp = unlist(sapply(empir_stats, function(x) x['exp', 'r2', 'wtr',]))
+dpwr = density(r2pwr, na.rm=T)
+hpwr = hist(r2pwr, plot=F)
+dexp = density(r2exp, na.rm=T)
+hexp = hist(r2exp, plot=F)
+
+xexp = dexp$x
+yexp = dexp$y / sum(hexp$density) * dexp$n
+
+xpwr = c(min(xexp), dpwr$x)
+ypwr = c(0, dpwr$y / sum(hpwr$density) * dpwr$n)
+
+
+plot(xpwr, ypwr, type='n', xlim=range(c(xpwr, xexp)), ylim=range(c(ypwr, yexp)),
+     xlab='', ylab='', frame.plot=F, axes=F)
+mtext(side=3, 'Empirical datasets', cex=2)
+addAxis1()
+addAxis2()
+addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
+        padj=2)
 addylab('Freqency')
 lines(xpwr, ypwr,  lwd=linelwd, col='black')
 lines(xexp, yexp, lwd=linelwd, col='grey')
+
 legend('topleft', c('Exponential Model', 'Power  Model'),
-       lty=1, lwd=6, bty='n', cex=2, col=c( 'grey', 'black'))
+       lty=1, lwd=6, bty='n', cex=1.5, col=c( 'grey', 'black'))
+
 
 dev.off()
 
