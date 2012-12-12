@@ -247,10 +247,13 @@ pl_r2 = function() {
   for( i in 1:2) {
     r2pwr = unlist(sapply(stats[[i]], function(x) x['pwr', 'r2', 'wtr',]))
     r2exp = unlist(sapply(stats[[i]], function(x) x['exp', 'r2', 'wtr',]))
-    brks = seq(0, 1, length.out=21)
+    dpwr = density(r2pwr, na.rm=T)
+    dexp = density(r2exp, na.rm=T)
     par(mfrow=c(1,2))
-    hist(r2exp, xlim=c(0,1), breaks=brks, col='red')
-    hist(r2pwr, xlim=c(0,1), breaks=brks, col='blue', add=TRUE)
+    plot(dpwr, col='blue',
+         xlim=range(c(dpwr$x, dexp$x)), ylim=range(c(dpwr$y, dexp$y)))
+    lines(dexp, col='red')
+    legend('topleft', c('pwr','exp'), col=c('blue','red'), lty=1)
     plot(r2pwr, r2exp)
     abline(a=0, b=1)
   }    
