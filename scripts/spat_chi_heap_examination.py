@@ -7,7 +7,12 @@ import mete
 import numpy as np
 import csv
 
-out = np.empty((50, 3))
+
+def chi_heap_approx(i, j, n0):
+    """ CHI approximation formula, Harte 2007, Eq. 6.12"""
+    return mete.get_lambda_heap(i, n0) ** 2 / mete.get_lambda_heap(j, n0)
+
+out = np.empty((50, 4))
 chi = []
 jvals = []
 ivals = []
@@ -20,11 +25,13 @@ for j in range(1, 6):
         out[irow, 2] = mete.chi_heap(i, j, 100)
         irow += 1
 
+out[:, 3] = map(chi_heap_approx, list(out[:, 1]), list(out[:, 0]), len(out) * [100])
+
 filename = '../sorensen/harte_2007_chi_heap_results.txt'
 writer = open(filename, 'wb') 
 datawriter = csv.writer(writer)
  
-datawriter.writerow(['i', 'j', 'chi'])
+datawriter.writerow(['i', 'j', 'chi', 'chi_appr'])
 for i in range(0, np.shape(out)[0]):
     datawriter.writerow(out[i, ])
      
