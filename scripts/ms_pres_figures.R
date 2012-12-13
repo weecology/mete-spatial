@@ -98,31 +98,29 @@ i = match(site, names(meteEmpirSAD))
 
 ## panels B & C: empirical SAR residuals
   sites = unique(sar_res$site)
-  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
-       type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6))
+  plot(empirsad_avg / richness ~ area, data=sar_res, log='x', 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='', 
+       xlim = c(0.1, 1e6), ylim=c(-.6, .6))
   addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
   abline(h=0, lwd=4, lty=3)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_avg / richness~ area, data=sar_res, subset= site == sites[i],
           lwd=3, col=habcol[habindex])
   }
-#  legend('bottomright', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
   ##
-  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
+  plot(empirsad_avg / richness ~ area, data=sar_res, log='x',
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6))
+       xlim = c(0.1, 1e6), ylim=c(-.6, .6))
   addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
-  abline(h=0, lwd=3, lty=3)
+  abline(h=0, lwd=4, lty=3)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_rp ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_rp / richness ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=habcol[habindex], lty=1)
   }
-
 ## panel D) empirical DDR pattern at a single scale
 load('./sorensen/empirSorAbu.Rdata')
 load('simulated_empirical_results.Rdata')
@@ -165,6 +163,10 @@ sar_data$area = round(sar_data$area, 2)
 dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
 ## subset so that has at least 20 individuals
 dat = subset(dat, indiv >= 20)
+## bring in habitat type
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+dat$hab = habitat[match(dat$site, shrtnm)]
 
 sites = unique(dat$site)
 
@@ -173,7 +175,7 @@ sites = unique(dat$site)
       main = 'METE'
     else
       main = 'RP'
-    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim=c(-.05,.4), xlim=c(.5,512),
+    plot(avg.res / Metric.avg ~ Dist, data=dat, log='x', type='n', ylim = c(-.1, .8), xlim=c(.5,512),
          xlab='', ylab='', axes=F, frame.plot=F)
     addAxis1(at=2^seq(-1, 9, 2))
     addAxis2()
@@ -183,10 +185,10 @@ sites = unique(dat$site)
       grains = unique(tmp$Comm)
       habindex = match(habitat[match(sites[i], shrtnm)], hab)
       if(j == 1) {
-          lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=3)
+          lines(lowess(tmp$Dist, tmp$avg.res / tmp$Metric.avg), col = habcol[habindex], lwd=3)
       }
       else {
-          lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=3)  
+          lines(lowess(tmp$Dist, tmp$exp.res / tmp$Metric.avg), col = habcol[habindex], lwd=3)  
       }  
     }  
   }  
@@ -478,41 +480,86 @@ hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
 habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
         "#FF8000")
 
-#pdf('./figs/sup_fig4_normalized_sar_residuals.pdf', width=7 * 2, height=7)
-#windows(width=7 * 2, height=7)
+#pdf('./figs/sup_fig4_raw_sar_and_ddr_residuals.pdf', width=7 * 2, height=7 * 2)
+#windows(width=7 * 3, height=7 * 2)
 
-par(mfrow=c(1,2))
+par(mfrow=c(2,2))
+## panels B & C: empirical SAR residuals
   sites = unique(sar_res$site)
-  plot(empirsad_avg / richness ~ area, data=sar_res, log='x', 
-       type='n', frame.plot=F, axes=F, xlab='', ylab='', 
-       xlim = c(0.1, 1e6), ylim=c(-.6, .6))
+  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
+       type='n', frame.plot=F, axes=F, xlab='', ylab='',
+       xlim = c(0.1, 1e6))
   mtext(side=3, 'METE', cex=2)
   addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
   addxlab(expression('Area ' * (m^2)), padj=2)
-  addylab('Normalized Residuals')
+  mtext(side=2,'Raw Residuals',cex=2,padj=-1.5)
   abline(h=0, lwd=4, lty=3)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_avg / richness~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_avg ~ area, data=sar_res, subset= site == sites[i],
           lwd=3, col=habcol[habindex])
   }
 #  legend('bottomright', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
   ##
-  plot(empirsad_avg / richness ~ area, data=sar_res, log='x',
+  plot(empirsad_avg ~ area, data=sar_res, log='x', ylim=c(-25, 25), 
        type='n', frame.plot=F, axes=F, xlab='', ylab='',
-       xlim = c(0.1, 1e6), ylim=c(-.6, .6))
+       xlim = c(0.1, 1e6))
   mtext(side=3, 'Random Placement', cex=2)
   addAxis1(at=10 ^ seq(-1, 5, 2))
   addAxis2()
   addxlab(expression('Area ' * (m^2)), padj=2)
-  addylab('Normalized Residuals')
+  mtext(side=2,'Raw Residuals',cex=2,padj=-1.5)
   abline(h=0, lwd=4, lty=3)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_rp / richness ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_rp ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=habcol[habindex], lty=1)
   }
-  legend('topright', hab, col=habcol, lty=1, lwd=5, bty='n', cex=1.25)
+
+  legend('topright', hab, col=habcol, lty=1, lwd=5, bty='n', cex=1.5)
+
+## raw emprical DDR residuals
+resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
+
+dat = resSorAbuFixed
+dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
+sar_data = read.csv('./sar/empir_sars.csv')
+sar_data$area = round(sar_data$area, 2)
+dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
+## subset so that has at least 20 individuals
+dat = subset(dat, indiv >= 20)
+## bring in habitat type
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+dat$hab = habitat[match(dat$site, shrtnm)]
+
+sites = unique(dat$site)
+
+  for(j in 1:2){
+    if(j == 1)
+      main = 'METE'
+    else
+      main = 'RP'
+    plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim = c(-.1, .6), xlim=c(.5,512),
+         xlab='', ylab='', axes=F, frame.plot=F)
+    addAxis1(at=2^seq(-1, 9, 2))
+    addAxis2()
+    addxlab('Distance (m)', padj=2.25)
+  mtext(side=2,'Raw Residuals',cex=2,padj=-1.5)
+    abline(h=0, lwd=4, lty=3)
+    for(i in seq_along(sites)) {
+      tmp = subset(dat, site == sites[i])
+      grains = unique(tmp$Comm)
+      habindex = match(habitat[match(sites[i], shrtnm)], hab)
+      if(j == 1) {
+          lines(lowess(tmp$Dist, tmp$avg.res), col = habcol[habindex], lwd=3)
+      }
+      else {
+          lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=3)  
+      }  
+    }  
+  }  
+#mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
 
 dev.off()
