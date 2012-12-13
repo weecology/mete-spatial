@@ -111,3 +111,9 @@ sar_res = merge(sar_res,
 ## sort sar_res so that its in a reasonable order
 sar_res = sar_res[order(sar_res$site, sar_res$area), ]
 
+## bring in habitat type
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+sar_res$hab = habitat[match(sar_res$site, shrtnm)]
+
+
