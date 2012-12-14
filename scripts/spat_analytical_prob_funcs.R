@@ -272,13 +272,31 @@ heap_prob = function(n, A, n0, A0, h=hash(), use_c=FALSE){
   return(out)
 }
 
+sep_orders = function(i, shape='sqr') {
+  ## i: number of bisections or scale of A relative to A0
+  ## shape: sqr, rect, or golden to indicate
+  ## that A0 is a square, rectangle, or golden rectangle 
+  ## respectively
+  ## Note: golden rectangle has the dimensions L x L(2^.5)
+  ## returns
+  ## seperation orders in which the number of bisections is 
+  ## shape preserving
+  if (shape == 'golden') 
+    j = i:1 ## all seperation orders
+  if (shape == 'sqr') 
+    j = (i:1)[i:1 %% 2 == 0] ## even seperation orders
+  if (shape == 'rect') 
+    j = (i:1)[i:1 %% 2 == 1] ## odd seperation orders
+  return(j)
+}
 
 calc_D = function(j, L=1){
-  ## Distance calculation for a golden rectangle, L x L(2^.5)
-  ## From Ostling et al. (2004) pg. 130
+  ## Distance calculation given serperation order
+  ## that are shape preserving
+  ## From Ostling et al. (2004) pg. 630
   ## j: seperation order
   ## L: width of rectangle of area A0  
-  D = L / 2^((j:1) / 2)
+  D = L / 2^(j / 2)
   return(D)
 }
 
@@ -287,63 +305,83 @@ calc_lambda = function(i, n0, ...){
   ## i: number of bisections
   if (i == 0)
     lambda = 1
-  if (i != 0){
+  if (i != 0) {
     A0 = 2^i
     lambda = 1 - heap_prob(0, 1, n0, A0, ...)
   }
   return(lambda)
 }
 
-chi_heap = function(i, j, n0, chi_hash=hash(), ...){
+chi_heap = function(i, j, n0, chi_hash=hash(), use_c=FALSE, ...){
   ## calculates the commonality function for a given degree of bisection (i) at 
   ## orders of seperation (j)
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
   ## i: number of bisections
   ## j: order of seperation
+  ## use_c: if TRUE will use C function "chi_heap"
   ## ... : optional arguments to pass on to heap_prob()
+  ## Note: even the C version of this equation is very slow because of the repeated
+  ## computation of the recursive heap_prob(). Lookup tables in python could 
+  ## provide a pretty major speed boost here potentially
   if(n0 == 1){
     out = 0
   }
   else {
-    key = paste(i, j, n0, sep=',')
-    if (!(has.key(key, chi_hash))) {
-      if(j == 1){
-        chi_hash[key] = (n0 + 1)^-1 *
-                 sum(sapply(1:(n0-1), function(m) calc_lambda(i - 1, m, ...) * 
-                                                  calc_lambda(i - 1, n0 - m, ...)))
-      }  
-      else {
-        i = i - 1
-        j = j - 1
-        chi_hash[key] = (n0 + 1)^-1 * sum(sapply(2:n0, function(m)
-                                                chi_heap(i, j, m, chi_hash, ...)))
-      }
+    if (use_c) {
+      load_heap()
+      out = .C("chi_heap", i=as.integer(i), j=as.integer(j),
+               n0=as.integer(n0), prob=as.double(0))$prob
     }
-    out = as.numeric(chi_hash[[key]])
-  }  
+    else {
+      key = paste(i, j, n0, sep=',')
+      if (!(has.key(key, chi_hash))) {
+        if(j == 1){
+          chi_hash[key] = (n0 + 1)^-1 *
+                   sum(sapply(1:(n0-1), function(m) calc_lambda(i - 1, m, ...) * 
+                                                    calc_lambda(i - 1, n0 - m, ...)))
+        }  
+        else {
+          i = i - 1
+          j = j - 1
+          chi_hash[key] = (n0 + 1)^-1 * sum(sapply(2:n0, function(m)
+                                                  chi_heap(i, j, m, chi_hash, ...)))
+        }  
+      }
+      out = as.numeric(chi_hash[[key]])
+    }
+  }
   return(out)
 }
 
-sor_heap = function(A, n0, A0, sor_use_c = FALSE, heap_use_c = FALSE, ...){
-  ## Computes sorensen's index for a given spatial grain (A) at 
-  ## all possible seperation distances 
+chi_heap_approx = function(i, j, n0) {
+  calc_lambda(i, n0, use_c=TRUE)^2 / calc_lambda(j, n0, use_c=TRUE)
+}
+
+sor_heap = function(A, n0, A0, shape='sqr',
+                    sor_use_c = FALSE, heap_use_c = FALSE, ...){
+  ## Computes sorensen's simiarilty index for a 
+  ## given spatial grain (A) at all possible seperation distances 
   ## Scaling Biodiveristy Chp. Eq. 6.10, pg.113  
+  ## shape: shape of A0 see function sep_orders()
+  ## Note: golden rectangle has the dimensions L x L(2^.5)
   ## source code in the file heap.c
   ## ... : optional arguments to pass on to chi_heap and heap_prob
   i = log2(A0 / A)
-  d = calc_D(log2(A0 / A))
+  j = sep_orders(i, shape)
+  d = calc_D(j)
   chi = lambda = matrix(NA, nrow=length(n0), ncol=length(d))
   for (s in seq_along(n0)) {
-    if (sor_use_c){  
+    if (sor_use_c) {  
       load_heap()
-      chi[s,] = sapply(1:i, function(j)
-                .C("chi_heap", i=as.integer(i), j=as.integer(j),
-                   n0=as.integer(n0[s]), prob=as.double(0))$prob)
+      chi[s, ] = sapply(j, function(jval)
+                        .C("chi_heap", i=as.integer(i), j=as.integer(jval),
+                        n0=as.integer(n0[s]), prob=as.double(0))$prob)
     }                   
     else {
-      chi[s,] = sapply(1:i, function(j) chi_heap(i, j, n0[s], use_c = heap_use_c, ...))
+      chi[s, ] = sapply(j, function(jval) 
+                        chi_heap(i, jval, n0[s], use_c = heap_use_c, ...))
     }  
-    lambda[s,] = sapply(1:i, function(j) calc_lambda(i, n0[s], use_c = heap_use_c, ...))
+    lambda[s, ] = calc_lambda(i, n0[s], use_c = heap_use_c, ...)
   }
   sor = apply(chi, 2, sum) / apply(lambda, 2, sum)
   out = data.frame(Dist = d, Sor = sor)
