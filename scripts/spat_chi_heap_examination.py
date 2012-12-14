@@ -23,9 +23,8 @@ for j in range(1, 6):
         out[irow, 0] = j
         out[irow, 1] = i
         out[irow, 2] = mete.chi_heap(i, j, 100)
+        out[irow, 3] = chi_heap_approx(i, j, 100)
         irow += 1
-
-out[:, 3] = map(chi_heap_approx, list(out[:, 1]), list(out[:, 0]), len(out) * [100])
 
 filename = '../sorensen/harte_2007_chi_heap_results.txt'
 writer = open(filename, 'wb') 
