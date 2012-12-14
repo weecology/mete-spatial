@@ -151,63 +151,76 @@ as.matrix(sort(apply(abs(sar_res[!is.na(sar_res[,4]), 3:10]), 2, mean, na.rm=T))
 ## this keeps sites with lots of spatial scales from dominating
 ## the residuals
 
-avg_sar_res = aggregate(sar_res[ , -c(1:2, 11:12)] / sar_res$richness, by=list(sar_res$site), 
+avg_sar_res = aggregate(sar_res[ , -c(1:2, 11:13)]/sar_res$richness, by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x, na.rm=T) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:8)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
+res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
                     res_avg
-empirsad_avg     0 15.75582
-empirsad_iter    0 54.45989
-empirsad_noniter 6  3.40553
-empirsad_rp      1 28.08008
-logser_avg       3 44.68045
-logser_iter      2 59.86338
-logser_noniter   2 27.78716
-logser_rp        2 13.26835
+empirsad_avg     0 2.321328
+empirsad_iter    0 4.245373
+empirsad_noniter 6 1.472516
+empirsad_rp      1 3.309048
+logser_avg       3 3.447583
+logser_iter      2 4.023770
+logser_noniter   2 3.095267
+logser_rp        2 2.831572
+
+## normalized by mean(Savg + Spred)
+
 
 ## compare only at the empirical SAD models
 avg_sar_res = aggregate(sar_res[ , 7:10] / sar_res$richness, by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
+res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
                      res_avg
-empirsad_avg      3 15.75582
-empirsad_iter     1 54.45989
-empirsad_noniter 10  3.40553
-empirsad_rp       2 28.08008
+empirsad_avg      3 2.321328
+empirsad_iter     1 4.245373
+empirsad_noniter 10 1.472516
+empirsad_rp       2 3.309048
 
-## normalized by Savg
-                        res_avg
-empirsad_avg      0 0.041606515
-empirsad_iter     1 0.066459792
-empirsad_noniter 14 0.007523939
-empirsad_rp       1 0.032704148
+## normalized by mean(Savg + Spred)
 
 
 ## compare only at the empirical SAD models simulated iterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] ,
+avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] / sar_res$richness,
                         by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
+
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
+res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
                  res_avg
-empirsad_avg 12 15.75582
-empirsad_rp   4 28.08008
+empirsad_avg 12 2.321328
+empirsad_rp   4 3.309048
 
 ## normalized by Savg
-                   res_avg
-empirsad_avg  4 0.04160652
-empirsad_rp  12 0.03270415
+                  res_avg
+empirsad_avg  4 0.1981773
+empirsad_rp  12 0.1640317
 
+## normalized by habitat type
+avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] / sar_res$richness,
+                        by=list(sar_res$hab), 
+                        FUN = function(x) mean(x^2, na.rm=T))
+data.frame(avg_sar_res, 
+           mete_rank=rank(avg_sar_res$empirsad_avg),
+           rp_rank=rank(avg_sar_res$empirsad_rp))
+          Group.1 empirsad_avg empirsad_rp mete_rank rp_rank
+1       grassland   0.01060391  0.10498694         1       6
+2 mixed evergreen   0.04279890  0.08064803         4       5
+3     oak savanna   0.06290683  0.03961006         6       4
+4     oak-hickory   0.04757971  0.02055527         5       2
+5            pine   0.03226573  0.02051344         2       1
+6        tropical   0.03736493  0.02878478         3       3
 
 ## compare empirical analytical iterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_iter','empirsad_rp')],
+avg_sar_res = aggregate(sar_res[ , c('empirsad_iter','empirsad_rp')] / sar_res$richness,
                         by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
@@ -218,6 +231,27 @@ cbind(wins, res_avg)
 empirsad_iter  6 54.45989
 empirsad_rp   10 28.08008
 
+## normalized by Savg
+                    res_avg
+empirsad_iter  2 0.06645979
+empirsad_rp   14 0.03270415
+
+## compare empirical analytical noniterative and rp
+avg_sar_res = aggregate(sar_res[ , c('empirsad_noniter','empirsad_rp')] / sar_res$richness,
+                        by=list(sar_res$site), 
+                        FUN = function(x) mean(x^2, na.rm=T))
+indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
+wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
+res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
+cbind(wins, res_avg)
+                     res_avg
+empirsad_noniter 12  3.40553
+empirsad_rp       4 28.08008
+
+## normalized by Savg
+                        res_avg
+empirsad_noniter 15 0.007523939
+empirsad_rp       1 0.032704148
 
 ## plot residuals---------------------------------------------------------------
 pdf('./figs/sar_residuals.pdf', width=7 * 2, height=7 * 2)
