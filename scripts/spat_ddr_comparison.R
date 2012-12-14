@@ -82,10 +82,43 @@ sar_data$area = round(sar_data$area, 2)
 dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
 ## subset so that has at least 20 individuals
 dat = subset(dat, indiv >= 20)
-## normalize by S
-#dat[, 14:16] = dat[ , 14:16]  / dat$richness
+## bring in habitat type
+shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
+habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
+dat$hab = habitat[match(dat$site, shrtnm)]
 
 sites = unique(dat$site)
+
+## aggregate residuals info by site
+avg_ddr_res = aggregate(dat[ , c('avg.res','exp.res')] / dat$Metric.avg,
+                        by=list(dat$site), 
+                        FUN = function(x) mean(x^2, na.rm=T))
+indices = apply(avg_ddr_res[ , -1], 1, function(x) which(min(x) == x))
+wins = as.matrix(table(names(avg_ddr_res[ , -1])[c(indices,1:4)]) - 1)
+res_avg = apply(sqrt(avg_ddr_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_ddr_res[,-1]))]
+cbind(wins, res_avg)
+              res_avg
+avg.res  0 0.30935180
+exp.res 16 0.09799125
+
+## normalized
+             res_avg
+avg.res  0 0.5505135
+exp.res 16 0.1784166
+
+## by habitat type
+avg_ddr_res = aggregate(dat[ , c('avg.res','exp.res')] / dat$Metric.avg,
+                        by=list(dat$hab), 
+                        FUN = function(x) sqrt(mean(x^2, na.rm=T)))
+data.frame(avg_ddr_res, mete_rank=rank(avg_ddr_res$avg.res), rp_rank=rank(avg_ddr_res$exp.res))
+          Group.1   avg.res    exp.res mete_rank rp_rank
+1       grassland 0.5179548 0.21389855         1       4
+2 mixed evergreen 0.5456574 0.24707095         3       5
+3     oak savanna 0.5894112 0.06476042         5       1
+4     oak-hickory 0.5731268 0.16228166         4       3
+5            pine 0.5269604 0.16118752         2       2
+6        tropical 0.6035905 0.28915776         6       6
+
 
 avgresid = aggregate(avg.res ~ site, data=dat, function(x) sum(x^2) / length(x))
 avgresid[order(avgresid[ , 2]), ]
@@ -150,6 +183,41 @@ for(k in 1:2){
           points(tmp$Dist, tmp$exp.res, col = habcol[habindex], pch=19)
         else
           lines(lowess(tmp$Dist, tmp$exp.res), col = habcol[habindex], lwd=2, lty=2)  
+      }  
+    }  
+  }
+}  
+mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
+dev.off()
+
+## normalized residuals
+pdf('./figs/sor_abu_fixed_norm_residuals.pdf', width = 7 *2 , height=7)
+ylims = c(-.1, .8)
+par(mfrow=c(1,2))
+for(k in 1:2){
+  for(j in 1:2){
+    if(j == 1)
+      main = 'METE'
+    else
+      main = 'RP'
+    plot(avg.res / Metric.avg ~ Dist, data=dat, log='x', type='n', ylim=ylims , main=main)
+    abline(h=0, lty=2, lwd=2)
+    for(i in seq_along(sites)) {
+      tmp = subset(dat, site == sites[i])
+      grains = unique(tmp$Comm)
+      col = colorRampPalette(c('dodgerblue', 'red'))(length(grains))
+      habindex = match(habitat[match(sites[i], shrtnm)], hab)
+      if(j == 1) {
+        if(k == 1)
+          points(tmp$Dist, tmp$avg.res / tmp$Metric.avg, col = habcol[habindex], pch=19)
+        else
+          lines(lowess(tmp$Dist, tmp$avg.res / tmp$Metric.avg), col = habcol[habindex], lwd=2)
+      }
+      else {
+        if(k ==1)
+          points(tmp$Dist, tmp$exp.res / tmp$Metric.avg, col = habcol[habindex], pch=19)
+        else
+          lines(lowess(tmp$Dist, tmp$exp.res / tmp$Metric.avg), col = habcol[habindex], lwd=2, lty=2)  
       }  
     }  
   }
