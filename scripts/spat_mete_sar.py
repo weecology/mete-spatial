@@ -31,6 +31,7 @@ for shrt_name in site_names:
     for i in range(1, len(data)):
         site_data.append(data[i][0:3])
 
+    # convert strings to floats            
     site_data = [map(float, x) for x in site_data]
 
     # enforce a minimum individual density of 2
@@ -79,7 +80,7 @@ for shrt_name in site_names:
     if sar_noniterative_worked:
         datawriter.writerow(['area', 'sr_iter', 'sr_noniter'])
     else:
-        datawriter.writerow(['area', 'sr_iter', 'sr_noniter'])
+        datawriter.writerow(['area', 'sr_iter'])
 
     for i in range(0, np.shape(out)[0]):
         datawriter.writerow(out[i, ])
