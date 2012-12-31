@@ -290,13 +290,20 @@ sep_orders = function(i, shape='sqr') {
   return(j)
 }
 
-calc_D = function(j, L=1){
+calc_D = function(j, W=1, rect=FALSE, LW_ratio=2){
   ## Distance calculation given serperation order
   ## that are shape preserving
   ## From Ostling et al. (2004) pg. 630
   ## j: seperation order
-  ## L: width of rectangle of area A0  
-  D = L / 2^(j / 2)
+  ## W: width of rectangle of area A0  
+  ## rect: if A0 is rectangular
+  ## LW_ratio: length-to-width ratio
+  ## Note: it is not necessary to specify rect or 
+  ## LW_ratio if A0 is a golden rectangle W x W(2^.5)
+  if (rect & j %% 2 == 1)
+    D = W * LW_ratio / 2 ^(j - floor(j / 2))
+  else
+    D = W / 2^(j / 2)
   return(D)
 }
 
