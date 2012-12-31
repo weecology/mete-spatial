@@ -117,3 +117,146 @@ summary(mod)
 ## this will likely give us a good approximation of the simulated DDR once it
 ## is considered in relation to degree of seperation rather than geographic 
 ## distance
+
+library(vegan)
+source('./spat_sim_vario_func.R')
+
+S = 20
+abu = matrix(rep(200, S), ncol=S)
+write.table(abu, file='../tst_abu.csv', sep=',',
+            row.names=FALSE, col.names=FALSE)
+
+system('python ./spat_community_generation.py 20 100 500 8 False ../tst_abu.csv S20_N100 &')
+comms = read.csv('../comms/simulated_comms_S20_N100_empirSAD_C500_B8_grid.txt')
+comms = as.matrix(comms)
+system('python spat_heap_ddr.py 1 256 sqr ../tst_abu.csv ../tst_heap_ddr.csv')
+heap_ddr = read.csv('../tst_heap_ddr.csv')
+
+for(i in 1:500){
+  tmp_comm = comms[comms[,1] == i, ] 
+  sor_dist = 1 - vegdist(tmp_comm[ , -(1:3)])  
+  coords = get_bisect_coords(8)
+
+}
+
+
+coords = get_bisect_coords(3)
+bc = as.character(coords[,3])
+bc1 = as.numeric(substr(bc, 1, 1))
+bc2 = as.numeric(substr(bc, 2, 2))
+bc3 = as.numeric(substr(bc, 3, 3))
+
+## for diffs at j = 3
+## must have same bisection for 1 and 2, ensured diff for 3
+gd_mat = (as.matrix(dist(cbind(bc1, bc2))) == 0) * 1
+tr_mat = gd_mat * lower.tri(gd_mat)
+D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
+mean(D_mat[D_mat > 0])
+calc_D(3, W=2, rect=T, LW_ratio =2)
+
+## above looks good
+## below still not quite working
+## for diffs at j = 2
+## must have different bisection number 
+gd_mat1 = (as.matrix(dist(bc1)) == 0) * 1
+gd_mat2 = (as.matrix(dist(bc2)) == 1) * 1
+gd_mat = gd_mat1 * gd_mat2
+tr_mat = gd_mat * lower.tri(gd_mat)
+D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
+mean(D_mat[D_mat > 0])
+calc_D(2, W=2, rect=T, LW_ratio =2)
+
+## above is still not quite correct
+## does it work for square shaped A0's? 
+coords = get_bisect_coords(4)
+bc = as.character(coords[,3])
+bc1 = as.numeric(substr(bc, 1, 1))
+bc2 = as.numeric(substr(bc, 2, 2))
+bc3 = as.numeric(substr(bc, 3, 3))
+bc4 = as.numeric(substr(bc, 4, 4))
+
+## for diffs at j = 4
+gd_mat = (as.matrix(dist(cbind(bc1, bc2, bc3))) == 0) * 1
+tr_mat = gd_mat * lower.tri(gd_mat)
+D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
+mean(D_mat[D_mat > 0])
+calc_D(4, W=4)
+
+## for diffs at j = 2
+gd_mat1 = (as.matrix(dist(bc1)) == 0) * 1
+gd_mat2 = (as.matrix(dist(bc2)) == 1) * 1
+gd_mat = gd_mat1 * gd_mat2
+tr_mat = gd_mat * lower.tri(gd_mat)
+D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
+mean(D_mat[D_mat > 0])
+calc_D(2, W=4)
+
+
+
+
+
+
+
+gd_mat = (as.matrix(dist(bc1) + dist(bc2)) == 0) * 1
+matrix(0, ncol=8, nrow=8) + gd_mat[lower.tri(gd_mat)]
+
+tr_mat = gd_mat * lower.tri(gd_mat)
+as.matrix(dist(coords[, 1:2])) * tr_mat
+calc_D(2, 2)
+
+gd_mat = (as.matrix(dist(bc1))  == 0) * 1
+tr_mat = gd_mat * lower.tri(gd_mat)
+d = as.matrix(dist(coords[, 1:2])) * tr_mat
+mean(d[d>0])
+calc_D(1, 2)
+
+### checking chi_heap calculation
+i = 2
+j = 1
+n0 = 3
+#
+chi_heap(i, j, n0)
+#
+(n0 + 1) ^ -1 * (calc_lambda(1, 1) * calc_lambda(1, 2) +
+                 calc_lambda(1, 2) * calc_lambda(1, 1))
+#
+(n0 + 1)^-1 * 
+  ((1 - ((1 + 1)^-1)) * (1 - ((2 + 1)^-1))) * 2
+## those all match
+i = 2
+j = 2
+n0 = 3
+chi_heap(i, j, n0)
+(n0 + 1) ^ -1 * 
+   ( (2 + 1) ^-1 *
+       (calc_lambda(0, 1) * calc_lambda(0, 1))
+     +
+     (3 + 1) ^-1 * 
+       (calc_lambda(0, 1) * calc_lambda(0, 2) + 
+        calc_lambda(0, 2) * calc_lambda(0, 1))
+    )
+
+(n0 + 1) ^-1 * ((2 + 1)^-1 + 2 * (3 + 1)^-1)
+## those match too
+## from first principles if i = 2 and j = 2
+     ##prob of a 2 and 1 bisection
+2 * ((3 + 1) ^-1  *
+    ((2 + 1)^-1 * (2 + 1)^-1)) + 
+2 * ((3 + 1) ^ -1 *
+    2 * ((3 + 1)^-1 * (3 + 1)^-1))
+chi_heap(2, 2, 3)
+
+## for j = 2
+
+
+
+
+
+
+
+
+                 
+
+
+
+
