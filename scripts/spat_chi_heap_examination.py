@@ -20,8 +20,8 @@ ivals = []
 irow = 0
 for j in range(1, 6):
     for i in range(j + 3, 16):
-        out[irow, 0] = j
-        out[irow, 1] = i
+        out[irow, 0] = i
+        out[irow, 1] = j
         out[irow, 2] = mete.chi_heap(i, j, 100)
         out[irow, 3] = chi_heap_approx(i, j, 100)
         irow += 1
