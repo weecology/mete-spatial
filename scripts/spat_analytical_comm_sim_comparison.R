@@ -112,6 +112,17 @@ mod = lm(chi_appr ~ chi, data=2 * chi_dat)
 abline(mod)
 summary(mod)
 
+
+## Figure 6.8 reproduced exactly, linear regression equation matches!
+par(mfrow=c(1,1))
+plot(log2(chi) ~ j, data = chi_dat, subset= j < 6 & j > 1 & i == 14,
+     ylim=c(-15.4, -13.9), xlim=c(0, 6), pch=15, cex=1.5)
+points(log2(chi_appr) ~ j, data=chi_dat, subset= j < 6 & j > 1 & i == 14,
+       pch=1)
+mod = lm(log2(chi) ~ j, data = chi_dat, subset= j < 6 & j > 1 & i == 14)
+abline(mod)
+summary(mod)
+
 ## this indicates that we have a functioning analytical metric for the binary
 ## sorensen index. Given the proximity of the quantiative and binary sorensen DDR
 ## this will likely give us a good approximation of the simulated DDR once it
@@ -126,89 +137,113 @@ abu = matrix(rep(200, S), ncol=S)
 write.table(abu, file='../tst_abu.csv', sep=',',
             row.names=FALSE, col.names=FALSE)
 
-system('python ./spat_community_generation.py 20 100 500 8 False ../tst_abu.csv S20_N100 &')
-comms = read.csv('../comms/simulated_comms_S20_N100_empirSAD_C500_B8_grid.txt')
+system('python ./spat_community_generation.py 20 100 500 7 False ../tst_abu.csv S20_N100 ')
+comms = read.csv('../comms/simulated_comms_S20_N100_empirSAD_C500_B7_grid.txt')
 comms = as.matrix(comms)
-system('python spat_heap_ddr.py 1 256 sqr ../tst_abu.csv ../tst_heap_ddr.csv')
+#comms[ , 5] = comms[ , 4]
+#comms = read.csv('../comms/simulated_comms_baldmnt_C200_B5_grid.txt')
+#comms = as.matrix(comms)
+
+## 3 x 2, i = 3, for j = 1:3, sor_avg should be .6, .5, .5
+occ = c(rep(1, 4), rep(c(1,0), 2))
+comms = data.frame(comm = 1, 
+                   x = rep(1:4, 2),
+                   y = rep(1:2, each=4),
+                   sp1 = occ,
+                   sp2 = occ)
+comms = as.matrix(comms)
+1 - vario_bisect(comms[, -(1:3)], comms[,2:3], 1:3, 'bray')$var 
+
+
+## 2 x 2, i = 2 for j = 1:2, sor_avg should be .333, 0 
+occ = c(1,0,0,1)
+comms = data.frame(comm = 1, 
+                   x = rep(1:2, 2),
+                   y = rep(1:2, each=2),
+                   sp1 = occ,
+                   sp2 = occ)
+comms = as.matrix(comms)
+1 - vario_bisect(comms[, -(1:3)], comms[,2:3], 1:2, 'bray')$var 
+
+##8 x 4, i = 5, for j = 4:5, sor_avg should be .333, .333
+occ = c(0, 1, 1, 0, 1, 0, 0, 1,
+        0, 0, 0, 0, 1, 1, 1, 1,
+        1, 1, 1, 1, 0, 0, 0, 0,
+        1, 0, 1, 0, 0, 1, 0, 1)
+comms = data.frame(comm = 1, 
+                   x = rep(1:8, 4),
+                   y = rep(1:4, each=8),
+                   sp1 = occ,
+                   sp2 = occ)
+comms = as.matrix(comms)
+1 - vario_bisect(comms[, -(1:3)], comms[,2:3], 4:5, 'bray')$var 
+
+
+system('python spat_heap_ddr.py 1 128 rect ../tst_abu.csv ../tst_heap_ddr.csv')
 heap_ddr = read.csv('../tst_heap_ddr.csv')
 
-for(i in 1:500){
-  tmp_comm = comms[comms[,1] == i, ] 
-  sor_dist = 1 - vegdist(tmp_comm[ , -(1:3)])  
-  coords = get_bisect_coords(8)
+sim_ddr = matrix(NA, nrow=500, ncol=4)
+for(i in 1:500) {
+  tmp_comm = comms[comms[,1] == i, ]
+  v = vario_bisect(tmp_comm[ , -(1:3)] > 0, 
+                   tmp_comm[ , 2:3],
+                   distance.metric='bray')
+  sim_ddr [i, ] = v$var
+}
+1 - apply(sim_ddr, 2, mean)
+heap_ddr
 
+pdf('../figs/heap_ddr_check_geo_dist.pdf')
+  par(mfrow=c(1,1))
+  plot(gdist, heap_ddr$sor, type='p', log='xy')
+  lines(gdist, sim_sor, type='o', col='red')
+  legend('bottomright', c('analytical', 'simulated'), col=c('black', 'red'),
+         lty=1, bty='n')
+dev.off()
+
+sim_sor - heap_ddr$sor
+par(mfrow=c(2, 2))
+for(j in seq(1, x-1, 2)) {
+  plot(density(sor_mat[ , j], na.rm=T), xlim=c(0, 1))
+  abline(v=heap_ddr[heap_ddr$j == j, 3])
 }
 
 
-coords = get_bisect_coords(3)
-bc = as.character(coords[,3])
-bc1 = as.numeric(substr(bc, 1, 1))
-bc2 = as.numeric(substr(bc, 2, 2))
-bc3 = as.numeric(substr(bc, 3, 3))
+dyn.load('tgangle.so')
+v_vals = array(NA, dim=c(500, 3, 3))
+for(i in 1:500){
+  tmp_comm = comms[comms[,1] == i, ]
+  tmp_comm[ , -(1:3)] = (tmp_comm[ , -(1:3)] > 0) * 1
+  ## reorder temp_comm to match coords
+  tmp_comm = tmp_comm[order(tmp_comm[, 2], tmp_comm[, 3]), ]
+  v = vario(tmp_comm[, -(1:3)], tmp_comm[,2:3],distance.metric='bray')
+  v90= vario(tmp_comm[, -(1:3)], tmp_comm[,2:3],distance.metric='bray',
+            direction = 90, tolerance=10, unit.angle='degrees')
+  v0 = vario(tmp_comm[, -(1:3)], tmp_comm[,2:3],distance.metric='bray',
+            direction = 0, tolerance=10, unit.angle='degrees')
+  v_vals[i, , ] = rbind(v$vario$exp.var[1:3],
+                        v90$vario$exp.var[1:3],
+                        v0$vario$exp.var[1:3])
+}
 
-## for diffs at j = 3
-## must have same bisection for 1 and 2, ensured diff for 3
-gd_mat = (as.matrix(dist(cbind(bc1, bc2))) == 0) * 1
-tr_mat = gd_mat * lower.tri(gd_mat)
-D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
-mean(D_mat[D_mat > 0])
-calc_D(3, W=2, rect=T, LW_ratio =2)
+boxplot(1-v_vals[, 1, ], ylim=c(.5,.8))
+abline(h=sim_sor[1])
 
-## above looks good
-## below still not quite working
-## for diffs at j = 2
-## must have different bisection number 
-gd_mat1 = (as.matrix(dist(bc1)) == 0) * 1
-gd_mat2 = (as.matrix(dist(bc2)) == 1) * 1
-gd_mat = gd_mat1 * gd_mat2
-tr_mat = gd_mat * lower.tri(gd_mat)
-D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
-mean(D_mat[D_mat > 0])
-calc_D(2, W=2, rect=T, LW_ratio =2)
-
-## above is still not quite correct
-## does it work for square shaped A0's? 
-coords = get_bisect_coords(4)
-bc = as.character(coords[,3])
-bc1 = as.numeric(substr(bc, 1, 1))
-bc2 = as.numeric(substr(bc, 2, 2))
-bc3 = as.numeric(substr(bc, 3, 3))
-bc4 = as.numeric(substr(bc, 4, 4))
-
-## for diffs at j = 4
-gd_mat = (as.matrix(dist(cbind(bc1, bc2, bc3))) == 0) * 1
-tr_mat = gd_mat * lower.tri(gd_mat)
-D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
-mean(D_mat[D_mat > 0])
-calc_D(4, W=4)
-
-## for diffs at j = 2
-gd_mat1 = (as.matrix(dist(bc1)) == 0) * 1
-gd_mat2 = (as.matrix(dist(bc2)) == 1) * 1
-gd_mat = gd_mat1 * gd_mat2
-tr_mat = gd_mat * lower.tri(gd_mat)
-D_mat = as.matrix(dist(coords[, 1:2])) * tr_mat
-mean(D_mat[D_mat > 0])
-calc_D(2, W=4)
+par(mfrow=c(1,1))
+plot(v$vario$Dist, 1- v$vario$exp.var, type='o', ylim=c(.5,.8), xlim=c(0, 3))
+lines(v0$vario$Dist, 1-v0$vario$exp.var, type='o', col='red')
+lines(v90$vario$Dist, 1-v90$vario$exp.var, type='o',col='blue')
+abline(h=sim_sor[1])
+  
 
 
 
 
+## so expected analytical is postive biased which is the direction of 
+## difference we expect but the bias appears to be larger than expected
+## the difference between the analytical and simulated also slightly
+## decreases as distance increases (i.e., j dec).
 
-
-
-gd_mat = (as.matrix(dist(bc1) + dist(bc2)) == 0) * 1
-matrix(0, ncol=8, nrow=8) + gd_mat[lower.tri(gd_mat)]
-
-tr_mat = gd_mat * lower.tri(gd_mat)
-as.matrix(dist(coords[, 1:2])) * tr_mat
-calc_D(2, 2)
-
-gd_mat = (as.matrix(dist(bc1))  == 0) * 1
-tr_mat = gd_mat * lower.tri(gd_mat)
-d = as.matrix(dist(coords[, 1:2])) * tr_mat
-mean(d[d>0])
-calc_D(1, 2)
 
 ### checking chi_heap calculation
 i = 2
@@ -252,6 +287,41 @@ chi_heap(2, 2, 3)
 
 
 
+
+sor_mat = matrix(NA, nrow=500, ncol=nchar(bc[1]))
+gdist = NULL
+for(j in heap_ddr$j) {
+  col_to = x - (x - j + 1)
+  #col_to = x - (x - j + 1) + 1
+  if (j == x) {
+    gd_mat = (as.matrix(dist(bc_mat[ , 1:(col_to - 1)])) == 0) * 1
+  #  gd_mat = (as.matrix(dist(bc_mat[ , -col_to])) == 0) * 1
+  }
+  else if (j == 1) {
+      gd_mat = (as.matrix(dist(bc_mat[ , 1])) == 1) * 1
+  }
+  else {
+    gd_mat1 = (as.matrix(dist(bc_mat[ , 1:col_to])) == 0) * 1
+    gd_mat2 = (as.matrix(dist(bc_mat[ , col_to + 1])) == 1) * 1
+  #  gd_mat1 = (as.matrix(dist(bc_mat[ , -col_to])) == 0) * 1
+  #  gd_mat2 = (as.matrix(dist(bc_mat[ , col_to])) == 1) * 1    
+    gd_mat = gd_mat1 * gd_mat2
+  }
+  tr_mat = gd_mat * lower.tri(gd_mat)
+  D_geo = as.matrix(dist(coords[, 1:2])) * tr_mat
+  gdist[j] = mean(D_geo[D_geo > 0])
+  for(i in 1:500) {
+    tmp_comm = comms[comms[,1] == i, ] 
+    ## reorder temp_comm to match coords
+    #intersect(match_index(tmp_comm[, 2], 1), 
+    #          match_index(tmp_comm[, 3], 16))
+    tmp_comm = tmp_comm[order(tmp_comm[, 2], tmp_comm[, 3]), ]
+    sor_dist = 1 - vegdist(tmp_comm[ , -(1:3)] > 0)  
+    D_sp = as.matrix(sor_dist) * tr_mat
+    sor_mat[i, j] = mean(D_sp[D_geo > 0], na.rm=T)
+    #calc_D(8, W=16, rect=F, LW_ratio =1)
+  }
+}
 
 
 
