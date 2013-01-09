@@ -982,8 +982,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
     ## coords changed to coord
     u.ang = .C("tgangle", as.double(as.vector(coord[ , 1])),
                as.double(as.vector(coord[ , 2])), as.integer(dim(coord)[1]),
-               res = as.double(rep(0, length(as.vector(Dist)))), 
-               PACKAGE = vario)$res
+               res = as.double(rep(0, length(as.vector(Dist)))))$res
     if (any(is.na(u.ang)))
       stop("NA returned in angle calculations maybe due to co-located data")
     u.ang = atan(u.ang)
@@ -2381,23 +2380,49 @@ paste_list = function(a_list) {
   return(out)
 }
 
+get_bisect_matrix = function(bisect_string) {
+  ## splits a vector of 0/1 strings into a matrix where
+  ## each digit is in its own column. This effectively converts
+  ## the string representation of a bisection coordinate into a 
+  ## numerical matrix.
+  ## E.g. '010' becomes 0 1 0 
+  ## Arguments
+  ## bisect_coords: a string representation of the bisection coordinates
+  ## in which 0 represents a left bisection and 1 reprents a right bisection
+  if (class(bisect_string) != 'character')
+    stop('bisect_string must be a character string')
+  i_bisect = nchar(bisect_string[1])
+  bisect_matrix = matrix(NA, ncol=i_bisect, nrow=length(bisect_string))
+  colnames(bisect_matrix) = paste('i=', 1:i_bisect, sep='')
+  for (i in 1:i_bisect) {
+    bisect_matrix[ , i] = as.numeric(substr(bisect_string, i, i))
+  }
+  return(bisect_matrix)
+}
+
 get_bisect_coords = function(i_bisect) {
-  ## generates a set of coordinates that indictates what pattern 
+  ## generates a data.frame of coordinates that indictates what pattern 
   ## of bisections (0 = left bisection or 1 = right bisect)
   ## that resulted in a given quadrat. The function also
-  ## generates a set of traditional xy-coordinates
+  ## returns a set of traditional xy-coordinates
   ## Arguments:
   ## i_bisect: the number of bisections
   ## Returns:
-  ## a 3 column matrix with x, y, and the bisection coordinates
-  ## there is one digit for each bisection, 0 indicates the 
+  ## a matrix with i_bisect + 2 columns 
+  ## x, y, and the bisection coordinates each as their own column
+  ## for the bisection coordinates, 0 indicates the 
   ## quadrat was on the left of the bisection, and 1 indicates
   ## the quadrat was on the right of the bisection.
-  ## Example: '011' indicates that 1st bisection was left, and 
+  ## Example: 0 1 1 indicates that 1st bisection was left, and 
   ## 2nd and 3rd bisections where right
   ## Note:
   ## this function assumes that the long side of rectangular
-  ## shaped A0 is along the x-axis
+  ## shaped A0 is along the x-axis (i.e., the 1st bisection is 
+  ## along the x-axis)
+  if (i_bisect < 0 )
+    stop('i_bisect must be greater than zero')
+  if (i_bisect != round(i_bisect))
+    stop('i_bisect must be an integer')
   mat_list = vector('list', length=i_bisect)
   n_cols = n_pixels_long(i_bisect)
   n_rows = n_pixels_wide(i_bisect)
@@ -2408,10 +2433,107 @@ get_bisect_coords = function(i_bisect) {
                                           ncol=n_cols, nrow=n_rows)
     flag = !flag
   }
-  bisect_coords = paste_list(mat_list)
+  bisect_string = paste_list(mat_list)
+  bisect_matrix = get_bisect_matrix(bisect_string)
   xy_coords = expand.grid(y = n_pixels_wide(i_bisect):1, 
                           x = 1:n_pixels_long(i_bisect))[ , 2:1]
-  out = cbind(xy_coords, bisect_coords)
+  bisect_coords = cbind(xy_coords, bisect_matrix)
+  return(bisect_coords)
+}
+
+get_pairs_matrix = function(bisect_coords, j) {
+  ## Returns a binary matrix that indicates which samples are to be 
+  ## compared for a given seperation order (j). 
+  ## Arguments
+  ## bisect_coords: a data.frame that contains the x, y, and 
+  ##   bisection coordinates, the result of the function get_bisect_coords()
+  ## j: seperation order, 1 <= j <= i_bisect
+  if (j < 1)
+    stop('j must be greater than 1')
+  if (j > (ncol(bisect_coords) - 2))
+    stop('j must be less than or equal to the number of bisections')
+  bisect_mat = bisect_coords[ , -(1:2)]
+  if (j == 1) {
+    pairs_mat = as.matrix(dist(bisect_mat[ , j])) == 1 
+  }
+  else {
+    same_bisect = as.matrix(dist(bisect_mat[ , 1:(j - 1)])) == 0
+    diff_bisect = as.matrix(dist(bisect_mat[ , j])) == 1
+    pairs_mat  = same_bisect * diff_bisect
+  }
+  pairs_lower_tri = pairs_mat  * lower.tri(pairs_mat)
+  return(pairs_lower_tri)
+}
+
+dimensional_match = function(coord1, coord2) {
+  ## Returns boolean indicating whether or not the spatial dimensions of 
+  ## two sets of coordinates match each other. 
+  ## Note: this does not check that the exact values match, but simply that
+  ## the number of unique x and y values in the two coordinate sets match
+  ## Note: coordinates of an arbitrary dimension can be checked
+  ## Arguments
+  ## coord1: the first set of coordinates
+  ## coord2: the second set of coordinates to be checked against.
+  flag = TRUE
+  icol = 1
+  while (flag & icol <= ncol(coord1)) {
+    uni_coord1 = length(unique(coord1[ , icol]))  
+    uni_coord2 = length(unique(coord2[ , icol]))
+    if (uni_coord1 != uni_coord2)
+      flag = FALSE
+    icol = icol + 1
+  }
+  return(flag)
+}
+
+vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
+  ## Computes a variogram based upon the possible seperation orders
+  ## Only seperation orders that compare square samples are considered.
+  ## Arguments:
+  ## x: a sitexsp matrix
+  ## coord: the spatial coordinates
+  ## sep_orders: default is NULL, the serpation orders of interest
+  ## distance.metric': can be one of the speices turnover metrics listed by the
+  ##   vegan function vegdist(). Common options include, 'jaccard' and 'bray'.
+  ##   If computed on pres/abse data then soreson index is computed by 'bray'.
+  if (distance.metric != 'euclidean') {
+    require(vegan)
+  }
+  i_bisect = log2(nrow(x))
+  if (i_bisect != round(i_bisect))
+    stop('Number of samples must be consistent with a bisection procedure')
+  if (is.null(sep_orders)) {
+    if (i_bisect %% 2 == 0)
+      sep_orders = seq(i_bisect, 2, -2)
+    else
+      sep_orders = seq(i_bisect, 1, -2)
+  }
+  bisect_coords = get_bisect_coords(i_bisect)
+  ## check that spatial dimensions of coord and bisect_coords are identical
+  if (!dimensional_match(coord, bisect_coords[ , 1:2]))
+    stop('The spatial dimension of the community matrix does not match that expected by the function get_bisect_coords()')
+  ## arrange x, coord and bisect_mat so that they are in the same order
+  sort_order = order(coord[ , 1], coord[ , 2])
+  x = x[sort_order, ]
+  coord = coord[sort_order, ]
+  sort_order = order(bisect_coords[ , 1], bisect_coords[ , 2])
+  bisect_coords = bisect_coords[sort_order, ]
+  geo_dist_avg = NULL
+  sp_dist_avg = NULL
+  n_pairs = NULL
+  for (j in sep_orders) {
+    pairs_mat = get_pairs_matrix(bisect_coords, j)
+    n_pairs = c(n_pairs, sum(pairs_mat))
+    geo_dist_mat = as.matrix(dist(coord)) * pairs_mat
+    geo_dist_avg = c(geo_dist_avg, mean(geo_dist_mat[geo_dist_mat > 0]))
+    if (distance.metric == 'euclidean')
+      sp_dist = as.matrix(dist(x))
+    else
+      sp_dist = as.matrix(vegdist(x, method=distance.metric))
+    sp_dist_j = sp_dist * pairs_mat
+    sp_dist_avg = c(sp_dist_avg, mean(sp_dist_j[geo_dist_mat > 0], na.rm=T))
+  }
+  out = data.frame(j = sep_orders, dist = geo_dist_avg, n = n_pairs, var = sp_dist_avg)
   return(out)
 }
 
@@ -3472,6 +3594,11 @@ avg_site_results = function(dat, site_names) {
 }
 
 get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
+  ## arguments:
+  ## obs_dat: the data frame that contains the observed sar
+  ## perd_dat: the data frame that contains the predicted sar
+  ## obs_field: the name of the field that has the observed richness
+  ## pred_field: the name of the field that has the predicted richness
   site = NULL
   area = NULL
   res = NULL
@@ -3493,4 +3620,11 @@ get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
   return(data.frame(site, area, res))
 }  
 
-
+match_index = function(x, table) {
+  ## An extenstion of the function match() that returns the 
+  ## index of the match rather than the matching element
+  ## Note: not currently being used
+  len_x = length(x)
+  indices = 1:len_x
+  return(indices[match(x, table, nomatch=0) == 1])
+}
