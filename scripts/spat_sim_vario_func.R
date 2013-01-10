@@ -1632,6 +1632,7 @@ getSAR = function(psp, grains, mv_window=FALSE)
   ind = rep(0, length(grains))
   std = rep(0, length(grains))
   cs = rep(0, length(grains))
+  S = dim(psp)[1]
   N = dim(psp)[2]
   M = dim(psp)[3]
   if (M > N) {
@@ -1657,10 +1658,16 @@ getSAR = function(psp, grains, mv_window=FALSE)
       sr_vec = NULL
       for (n in brksN) {
         for (m in brksM) {
-          psp_tmp = as.matrix(psp[ , n:(n + (lenN[l] - 1)),
-                                     m:(m + (lenM[l] - 1))])
-          sr_vec = c(sr_vec, sum(apply(psp_tmp > 0, 1, sum) > 0))
-          ind[l] = ind[l] + sum(apply(psp_tmp, 1, sum))
+          psp_tmp = psp[ , n:(n + (lenN[l] - 1)),
+                             m:(m + (lenM[l] - 1))]
+          if (S == 1) {
+            sr_vec = c(sr_vec, any(psp_tmp > 0) * 1)
+            ind[l] = ind[l] + sum(psp_tmp)
+          }
+          else {
+            sr_vec = c(sr_vec, sum(apply(psp_tmp > 0, 1, sum) > 0))
+            ind[l] = ind[l] + sum(apply(psp_tmp, 1, sum))
+          }
           cs[l] = cs[l] + 1
         }
       }
