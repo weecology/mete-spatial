@@ -1625,7 +1625,6 @@ getSAR = function(psp, grains, mv_window=FALSE)
   if (class(psp) != 'array')
     stop('psp must be a community array (S X N X M)')
   grains = grains[log2(grains) == round(log2(grains))]
-  grainsSqr = grains[sqrt(grains) == round(sqrt(grains))]
   ## define the size of sampling units on each side
   lenN = n_pixels_long(log2(grains))
   lenM = n_pixels_wide(log2(grains))
@@ -1658,10 +1657,10 @@ getSAR = function(psp, grains, mv_window=FALSE)
       sr_vec = NULL
       for (n in brksN) {
         for (m in brksM) {
-          sr_vec= c(sr_vec, sum(apply(psp[ , n:(n + (lenN[l] - 1)),
-                                           m:(m + (lenM[l] - 1))] > 0, 1, sum) > 0))
-          ind[l] = ind[l] + sum(apply(psp[ , n:(n + (lenN[l] - 1)),
-                                             m:(m + (lenM[l] - 1))], 1, sum))
+          psp_tmp = as.matrix(psp[ , n:(n + (lenN[l] - 1)),
+                                     m:(m + (lenM[l] - 1))])
+          sr_vec = c(sr_vec, sum(apply(psp_tmp > 0, 1, sum) > 0))
+          ind[l] = ind[l] + sum(apply(psp_tmp, 1, sum))
           cs[l] = cs[l] + 1
         }
       }
