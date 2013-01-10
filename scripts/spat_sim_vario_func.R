@@ -1,21 +1,18 @@
-## $Id: $
-###################################################
 ##Author: Dan McGlinn
 ##Date: 10/25/10
 ##Purpose: to provide necessary support functions
 ##to simulate a community influenced by neutral
 ##and niche processes and then examine the spatial 
 ##pattern of associations in the resulting community
-###################################################
-##nuetral.vp functions
+
+## nuetral.vp functions-------------------------------------------
 census<-function (sim, snap = length(sim$snaps), type = "census") 
 {
     pop <- sim$snaps[[snap]]
     dim(pop) <- c(sim$p$S, sim$p$M, sim$p$M)
     if (type == "census") {
         output <- t(pop[, , 1])
-        for (i in 2:sim$p$M) output <- rbind(output, t(pop[, 
-            , i]))
+        for (i in 2:sim$p$M) output <- rbind(output, t(pop[, , i]))
     }
     else if (type == "richness") 
         output <- apply(pop, MARGIN = 2:3, FUN = function(x) sum(as.logical(x)))
@@ -83,8 +80,7 @@ site.rand<-function(mat){
  c(rtot.cv,rpos.cv,rneg.cv)
 }
 
-
-#####Part I - FUNCTIONS FOR SIMULATING ENVIORNMENTS AND COMMUNITIES#####
+##Part I - FUNCTIONS FOR SIMULATING ENVIORNMENTS AND COMMUNITIES----------------
 ##1.1##
 gen.env<-function(M,env='fractal',D=NA,err=.1){
  ##Purpose: to generate a 2-D landscape representation of a 
@@ -328,7 +324,7 @@ D.vario.est<-function(z){
  D
 }
 
-#####Part II - FUNCTIONS FOR Spatial Permutations #####
+##Part II - FUNCTIONS FOR Spatial Permutations-----------------------------------
 
 ##2.1##
 SpatPerm2D<-function(psp,shiftpos=NULL,rotate=NULL,meth='shift',sp=FALSE){
@@ -557,7 +553,6 @@ RandPat<-function(i,psp,rpsp,n,nstrata,pl,mtrials1=1e3,mtrials2=1e6,alpha=0.01){
  ##mtrials1: the number of times to attempt a swap at the strata level
  ##mtrials2: the number of times to attempt a swap at the pixel level
  ##alpha: the cutoff value for the phi statistic of Roxburgh and Chesson 1998
- ###################################################
  psp<-psp[i,,]
  rpsp<-rpsp[i,,]
  n2<-n+2
@@ -638,7 +633,6 @@ RandPatPar<-function(psp,nstrata,mtrials1=1e3,mtrials2=1e6,alpha=0.01,npar=1){
  ##mtrials: the numbef of times to attempt a swap
  ##alpha: the cutoff value for the phi statistic of Roxburgh and Chesson 1998
  ##npar: the number of processors to run the code on
- ###################################################
  n<-dim(psp)[2]
  if(length(dim(psp))==3)
   S<-dim(psp)[1]
@@ -646,8 +640,8 @@ RandPatPar<-function(psp,nstrata,mtrials1=1e3,mtrials2=1e6,alpha=0.01,npar=1){
   S<-1
   psp<-array(psp,dim=c(S,n,n))
  }
- ####first prepare psp for the randomization process####
- ##fill in empty pixels with -999##
+ ##first prepare psp for the randomization process
+ ##fill in empty pixels with -999
  #sampled<-rep(ifelse(apply(psp,c(2,3),sum)>0,0,-999),each=S)
  #dim(sampled)<-c(S,n,n) 
  #psp <- psp + sampled
@@ -788,7 +782,8 @@ FixUnSamp2<-function(oarray,rarray){
  }}
  rarray
 }
-#####Part III - ANALYZING AND GRAPHING RESULTS#####
+
+##Part III - ANALYZING AND GRAPHING RESULTS----------------------------
 
 ##3.1##
 getCovFractions = function(x)
@@ -868,7 +863,6 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   ##   vegan function vegdist(). This is only appropriate if pos.neg = FALSE.
   ##   Common options include, 'jaccard' and 'bray'. If computed on pres/abse
   ##   data then soreson index is computed by 'bray'.
-  ##----------------------------------------------------------------------------
   if (distance.metric != 'euclidean') {
     if (pos.neg)
       stop("cannot commpute pos-neg covariance using a turnover metric")
@@ -3072,11 +3066,7 @@ comp_results = function(site, results, args=NULL, ...) {
   }
 }
 
-
-
-
-
-#####Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS#####
+##Part IV - BATCH FUNCTIONS FOR GENERATING LARGE SETS OF RESULTS---------------------------------------
 
 ##4.1##
 sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), REPS = 10, REP.ID = NULL,
@@ -3116,7 +3106,6 @@ sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), R
  ###2)'nstrata',3)'mtrials1',4)'mtrials2',5)'alpha',6)'npar'
  ## DESTDIRDRAW : directory where all raw results are returned (i.e. community sim file and vario files)
  ## SIMINPUT : this is a list of empirically derived simulation parameters
- #####################
  if(!is.null(SIMINPUT)){
   M = SIMINPUT$M
   S = SIMINPUT$S
@@ -3251,7 +3240,6 @@ sim.vario <- function(PREFIX, DESTDIR = paste(getwd(),"/results_main",sep=""), R
 
 ##4.2##
 sim.dat.prep<-function(stcrd,psp,envir,perc.land,res,n,K,K.cont=FALSE,export=FALSE,DESTDIR=getwd()){
- ##################################################################
  ##PURPOSE:take a starting coordinate and generate the empirically constrained
  ##input files for the simulation framework. This script generates and Rdata file if export is TRUE
  ##ARGUMENTS:
@@ -3265,7 +3253,6 @@ sim.dat.prep<-function(stcrd,psp,envir,perc.land,res,n,K,K.cont=FALSE,export=FAL
  ##K.cont: TRUE if continously varying Ks are desired which are linear related to envir
  ##export: TRUE if you wish to export the .Rdata file
  ##DESTDIR: the directory where the .Rdata file will be written to
- ##################################################################
  i<-(stcrd[1]/res)+1
  j<-(stcrd[2]/res)+1
  envir.grd<-envir[1,i:(i+n-1),j:(j+n-1)]
@@ -3290,8 +3277,7 @@ sim.dat.prep<-function(stcrd,psp,envir,perc.land,res,n,K,K.cont=FALSE,export=FAL
  ##PURPOSE: to graph the results of a call to var.test
  ##which is a mechanism for generating batch output of the sim and 
 
-
-#####Part V - FUNCTIONS FOR EMPIRICAL BBS PROCESSING#####
+##Part V - FUNCTIONS FOR EMPIRICAL BBS PROCESSING-------------------------------
 ##5.1##
 GridCount<-function(samps,grd,land=NULL,perc.land=NULL){
  ##count number of samples in each cell 
@@ -3364,7 +3350,6 @@ Empir<-function(stcrds,xmn,ymn,len,n,pos.neg=TRUE,meth='randpat',nstrata=3,rperm
  ##npar : the number of processors to use for calculating all of the many variograms
  ##all.dat: the global empirical S x n x n array of occupancies
  ##linux: whether or not this is to be run on a linux machine
- ###############################################################
  ####for each starting coordinate
  for(icord in 1:length(stcrds[,1])){
   xmin<-stcrds[icord,1] ; xmax<-xmin+n*len
@@ -3391,7 +3376,7 @@ Empir<-function(stcrds,xmn,ymn,len,n,pos.neg=TRUE,meth='randpat',nstrata=3,rperm
 
 ##5.4##
 Empir.pdf<-function(stcrds,n,nsamp=2,both=TRUE){
- ###purpose: to generate .pdfs of the empirical variograms####
+ ##purpose: to generate .pdfs of the empirical variograms
  if(both)
   pdf(paste("C:/Users/dmcglinn/Documents/Lab data/abundance surface/BBS/empir_study_n",n,"/empir_n",n,".pdf",sep=""),width=7*3,height=7*2)
  else
@@ -3438,7 +3423,7 @@ Empir.pdf<-function(stcrds,n,nsamp=2,both=TRUE){
 
 ##5.4.b##
 Empir.pdf.b<-function(stcrds,n,nsamp=2,both=FALSE){
- ###purpose: to generate .pdfs of the empirical variograms####
+ ##purpose: to generate .pdfs of the empirical variograms
  if(both)
   pdf(paste("C:/Users/dmcglinn/Documents/Lab data/abundance surface/BBS/empir_study_n",n,"_random/empir_n",n,"_random.pdf",sep=""),width=7*3,height=7*2)
  else
