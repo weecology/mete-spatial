@@ -18,7 +18,7 @@ site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
 
 if len(sys.argv) > 1:
     site_index = int(sys.argv[1])
-    site_names = site_names[site_index]
+    site_names = [site_names[site_index]]
 
 for shrt_name in site_names:
     for sadType in ['meteSAD', 'empirSAD']:
