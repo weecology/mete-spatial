@@ -11,13 +11,14 @@ import os
 
 import mete
 
+site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
+              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
+              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
+              'bigoak']
+
 if len(sys.argv) > 1:
-    site_names = [sys.argv[1]]
-else:
-    site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
-                  'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-                  'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-                  'bigoak']
+    site_index = int(sys.argv[1])
+    site_names = site_names[site_index]
 
 for shrt_name in site_names:
     for sadType in ['meteSAD', 'empirSAD']:
