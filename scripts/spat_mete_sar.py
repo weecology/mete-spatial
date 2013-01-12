@@ -20,28 +20,21 @@ else:
                   'bigoak']
 
 for shrt_name in site_names:
-    datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
-    datareader = csv.reader(datafile)
-    data = []
-    for row in datareader:
-        data.append(row)
-   
-    # drop the header row
-    site_data = []
-    for i in range(1, len(data)):
-        site_data.append(data[i][0:3])
-
-    # convert strings to floats            
-    site_data = [map(float, x) for x in site_data]
-
-    # read in SAD information
-    sad_file = open('../data/' + shrt_name + '_sad.csv', 'r')
-    sadreader = csv.reader(sad_file)
-    sad = []
-    for row in sadreader:
-        sad.append(row)
-    
     for sadType in ['meteSAD', 'empirSAD']:
+        datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
+        datareader = csv.reader(datafile)
+        data = []
+        for row in datareader:
+            data.append(row)
+   
+        # drop the header row
+        site_data = []
+        for i in range(1, len(data)):
+            site_data.append(data[i][0:3])
+
+        # convert strings to floats            
+        site_data = [map(float, x) for x in site_data]
+        
         if sadType == 'meteSAD':
             # enforce a minimum individual density of 2
             indices = mete.which([site_data[i][2] > 2 for i in range(0, len(site_data))])
@@ -50,6 +43,14 @@ for shrt_name in site_names:
         site_data = np.array(site_data)
 
         # get parameters needed for computing the mete sar
+        if sadType == 'empirSAD':
+            # read in SAD information  
+            sad_file = open('../data/' + shrt_name + '_sad.csv', 'r')
+            sadreader = csv.reader(sad_file)
+            sad = []
+            for row in sadreader:
+                sad.append(row)
+
         Amin = min(site_data[ : , 0])
         Amax = max(site_data[ : , 0])
         if sadType == 'meteSAD':
@@ -57,7 +58,6 @@ for shrt_name in site_names:
             N0 = int(max(site_data[ : , 2]))
         else:
             n0vals = [int(n0) for n0 in sad[0]]
-
 
         if sadType == 'meteSAD':
             sar_down_iterative = mete.downscale_sar(Amax, S0, N0, Amin)
