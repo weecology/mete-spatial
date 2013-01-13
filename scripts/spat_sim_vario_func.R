@@ -1592,22 +1592,33 @@ v.graph.all2<-function(vrand=NULL,vspat=NULL,obs.var=FALSE,flip.neg=FALSE,
   if(box)box()
 }}
 
-mat2psp = function(x,N=NULL,M=NULL)
+mat2psp = function(sp_mat, xy_coord, N=NULL, M=NULL)
 {
   ##place site by species matrix (x) into an S x N x M array where N >= M
   ##a multidimensional array that eases computing 
   ##replaces the old function 'grid.pres'
-  S = ncol(x)
-  if(is.null(N))
-    N = sqrt(nrow(x))
-  if(is.null(M))
+  ##Note: function assumes that 
+  if (is.null(N) )
+    N = sqrt(nrow(sp_mat))
+  if (is.null(M) )
     M = N
-  psp = array(x,dim=c(N,M,S))
-  psp = aperm(psp,c(3,1,2))
-  spSums = apply(psp,1,sum)
+  if (nrow(sp_mat) != nrow(xy_coord))
+    stop('Number of samples in species matrix must match number of samples in xy-coordinates')
+  if (N < M)
+    stop('N should be >= M')
+  if (N * M != nrow(sp_mat))
+    stop('Number of specified samples (N X M) must be equal to the number of samples in sp_mat')
+  S = ncol(sp_mat)
+  ## order rows of sp_mat based on xy_coords so that they are placed
+  ## in the multidimensional array in the correct arrangement
+  proper_order = order(xy_coord[ , 2], xy_coord[ , 1])
+  sp_mat = sp_mat[proper_order, ]
+  psp = array(sp_mat, dim=c(N, M, S))
+  psp = aperm(psp, c(3, 1, 2))
+  spSums = apply(psp, 1, sum)
   ## drop species that never occur
   if(any(spSums %in% 0))
-    psp = psp[spSums > 0,,]
+    psp = psp[spSums > 0, , ]
   return(psp)
 }
 
@@ -1618,7 +1629,7 @@ getSAR = function(psp, grains, mv_window=FALSE)
   ## mapped grid of occurances
   ## this function replaces the older function 'grid.SAR'
   ## Arguments:
-  ## psp: community array (i.e., S x N x M pres/absen array where N >= M)
+  ## psp: community array (i.e., S x N x M abundance array where N >= M)
   ## grains: the areas in pixels for which to compute the SAR
   ##         only grains that have integer log base 2 are considered
   ## mv_window: FALSE indicates that a non-moving window SAR will be calculated
@@ -2464,6 +2475,26 @@ get_pairs_matrix = function(bisect_coords, j) {
   pairs_lower_tri = pairs_mat  * lower.tri(pairs_mat)
   return(pairs_lower_tri)
 }
+
+get_sep_dist = function(i_bisect) {
+  N = 2^i_bisect
+  coords = get_bisect_coords(i_bisect)
+  coords = coords[order(coords[ , 1], coords[ , 2]), ]
+  jdist = matrix(NA, ncol=N, nrow=N)
+  icount = 1
+  for (i in 1:(N - 1)) {
+    for (j in (i + 1):N) {
+      abs_diff = abs(coords[i, -(1:2)] - coords[j, -(1:2)])
+      jdist[i, j] = min(which(abs_diff == 1))
+      jdist[j, i] = jdist[i, j]
+      icount = icount + 1 
+    }
+  }
+  jdist = as.dist(jdist)
+  return(jdist)
+}
+
+## need function to return predicted distance matrix based on sep_dist
 
 dimensional_match = function(coord1, coord2) {
   ## Returns boolean indicating whether or not the spatial dimensions of 
