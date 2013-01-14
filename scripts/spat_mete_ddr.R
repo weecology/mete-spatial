@@ -38,7 +38,7 @@ if (server == 'unc')
               Amin, Amax, shape, sadType, abu_file, out_file, 
               unit_distance, sep=' ')
 if (server == 'usu')
-  cmd = paste('python ./scripts/spat_heap_ddr.py',
+  cmd = paste('nice python ./scripts/spat_heap_ddr.py',
               Amin, Amax, shape, sadType, abu_file, out_file, 
               unit_distance, '>', log_file, '2>&1', sep=' ')
 
