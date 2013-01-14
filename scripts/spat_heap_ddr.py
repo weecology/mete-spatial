@@ -16,7 +16,7 @@ if len(sys.argv) > 1:
     abu_filepath = sys.argv[5]
     out_filepath = sys.argv[6]
     if len(sys.argv) == 8:
-        unit_distance = float(sys.argv[6])
+        unit_distance = float(sys.argv[7])
     else:
         unit_distance = 1
 else:
