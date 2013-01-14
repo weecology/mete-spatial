@@ -14,7 +14,7 @@ if len(sys.argv) > 1:
     shape = sys.argv[3]
     abu_filename = sys.argv[4]
     out_filename = sys.argv[5]
-    if len(sys.arv) == 7:
+    if len(sys.argv) == 7:
         unit_distance = sys.argv[6]
     else:
         unit_distance = 1
