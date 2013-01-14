@@ -14,6 +14,10 @@ if len(sys.argv) > 1:
     shape = sys.argv[3]
     abu_filename = sys.argv[4]
     out_filename = sys.argv[5]
+    if len(sys.arv) == 7:
+        unit_distance = sys.argv[6]
+    else:
+        unit_distance = 1
 else:
     print 'Error: Specify A, A0, shape, and abu file at the command line'
 
@@ -27,7 +31,7 @@ if abu_filename  != 'None':
 else:
     print 'Error: Abundance data not specified'
 
-sor = mete.sor_heap(A, abu, A0, shape)
+sor = mete.sor_heap(A, abu, A0, shape, unit_distance)
 
 writer = open(out_filename, 'wb') 
 datawriter = csv.writer(writer)
