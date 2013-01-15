@@ -15,31 +15,32 @@ if (length(clArgs) > 0) {
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
 grain_fine = as.numeric(read.table('./data/grain_fine.txt'))
 bisect_fine = as.numeric(read.table('./data/bisect_fine.txt'))
+bisect_coarse = as.numeric(read.table('./data/bisect_coarse.txt'))
 
 i = site_index
 
-Amin = 1
-Amax = 2^bisect_fine[i]
-shape = ifelse(log2(Amax) %% 2 == 0, 'sqr', 'rect')
+unit_distance = sqrt(grain_fine[i]) * n_pixels_wide(bisect_fine[i])
+shape = ifelse(log2(2^bisect_fine[i]) %% 2 == 0, 'sqr', 'rect')
 abu_file = paste('./data/', shrtnames[i], '_sad.csv', sep='')
-if (sadType == 'meteSAD') {
+log_file = paste('./scripts/log_files/', shrtnames[i], '_mete_sor.log', sep='')
+
+if (sadType == 'meteSAD')
   out_file = paste('./sorensen/', shrtnames[i], 
                    '_mete_sor.csv', sep='')
-}
-if (sadType == 'empirSAD') { 
+if (sadType == 'empirSAD')
   out_file = paste('./sorensen/', shrtnames[i], 
                    '_empirSAD_mete_sor.csv', sep='')
-}
-log_file = paste('./scripts/log_files/', shrtnames[i], '_mete_sor.log', sep='')
-unit_distance = sqrt(grain_fine[i]) * n_pixels_wide(bisect_fine[i])
+
 if (server == 'unc')
   cmd = paste('bsub -q day -o', log_file,
               'python ./scripts/spat_heap_ddr.py',
-              Amin, Amax, shape, sadType, abu_file, out_file, 
+              bisect_fine[i], bisect_coarse[i], shape,
+              sadType, abu_file, out_file, 
               unit_distance, sep=' ')
 if (server == 'usu')
   cmd = paste('nice python ./scripts/spat_heap_ddr.py',
-              Amin, Amax, shape, sadType, abu_file, out_file, 
+              bisect_fine[i], bisect_coarse[i], shape,
+              sadType, abu_file, out_file, 
               unit_distance, '>', log_file, '2>&1', sep=' ')
 
 system(cmd, wait=FALSE)
