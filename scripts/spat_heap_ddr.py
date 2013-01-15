@@ -9,7 +9,7 @@ import csv
 import sys
 
 if len(sys.argv) > 1:
-    A = int(sys.argv[1]) 
+    A_vals = map(int, sys.argv[1]) 
     A0 = int(sys.argv[2])
     shape = sys.argv[3]
     sadType = sys.argv[4]
@@ -35,15 +35,19 @@ else:
 if sadType == 'meteSAD':
     S0 = len(abu)
     N0 = sum(abu)
-    sor = mete.sor_heap(A, A0, S0, N0, shape, unit_distance)
+    sor = [mete.sor_heap(A, A0, S0, N0, shape, unit_distance) for A in A_vals]
+    sor = np.concatenate((sor), axis=0)
 else:
-    sor = mete.sor_heap_fixed_abu(A, abu, A0, shape, unit_distance)
+    sor = [mete.sor_heap_fixed_abu(A, abu, A0, shape, unit_distance) for A in A_vals]
+    sor = np.concatenate((sor), axis=0)
 
 writer = open(out_filepath, 'wb') 
 datawriter = csv.writer(writer)
  
-datawriter.writerow(['j', 'dist', 'sor'])
+datawriter.writerow(['i', 'j', 'dist', 'sor'])
 for i in range(0, np.shape(sor)[0]):
     datawriter.writerow(sor[i, ])
      
 writer.close()
+
+
