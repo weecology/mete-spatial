@@ -9,8 +9,8 @@ import csv
 import sys
 
 if len(sys.argv) > 1:
-    A_vals = map(int, sys.argv[1]) 
-    A0 = int(sys.argv[2])
+    bisect_fine = int(sys.argv[1]) 
+    bisect_coarse = int(sys.argv[2])
     shape = sys.argv[3]
     sadType = sys.argv[4]
     abu_filepath = sys.argv[5]
@@ -31,6 +31,10 @@ if abu_filepath  != 'None':
     abu = [int(x) for x in data[0]]
 else:
     print 'Error: Abundance data not specified'
+
+bisections = range(bisect_fine, bisect_coarse - 2, -2)
+A0 = 2 ** bisect_fine
+A_vals = [A0 / 2 ** i for i in bisections]
 
 if sadType == 'meteSAD':
     S0 = len(abu)
