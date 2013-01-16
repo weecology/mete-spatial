@@ -20,7 +20,6 @@ bisect_coarse = as.numeric(read.table('./data/bisect_coarse.txt'))
 i = site_index
 
 unit_distance = sqrt(grain_fine[i]) * n_pixels_wide(bisect_fine[i])
-shape = ifelse(log2(2^bisect_fine[i]) %% 2 == 0, 'sqr', 'rect')
 abu_file = paste('./data/', shrtnames[i], '_sad.csv', sep='')
 log_file = paste('./scripts/log_files/', shrtnames[i], '_mete_sor.log', sep='')
 
@@ -34,12 +33,12 @@ if (sadType == 'empirSAD')
 if (server == 'unc')
   cmd = paste('bsub -q day -o', log_file,
               'python ./scripts/spat_heap_ddr.py',
-              bisect_fine[i], bisect_coarse[i], shape,
+              bisect_fine[i], bisect_coarse[i], 
               sadType, abu_file, out_file, 
               unit_distance, sep=' ')
 if (server == 'usu')
   cmd = paste('nice python ./scripts/spat_heap_ddr.py',
-              bisect_fine[i], bisect_coarse[i], shape,
+              bisect_fine[i], bisect_coarse[i],
               sadType, abu_file, out_file, 
               unit_distance, '>', log_file, '2>&1', sep=' ')
 
