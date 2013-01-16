@@ -40,7 +40,8 @@ for (i in seq_along(sitename)) {
     Ms = n_pixels_wide(bisect)
     for (j in 1:ncomm) {
       comm_tmp = comms[comms[ , 1] == j, ]
-      psp = mat2psp(comm_tmp[ , -(1:3)], Ns, Ms)
+      psp = mat2psp(comm_tmp[ , -(1:3)], comm_tmp[ , 2:3],
+                    Ns, Ms)
       if (j == 1) 
         sar = data.frame(comm = j, getSAR(psp, grains))
       else
