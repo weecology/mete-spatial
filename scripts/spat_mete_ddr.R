@@ -31,7 +31,7 @@ if (sadType == 'empirSAD')
                    '_empirSAD_mete_sor.csv', sep='')
 
 if (server == 'unc')
-  cmd = paste('bsub -q day -o', log_file,
+  cmd = paste('bsub -q week -x -o', log_file, '-J', shrtnames[i],
               'python ./scripts/spat_heap_ddr.py',
               bisect_fine[i], bisect_coarse[i], 
               sadType, abu_file, out_file, 
