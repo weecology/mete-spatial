@@ -2485,8 +2485,7 @@ get_sep_dist = function(i_bisect) {
   for (i in 1:(N - 1)) {
     for (j in (i + 1):N) {
       abs_diff = abs(coords[i, -(1:2)] - coords[j, -(1:2)])
-      jdist[i, j] = min(which(abs_diff == 1))
-      jdist[j, i] = jdist[i, j]
+      jdist[j, i] = min(which(abs_diff == 1))
       icount = icount + 1 
     }
   }
