@@ -5,21 +5,26 @@ working correctly
 """
 import numpy as np
 import mete
-import csv
+import matplotlib.pyplot as plt
 
 n0 = 617
 c = 256
 
-sing_pdfs = np.zeros((4, 7))
+sing_pdfs = np.zeros((4, 8))
 
 psi = [0.01, 0.25, 0.5, 0.75]
 for i in range(0, len(psi)):
-    sing_pdfs[i, : ] = [mete.single_prob(n, n0, psi[i], c) for n in range(0, 7)]
+    sing_pdfs[i, : ] = [mete.single_prob(n, n0, psi[i], c) for n in range(0, 8)]
 
-writer = open('./data/conlisk_data_fig2a.csv', 'wb') 
-datawriter = csv.writer(writer)
-     
-for i in range(0, np.shape(sing_pdfs)[0]):
-    datawriter.writerow(sing_pdfs[i, ])
+n = range(0, 8)
 
-writer.close()
+plt.plot(n, sing_pdfs[0, :], color='black', linewidth=1)
+plt.plot(n, sing_pdfs[1, :], color='black', linewidth=1, ls='--')
+plt.plot(n, sing_pdfs[2, :], color='black', linewidth=2)
+plt.plot(n, sing_pdfs[3, :], color='lightgrey', linewidth=2)
+plt.axis([0, 7, 0, 0.9])
+plt.xlabel('n')
+plt.ylabel('P(n)')
+plt.legend(['psi = 0.01', 'psi = 0.25', 'psi = 0.50','psi = 0.75'])
+plt.savefig('../figs/conlisk_univaritate_fig2a.pdf')
+
