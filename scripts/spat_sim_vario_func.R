@@ -812,7 +812,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
                  pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
                  quants=NA, direction = 'omnidirectional',
                  tolerance = pi/8, unit.angle = c('radians', 'degrees'),
-                 distance.metric = 'euclidean')
+                 distance.metric = 'euclidean', univariate=FALSE)
 {
   ## Purpose: calculates uni- and multi-variate variograms
   ##
@@ -863,200 +863,208 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   ##   vegan function vegdist(). This is only appropriate if pos.neg = FALSE.
   ##   Common options include, 'jaccard' and 'bray'. If computed on pres/abse
   ##   data then soreson index is computed by 'bray'.
-  if (class(x) == "sim"){
-    coord = x$coords
-    if (is.na(snap))
-      snap = length(sim$snaps)
-  }
-  else
-    x = ifelse(x == -999, NA, x)  
-  if (distance.metric != 'euclidean') {
-    if (pos.neg)
-      stop("cannot commpute pos-neg covariance using a turnover metric")
-    else
-      require(vegan)
-  }
-  ## geoR code from function variog starts here'
-  unit.angle = match.arg(unit.angle)
-  if (mode(direction) == "numeric") {
-    if (length(direction) > 1)
-      stop("only one direction is allowed")
-    if (length(tolerance) > 1)
-      stop("only one tolerance value is allowed")
-    if (unit.angle == "degrees") {
-      ang.deg = direction
-      ang.rad = (ang.deg * pi) / 180
-      tol.deg = tolerance
-      tol.rad = (tol.deg * pi) / 180
-    }
-    else {
-     ang.rad = direction
-     ang.deg = (ang.rad * 180) / pi
-     tol.rad = tolerance
-     tol.deg = (tol.rad * 180) / pi
-    }
-    if (ang.rad > pi | ang.rad < 0)
-      stop("direction must be an angle in the interval [0,pi[ radians")
-    if (tol.rad > pi/2 | tol.rad < 0)
-      stop("tolerance must be an angle in the interval [0,pi/2] radians")
-    if (tol.deg >= 90) {
-      direction = "omnidirectional"
-    }
-  }  
-  ## geoR code from function variog ends here'
-  Dist = dist(coord)
-  maxDist = max(Dist)
-  if (is.na(breaks[1])) {
-    if (is.na(hmin))
-      hmin = grain
-    if (is.na(hmax))
-      hmax = round((maxDist / 2) / grain) * grain
-    H = round(Dist / grain) * grain
+  ## univariate: if TRUE then results are computed on a per species basis
+  if (univariate) {
+    vobject = vario_uni(x, coord, grain, breaks, hmin, hmax, round.int,
+                        pos.neg, binary, snap, median, quants, direction,
+                        tolerance, unit.angle, distance.metric, univariate)
   }
   else {
-    if (is.na(hmin))
-      hmin = min(Dist)  ## potentially this should be set when breaks is NA as well
-    if (is.na(hmax))
-      hmax = maxDist / 2
-    H = Dist
-    if (is.numeric(breaks[1])) {
-      if (length(breaks) == 1)
-        breaks = seq(hmin, hmax, length.out=breaks)
+    if (class(x) == "sim"){
+      coord = x$coords
+      if (is.na(snap))
+        snap = length(sim$snaps)
     }
-    else {
-      if (breaks[1] == 'log')
-        base = 'exp'
-      else if (breaks[1] == 'log2')
-        base = '2^'
-      else if (breaks[1] == 'log10')
-        base = '10^'
-      else 
-        stop('Specification of breaks using a character string must be log, log2, 
-             or log10')
-      incre = (hmax - hmin) / as.numeric(breaks[2])
-      if (round(hmax,2) == round(maxDist / 2, 2))
-        hmax = hmax + incre
-      breaks = eval(parse(text = paste(base, '(seq(', breaks[1], '(hmin),', 
-                                       breaks[1], '(hmax), length.out=', 
-                                       breaks[2], '))', sep='')))
-    } 
-    if (round.int)
-      breaks = round(breaks)
-    for (i in 1:(length(breaks) - 1)) {
-      H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
-    }  
-  }
-  H[H < hmin] = NA
-  H[H > hmax] = NA
-  H = as.vector(H)
-  if (is.vector(x)) {
-    S = 1
-    N = length(x)
-  }
-  else {
-    S = ncol(x)
-    N = nrow(x)
-  } 
-  vobject = list()
-  vobject$parms = data.frame(grain, hmin, hmax, S=S, N=N, pos.neg, median, direction,
-                             tolerance, unit.angle, distance.metric, 
-                             quants = ifelse(is.na(quants[1]), NA, 
-                                             paste(quants* 100, collapse=", ")))
-  if(class(x) == "sim"){
-    if(binary)
-      x = apply(census(x, snap=snap), c(1, 2), as.logical) * 1
     else
-      x = census(x, snap=snap)
-    vobject$parms = cbind(vobject$parms, niche.wid.rel=x$p$s.rel,
-                          disp.wid.rel=x$p$u.rel) 
-  }
-  ## geoR code from function variog with slight modifications starts here'
-  if (direction != "omnidirectional") {
-    ## note that the changes: 'u' has been changed for as.vector(Dist) and
-    ## coords changed to coord
-    u.ang = .C("tgangle", as.double(as.vector(coord[ , 1])),
-               as.double(as.vector(coord[ , 2])), as.integer(dim(coord)[1]),
-               res = as.double(rep(0, length(as.vector(Dist)))))$res
-    if (any(is.na(u.ang)))
-      stop("NA returned in angle calculations maybe due to co-located data")
-    u.ang = atan(u.ang)
-    u.ang[u.ang < 0] = u.ang[u.ang < 0] + pi
-    ang.lower = ang.rad - tol.rad
-    ang.upper = ang.rad + tol.rad
-    if (ang.lower >= 0 & ang.upper < pi)
-      ang.ind = (!is.na(u.ang) & ((u.ang >= ang.lower) & (u.ang <= ang.upper)))
-    if (ang.lower < 0)
-      ang.ind = (!is.na(u.ang) & ((u.ang < ang.upper) | (u.ang > (pi + ang.lower))))
-    if (ang.upper >= pi)
-      ang.ind = (!is.na(u.ang) & ((u.ang > ang.lower) | (u.ang < (ang.upper - pi))))
-    Dist[!ang.ind] = NA
-    H[!ang.ind] = NA
-  }
-  ## geoR code from function variog ends here
-  Dist = sapply(split(Dist, H), mean, na.rm=TRUE)
-  vobject$vario = data.frame(H = as.numeric(names(table(H))), Dist = Dist,
-                             n = as.numeric(table(H)))
-  ## below 'exp.gamma' is the expected variogram if 'x' is a sitexsp
-  ## pres/abse matrix. The expectation is based upon the assumption of zero
-  ## sp x sp covariances
-  if(distance.metric == 'euclidean')
-    exp.split = split(dist(x)^2 * .5, H)
-  else
-    exp.split = split(vegdist(x, method=distance.metric), H)
-  exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
-  if (!is.na(quants[1])) {
-    exp.qt = sapply(exp.split, function(x) quantile(x, quants, na.rm=TRUE))
-    exp.qt = t(exp.qt)
-    colnames(exp.qt) = paste(quants * 100)
-  }  
-  vobject$vario = cbind(vobject$vario, exp.var=exp.gamma)
-  if (median)
-    exp.med = sapply(exp.split, median, na.rm=TRUE)
-  if (!is.vector(x)) { ## i.e. x is a site x sp matrix and not simply a vector
-    ## if 'x' is a sitexsp pres/abse matrix the following computes site species richness
-    rich = apply(x, 1, sum)
-    ## see equation 7 in Wagner, H. 2003. Spatial covariance in plant
-    ## communities... Ecology 84:1045-1057 to see that observed multivariate
-    ## variogram can be computed from the species richness vector
-    obs.gamma = sapply(split(dist(rich)^2 * .5, H), mean, na.rm=TRUE)
-    vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
-                          ratio = obs.gamma/exp.gamma)
-    if (pos.neg) {
-      cov.mat = getCovFractions(x)
-      pos.split = split(cov.mat$pos, H)
-      neg.split = split(cov.mat$neg, H)
-      pos = sapply(pos.split, mean)
-      neg = sapply(neg.split, mean)
-      vobject$vario = cbind(vobject$vario, pos = pos, neg = neg)
-      if (median) {
-        pos.med = sapply(pos.split, median)
-        neg.med = sapply(neg.split, median)
-        vobject$vario = cbind(vobject$vario, exp.med = exp.med, pos.med = pos.med,
-                              neg.med = neg.med)
+      x = ifelse(x == -999, NA, x)  
+    if (distance.metric != 'euclidean') {
+      if (pos.neg)
+        stop("cannot commpute pos-neg covariance using a turnover metric")
+      else
+        require(vegan)
+    }
+    ## geoR code from function variog starts here'
+    unit.angle = match.arg(unit.angle)
+    if (mode(direction) == "numeric") {
+      if (length(direction) > 1)
+        stop("only one direction is allowed")
+      if (length(tolerance) > 1)
+        stop("only one tolerance value is allowed")
+      if (unit.angle == "degrees") {
+        ang.deg = direction
+        ang.rad = (ang.deg * pi) / 180
+        tol.deg = tolerance
+        tol.rad = (tol.deg * pi) / 180
       }
-    ##Note: obs.var = exp.var + pos.var + neg.var
+      else {
+       ang.rad = direction
+       ang.deg = (ang.rad * 180) / pi
+       tol.rad = tolerance
+       tol.deg = (tol.rad * 180) / pi
+      }
+      if (ang.rad > pi | ang.rad < 0)
+        stop("direction must be an angle in the interval [0,pi[ radians")
+      if (tol.rad > pi/2 | tol.rad < 0)
+        stop("tolerance must be an angle in the interval [0,pi/2] radians")
+      if (tol.deg >= 90) {
+        direction = "omnidirectional"
+      }
+    }  
+    ## geoR code from function variog ends here'
+    Dist = dist(coord)
+    maxDist = max(Dist)
+    if (is.na(breaks[1])) {
+      if (is.na(hmin))
+        hmin = grain
+      if (is.na(hmax))
+        hmax = round((maxDist / 2) / grain) * grain
+      H = round(Dist / grain) * grain
     }
-    else{
-      if (median) {
-        obs.gamma.med = sapply(split(dist(rich)^2 * .5, H),median, na.rm=TRUE)
-        vobject$vario = cbind(vobject$vario, obs.med = obs.gamma.med,
-                              exp.med = exp.med)
+    else {
+      if (is.na(hmin))
+        hmin = min(Dist)  ## potentially this should be set when breaks is NA as well
+      if (is.na(hmax))
+        hmax = maxDist / 2
+      H = Dist
+      if (is.numeric(breaks[1])) {
+        if (length(breaks) == 1)
+          breaks = seq(hmin, hmax, length.out=breaks)
+      }
+      else {
+        if (breaks[1] == 'log')
+          base = 'exp'
+        else if (breaks[1] == 'log2')
+          base = '2^'
+        else if (breaks[1] == 'log10')
+          base = '10^'
+        else 
+          stop('Specification of breaks using a character string must be log, log2, 
+               or log10')
+        incre = (hmax - hmin) / as.numeric(breaks[2])
+        if (round(hmax,2) == round(maxDist / 2, 2))
+          hmax = hmax + incre
+        breaks = eval(parse(text = paste(base, '(seq(', breaks[1], '(hmin),', 
+                                         breaks[1], '(hmax), length.out=', 
+                                         breaks[2], '))', sep='')))
+      } 
+      if (round.int)
+        breaks = round(breaks)
+      for (i in 1:(length(breaks) - 1)) {
+        H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
       }  
     }
+    H[H < hmin] = NA
+    H[H > hmax] = NA
+    H = as.vector(H)
+    if (is.vector(x)) {
+      S = 1
+      N = length(x)
+    }
+    else {
+      S = ncol(x)
+      N = nrow(x)
+    } 
+    vobject = list()
+    vobject$parms = data.frame(grain, hmin, hmax, S=S, N=N, pos.neg, median, direction,
+                               tolerance, unit.angle, distance.metric, 
+                               quants = ifelse(is.na(quants[1]), NA, 
+                                               paste(quants* 100, collapse=", ")))
+    if(class(x) == "sim"){
+      if(binary)
+        x = apply(census(x, snap=snap), c(1, 2), as.logical) * 1
+      else
+        x = census(x, snap=snap)
+      vobject$parms = cbind(vobject$parms, niche.wid.rel=x$p$s.rel,
+                            disp.wid.rel=x$p$u.rel) 
+    }
+    ## geoR code from function variog with slight modifications starts here'
+    if (direction != "omnidirectional") {
+      ## note that the changes: 'u' has been changed for as.vector(Dist) and
+      ## coords changed to coord
+      u.ang = .C("tgangle", as.double(as.vector(coord[ , 1])),
+                 as.double(as.vector(coord[ , 2])), as.integer(dim(coord)[1]),
+                 res = as.double(rep(0, length(as.vector(Dist)))))$res
+      if (any(is.na(u.ang)))
+        stop("NA returned in angle calculations maybe due to co-located data")
+      u.ang = atan(u.ang)
+      u.ang[u.ang < 0] = u.ang[u.ang < 0] + pi
+      ang.lower = ang.rad - tol.rad
+      ang.upper = ang.rad + tol.rad
+      if (ang.lower >= 0 & ang.upper < pi)
+        ang.ind = (!is.na(u.ang) & ((u.ang >= ang.lower) & (u.ang <= ang.upper)))
+      if (ang.lower < 0)
+        ang.ind = (!is.na(u.ang) & ((u.ang < ang.upper) | (u.ang > (pi + ang.lower))))
+      if (ang.upper >= pi)
+        ang.ind = (!is.na(u.ang) & ((u.ang > ang.lower) | (u.ang < (ang.upper - pi))))
+      Dist[!ang.ind] = NA
+      H[!ang.ind] = NA
+    }
+    ## geoR code from function variog ends here
+    Dist = sapply(split(Dist, H), mean, na.rm=TRUE)
+    vobject$vario = data.frame(H = as.numeric(names(table(H))), Dist = Dist,
+                               n = as.numeric(table(H)))
+    ## below 'exp.gamma' is the expected variogram if 'x' is a sitexsp
+    ## pres/abse matrix. The expectation is based upon the assumption of zero
+    ## sp x sp covariances
+    if(distance.metric == 'euclidean')
+      exp.split = split(dist(x)^2 * .5, H)
+    else
+      exp.split = split(vegdist(x, method=distance.metric), H)
+    exp.gamma = sapply(exp.split, mean, na.rm=TRUE)
+    if (!is.na(quants[1])) {
+      exp.qt = sapply(exp.split, function(x) quantile(x, quants, na.rm=TRUE))
+      exp.qt = t(exp.qt)
+      colnames(exp.qt) = paste(quants * 100)
+    }  
+    vobject$vario = cbind(vobject$vario, exp.var=exp.gamma)
+    if (median)
+      exp.med = sapply(exp.split, median, na.rm=TRUE)
+    if (!is.vector(x)) { ## i.e. x is a site x sp matrix and not simply a vector
+      ## if 'x' is a sitexsp pres/abse matrix the following computes site species richness
+      rich = apply(x, 1, sum)
+      ## see equation 7 in Wagner, H. 2003. Spatial covariance in plant
+      ## communities... Ecology 84:1045-1057 to see that observed multivariate
+      ## variogram can be computed from the species richness vector
+      obs.gamma = sapply(split(dist(rich)^2 * .5, H), mean, na.rm=TRUE)
+      vobject$vario = cbind(vobject$vario, obs.var = obs.gamma,
+                            ratio = obs.gamma/exp.gamma)
+      if (pos.neg) {
+        cov.mat = getCovFractions(x)
+        pos.split = split(cov.mat$pos, H)
+        neg.split = split(cov.mat$neg, H)
+        pos = sapply(pos.split, mean)
+        neg = sapply(neg.split, mean)
+        vobject$vario = cbind(vobject$vario, pos = pos, neg = neg)
+        if (median) {
+          pos.med = sapply(pos.split, median)
+          neg.med = sapply(neg.split, median)
+          vobject$vario = cbind(vobject$vario, exp.med = exp.med, pos.med = pos.med,
+                                neg.med = neg.med)
+        }
+      ##Note: obs.var = exp.var + pos.var + neg.var
+      }
+      else{
+        if (median) {
+          obs.gamma.med = sapply(split(dist(rich)^2 * .5, H),median, na.rm=TRUE)
+          vobject$vario = cbind(vobject$vario, obs.med = obs.gamma.med,
+                                exp.med = exp.med)
+        }  
+      }
+    }
+    if (!is.na(quants[1]))
+      vobject$vario = cbind(vobject$vario, exp.qt = exp.qt)
+    if (is.vector(x))
+      vobject$p = sum(x) / length(x)
+    else
+      vobject$p = apply(x, 2, sum, na.rm=TRUE) / nrow(x)
+    vobject$perm = FALSE
+    ## the above line indicates to the function 'vGraph' if the variogram is the
+    ## result of a randomization or not
+    row.names(vobject$vario) = NULL
   }
-  if (!is.na(quants[1]))
-    vobject$vario = cbind(vobject$vario, exp.qt = exp.qt)
-  if (is.vector(x))
-    vobject$p = sum(x) / length(x)
-  else
-    vobject$p = apply(x, 2, sum, na.rm=TRUE) / nrow(x)
-  vobject$perm = FALSE
-  ## the above line indicates to the function 'vGraph' if the variogram is the
-  ## result of a randomization or not
-  row.names(vobject$vario) = NULL
   return(vobject)
 }
-
+  
 vario_uni = function(x, ...)
 {
   ## Purpose: to compute the multivariate variogram as well as individual univariate 
@@ -1973,7 +1981,7 @@ jacExp = function(mat, areaSampA, areaSampB=NULL){
 ##3.17##
 calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, 
                        hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
-                       tolerance=NA, nperm=NULL, npar=1, RPargs=NULL,
+                       tolerance=NA, nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
                        writeToFile=FALSE,fileSuffix=NULL) {
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
@@ -1994,6 +2002,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
   ## nperm: number of permutations to carry out for null models
   ## npar: number of processesors to run null models on
   ## RPargs: arguments to parameterize the Random Patterns null model
+  ## univariate: if TRUE then results are computed on a per species basis
   ## writeToFile: if True an .Rdata file is written for each metric calculated
   ## fileSuffix: add a file identifying string here
   if(metricsToCalc == 'all')
@@ -2027,7 +2036,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       }  
       varWithinObs = vario(mat,coords,grain,brks,hmin_val,hmax,pos.neg=FALSE,
                            quants=quants,direction=direction,tolerance=tolerance,
-                           unit.angle='degrees')
+                           unit.angle='degrees',univariate=univariate)
       if(!is.null(nperm)){ 
         varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
                                    meth='random',npar=npar)
@@ -2046,7 +2055,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       }  
       varBetweenObs = vario(mat,coords,grain,brks,hmin,hmax,pos.neg=TRUE,
                             quants=quants,direction=direction,tolerance=tolerance,
-                            unit.angle='degrees') 
+                            unit.angle='degrees',univariate=univariate) 
       if (!is.null(nperm)) { 
         varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
                                     meth='randpat',RPargs=RPargs,npar=npar)
@@ -2064,7 +2073,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       }  
       jaccardObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
-                          unit.angle='degrees') 
+                          unit.angle='degrees',univariate=univariate) 
       jaccardNull = NULL
       if (!is.null(nperm)) {
         jaccardNull = null.perms(mat, jaccardObs, nperm, coords=coords,
@@ -2085,7 +2094,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA,
       ## bray-curtis is equiv to sorensen        
       sorensenObs  = vario(mat,coords,grain,brks,hmin,hmax,distance.metric='bray',
                            quants=quants,direction=direction,tolerance=tolerance,
-                           unit.angle='degrees') 
+                           unit.angle='degrees',univariate=univariate) 
       sorensenNull = NULL
       if (!is.null(nperm)) {
           sorensenNull = null.perms(mat, sorensenObs, nperm, coords=coords,
