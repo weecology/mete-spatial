@@ -863,6 +863,13 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   ##   vegan function vegdist(). This is only appropriate if pos.neg = FALSE.
   ##   Common options include, 'jaccard' and 'bray'. If computed on pres/abse
   ##   data then soreson index is computed by 'bray'.
+  if (class(x) == "sim"){
+    coord = x$coords
+    if (is.na(snap))
+      snap = length(sim$snaps)
+  }
+  else
+    x = ifelse(x == -999, NA, x)  
   if (distance.metric != 'euclidean') {
     if (pos.neg)
       stop("cannot commpute pos-neg covariance using a turnover metric")
@@ -897,13 +904,6 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
     }
   }  
   ## geoR code from function variog ends here'
-  if (class(x) == "sim"){
-    coord = x$coords
-    if (is.na(snap))
-      snap = length(sim$snaps)
-  }
-  else
-    x = ifelse(x == -999, NA, x)
   Dist = dist(coord)
   maxDist = max(Dist)
   if (is.na(breaks[1])) {
@@ -1056,6 +1056,27 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   row.names(vobject$vario) = NULL
   return(vobject)
 }
+
+vario_uni = function(x, ...)
+{
+  ## Purpose: to compute the multivariate variogram as well as individual univariate 
+  ## variograms for evey column of x
+  ## Arguments:
+  ## x : site x sp matrix
+  ## ... : arguments supplied to the function vario()
+  ## Note: speed gains would be significant if partitioning of computation between
+  ## species was carried out within the vario function after computing the
+  ## distance matrix because that is a time intensive step
+  S = ncol(x)
+  v = vario(x, ...)
+  exp_var = matrix(NA, nrow=nrow(v$vario), ncol=S)
+  for (sp in 1:S) {
+    exp_var[ , sp] = vario(x[ , sp], ...)$vario$exp.var
+  }
+  v$exp_var = exp_var  
+  return(v)
+}
+
 
 ##3.3##
 null.perms<-function(x,vobject,nperm,coords=NULL,meth='both',sp=TRUE,all=FALSE,
@@ -3538,16 +3559,16 @@ Empir.fit<-function(stcrds,n,sim.array,meth='avg',on='desktop'){
  output
 }
 
-addCI = function(x, y.lo, y.hi, col, data=NULL) {
+addCI = function(x, y_lo, y_hi, col, data=NULL) {
   ## if data is not null then all of the arguments
   ## including data itself must be text strings
   if (!is.null(data)) {
     x = eval(parse(text=paste(data, '$', x, sep='')))
-    y.lo = eval(parse(text=paste(data, '$', y.lo, sep='')))
-    y.hi = eval(parse(text=paste(data, '$', y.hi, sep='')))
+    y_lo = eval(parse(text=paste(data, '$', y_lo, sep='')))
+    y_hi = eval(parse(text=paste(data, '$', y_hi, sep='')))
   }  
   xvals = c(x, rev(x))
-  yvals = c(y.lo, rev(y.hi))
+  yvals = c(y_lo, rev(y_hi))
   polygon(xvals, yvals, border=NA, col=col)
 }
 
@@ -3640,6 +3661,30 @@ get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
   }
   return(data.frame(site, area, res))
 }  
+
+get_R2 = function(obs, exp) {
+  SSerr = sum((obs - exp)^2)
+  SStot = sum((obs - mean(obs))^2)
+  R2 = 1 - SSerr / SStot
+  return(R2)
+}
+
+get_SSAD = function(comms) {
+  grains = unique(comms[ , 1])
+  for (g in seq_along(grains)) {
+    tmp_comm = comms[comms[ , 1] == grains[g], -(1:3)]
+    uni_abu = sort(unique(as.vector(tmp_comm)))
+    ssad = apply(tmp_comm, 2, function(x) table(c(x, uni_abu)) - 1)
+    ssad = cbind(grains[g], uni_abu, ssad)
+    if (g == 1)
+      out = ssad
+    else
+      out = rbind(out, ssad)
+  }
+  colnames(out)[1:2] = c('grain', 'abu')
+  return(out)
+}
+
 
 match_index = function(x, table) {
   ## An extenstion of the function match() that returns the 
