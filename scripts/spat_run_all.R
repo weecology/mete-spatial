@@ -36,8 +36,7 @@ system(paste("Rscript spat_empir_simulated_ddr.R", server,
 
 ## generate analytical mete DDR expectation for the empirical communities
 
-system(paste('Rscript spat_empir_analytical_ddr.R', server,
-             site_index, sadType, sep=' '), wait=FALSE)
+system('Rscript spat_mete_ddr.R', wait=FALSE)
 
 ## analyze empirical observed SAR (3 min)
 system('Rscript spat_empir_sar.R', wait=FALSE)
