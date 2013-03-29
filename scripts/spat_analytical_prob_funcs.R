@@ -1,4 +1,4 @@
-## $Id$ 
+## $Id: spat_analytical_prob_funcs.R 1048 2012-12-31 17:10:55Z danmcglinn $ 
 
 ## This package to compute probabilities related to the following models: HEAP, 
 ## single division,bisection, and METE. These probabilities primarily are 
@@ -82,7 +82,7 @@ calc_F = function(a, n){
   return(out)
 }  
 
-single_prob = function(n, A, n0, A0, psi, c=2){
+single_prob = function(n, n0, psi, c=2){
   ## Univaritate pdf of the Single division model
   ## Conlisk et al. (2007)
   ## Theorem 1.3
@@ -114,9 +114,9 @@ single_cdf = function(A, n0, A0, psi, use_c=TRUE){
       out = rep(0, n0+1)
       for (n in 0:n0) {
         if (n == 0)
-           out[n+1] = single_prob(n, A, n0, A0, psi)
+           out[n+1] = single_prob(n, n0, psi)
         else
-          out[n+1] = out[n] + single_prob(n, A ,n0, A0, psi)
+          out[n+1] = out[n] + single_prob(n, n0, psi)
       }
     }  
   }  
@@ -161,12 +161,12 @@ bisect_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
       key = paste(n, n0, i, sep=',')
       if (!(has.key(key, h))) {
         if (i == 1)
-          h[key] = single_prob(n, A, n0, A0, psi)
+          h[key] = single_prob(n, n0, psi)
         else {
           A = A * 2
           h[key] = sum(sapply(n:n0, function(q) 
                        bisect_prob(q, A, n0, A0, psi, h) * 
-                       single_prob(n, A, q, A0, psi)))
+                       single_prob(n, q, psi)))
         }  
       }
       out = as.numeric(h[[key]])
@@ -193,12 +193,12 @@ quad_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
       key = paste(n, n0, i, sep=',')
       if (!(has.key(key, h))) {
         if (i == 1)
-          h[key] = single_prob(n, A, n0, A0, psi, c=4)
+          h[key] = single_prob(n, n0, psi, c=4)
         else {
           A = A * 2
           h[key] = sum(sapply(n:n0, function(q) 
                        bisect_prob(q, A, n0, A0, psi, h) * 
-                       single_prob(n, A, q, A0, psi)))
+                       single_prob(n, q, psi)))
         }  
       }
       out = as.numeric(h[[key]])
