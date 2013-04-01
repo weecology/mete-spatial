@@ -22,22 +22,26 @@ sadType = ifelse(sadType == 'both', c('empirSAD','meteSAD'), sadType)
 for(i in site_index) {
   for(j in sadType) {
     unit_distance = sqrt(grain_fine[i]) * n_pixels_wide(bisect_fine[i])
-    abu_file = paste('./data/', shrtnames[i], '_sad.csv', sep='')
-    log_file = paste('./scripts/log_files/', shrtnames[i], '_mete_sor.log', sep='')
-    
-    if (j == 'meteSAD')
+    abu_file = paste('./data/', shrtnames[i], '_sad.csv', sep='')    
+    if (j == 'meteSAD') {
       out_file = paste('./sorensen/', shrtnames[i], 
                        '_mete_sor.csv', sep='')
-    if (j == 'empirSAD')
+      log_file = paste('./scripts/log_files/', shrtnames[i],
+                       '_mete_sor.log', sep='')
+    }
+    if (j == 'empirSAD') {
       out_file = paste('./sorensen/', shrtnames[i], 
                        '_empirSAD_mete_sor.csv', sep='')
-    
-    if (server == 'unc')
+      log_file = paste('./scripts/log_files/', shrtnames[i],
+                       '_empirSAD_mete_sor.log', sep='')    
+    }    
+    if (server == 'unc') {
       cmd = paste('bsub -q week -x -o', log_file, '-J', shrtnames[i],
                   'python ./scripts/spat_heap_ddr.py',
                   bisect_fine[i], bisect_coarse[i], 
                   j, abu_file, out_file, 
                   unit_distance, sep=' ')
+    }
     if (server == 'usu')
       cmd = paste('nice python ./scripts/spat_heap_ddr.py',
                   bisect_fine[i], bisect_coarse[i],
