@@ -8,17 +8,23 @@ source('./scripts/spat_sim_vario_func.R')
 clArgs = commandArgs(trailingOnly=TRUE)
 if (length(clArgs) > 0) {
   server = clArgs[1]
-  site_index = as.integer(clArgs[2])
+  site_index = clArgs[2]
   sadType = clArgs[3]
 }
+
+if (sadType == 'both')
+  sadType = c('empirSAD','meteSAD')
+
+if (site_index != 'all')
+  site_index = as.integer(site_index)
+
+if (site_index == 'all')
+  site_index = 1:19
 
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
 grain_fine = as.numeric(read.table('./data/grain_fine.txt'))
 bisect_fine = as.numeric(read.table('./data/bisect_fine.txt'))
 bisect_coarse = as.numeric(read.table('./data/bisect_coarse.txt'))
-
-if (sadType == 'both')
-  sadType = c('empirSAD','meteSAD')
 
 for(i in site_index) {
   for(j in sadType) {
