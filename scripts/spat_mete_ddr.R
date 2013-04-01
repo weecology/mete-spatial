@@ -17,7 +17,8 @@ grain_fine = as.numeric(read.table('./data/grain_fine.txt'))
 bisect_fine = as.numeric(read.table('./data/bisect_fine.txt'))
 bisect_coarse = as.numeric(read.table('./data/bisect_coarse.txt'))
 
-sadType = ifelse(sadType == 'both', c('empirSAD','meteSAD'), sadType)
+if (sadType == 'both')
+  sadType = c('empirSAD','meteSAD')
 
 for(i in site_index) {
   for(j in sadType) {
