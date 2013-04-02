@@ -867,7 +867,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   if (univariate) {
     vobject = vario_uni(x, coord, grain, breaks, hmin, hmax, round.int,
                         pos.neg, binary, snap, median, quants, direction,
-                        tolerance, unit.angle, distance.metric, univariate)
+                        tolerance, unit.angle, distance.metric)
   }
   else {
     if (class(x) == "sim"){
