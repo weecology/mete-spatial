@@ -43,7 +43,7 @@ for(i in site_index) {
                        '_empirSAD_mete_sor.log', sep='')    
     }    
     if (server == 'unc') {
-      cmd = paste('bsub -q week -x -o', log_file, '-J', shrtnames[i],
+      cmd = paste('bsub -q week -M 10 -o', log_file, '-J', shrtnames[i],
                   'python ./scripts/spat_heap_ddr.py',
                   bisect_fine[i], bisect_coarse[i], 
                   j, abu_file, out_file, 
