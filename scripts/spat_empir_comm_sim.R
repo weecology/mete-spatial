@@ -30,6 +30,7 @@ for (i in indices) {
     else
       system(paste('python spat_community_generation.py',
                    S[i], N[i], 200, bisect[i], 'False', 'None',
-                   names[i], '>', log_file, '2>&1 &', sep=' '))
+                   names[i], '>', log_file, '2>&1 &', sep=' '),
+             wait=FALSE)
   }
 }
