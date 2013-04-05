@@ -1075,11 +1075,16 @@ vario_uni = function(x, ...)
   ## Note: speed gains would be significant if partitioning of computation between
   ## species was carried out within the vario function after computing the
   ## distance matrix because that is a time intensive step
+  require(snowfall)
   S = ncol(x)
   v = vario(x, ...)
-  exp_var = matrix(NA, nrow=nrow(v$vario), ncol=S)
-  for (sp in 1:S) {
-    exp_var[ , sp] = vario(x[ , sp], ...)$vario$exp.var
+  n_cpus = length(suppressMessages(sfGetCluster()))
+  if (n_cpus > 0) {
+    sfExport("vario")
+    exp_var = sfSapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var)
+  }
+  else {
+    exp_var = sapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var) 
   }
   v$exp_var = exp_var  
   return(v)
