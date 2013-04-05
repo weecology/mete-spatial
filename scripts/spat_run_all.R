@@ -29,14 +29,17 @@ commName = paste("'", paste(commName, collapse=' '), "'", sep='')
 system(paste("Rscript spat_empir_observed_ddr.R", server,
              npar, nperm, commName, sep=" "), wait=FALSE)
 
+## generate analytical mete DDR expectation for the empirical communities
+
+server = 'usu'
+site_index = 'all'
+sadType = 'both'
+system(paste('Rscript spat_mete_ddr.R', server, site_index, sadType), wait=FALSE)
+
 ## analyze emprical simulated DDR (very slow)
 indices = paste("'", paste(1:19, collapse=' '), "'", sep='')
 system(paste("Rscript spat_empir_simulated_ddr.R", server,
              indices, sep=" "), wait=FALSE)
-
-## generate analytical mete DDR expectation for the empirical communities
-
-system('Rscript spat_mete_ddr.R', wait=FALSE)
 
 ## analyze empirical observed SAR (3 min)
 system('Rscript spat_empir_sar.R', wait=FALSE)
