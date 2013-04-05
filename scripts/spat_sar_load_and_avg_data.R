@@ -1,7 +1,7 @@
-## this script assumes the working directory is
-## '~/maxent/spat'
-## and that the script ./scripts/spat_sim_vario_func.R has
-## been sourced
+## Loads and averages the species area anaylsis data products
+
+setwd('~/maxent/spat')
+source('./scripts/spat_sim_vario_func.R')
 
 fileNames = dir('./sar')
 
@@ -106,7 +106,7 @@ sar_res = data.frame(site = meteLogSer_avg_res$site, area = meteLogSer_avg_res$a
 ## Add richness and individual density to residual data.frame
 sar_data = read.csv('./sar/empir_sars.csv')
 sar_res = merge(sar_res, 
-                sar_data[ , c('site', 'area', 'richness', 'std', 'indiv')],
+                sar_data[ , c('site', 'area', 'richness', 'sr_std', 'indiv')],
                 all.x=TRUE)
 ## sort sar_res so that its in a reasonable order
 sar_res = sar_res[order(sar_res$site, sar_res$area), ]
