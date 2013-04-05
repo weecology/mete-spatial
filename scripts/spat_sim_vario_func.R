@@ -2512,6 +2512,9 @@ get_pairs_matrix = function(bisect_coords, j) {
 }
 
 get_sep_dist = function(i_bisect) {
+  ## Returns a lower-triangular distance matrix (class dist)
+  ## that is populated with the seperation orders of each unique
+  ## pairwise comparison
   N = 2^i_bisect
   coords = get_bisect_coords(i_bisect)
   coords = coords[order(coords[ , 1], coords[ , 2]), ]
