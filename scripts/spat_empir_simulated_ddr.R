@@ -39,7 +39,8 @@ for (i in indices) {
           system(paste('Rscript spat_analysis.R', S[i], N[i], 200,
                        bisect_fine[i], bisect_coarse[i],
                        grain_fine[i], FALSE, k, m, NA, NA,
-                       name, TRUE, '>', log_file, '2>&1 &', sep=' '))
+                       name, TRUE, '>', log_file, '2>&1 &', sep=' '),
+                 wait=FALSE)
       }    
     }
   }

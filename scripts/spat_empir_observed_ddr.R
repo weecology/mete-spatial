@@ -35,10 +35,12 @@ for (i in commName) {
       else {
         if (k == 'abu')
           system(paste('Rscript spat_empir_analysis.R', i, j, k,
-                       nperm, npar, '>' log_file, '2>&1 &', sep=' '))
+                       nperm, npar, '>' log_file, '2>&1 &', sep=' '),
+                 wait=FALSE)
         else 
           system(paste('Rscript spat_empir_analysis.R', i, j, k,
-                       'NULL', 1, '>' log_file, '2>&1 &', sep=' '))
+                       'NULL', 1, '>' log_file, '2>&1 &', sep=' '),
+                 wait=FALSE)
       }
     }
   }
