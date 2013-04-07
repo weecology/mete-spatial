@@ -829,9 +829,9 @@ get_breaks = function(breaks, hmin, hmax, maxDist, log=FALSE) {
 }
 
 ##3.2##
-vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE,
-                 pos.neg=FALSE, binary=TRUE, snap=NA, median=FALSE, 
-                 quants=NA, direction = 'omnidirectional',
+vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
+                 hmax=NA, round.int=FALSE, pos.neg=FALSE, binary=TRUE,
+                 snap=NA, median=FALSE, quants=NA, direction = 'omnidirectional',
                  tolerance = pi/8, unit.angle = c('radians', 'degrees'),
                  distance.metric = 'euclidean', univariate=FALSE)
 {
@@ -856,6 +856,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   ## coord: the spatial coordinates
   ## grain: interval size for distance classes, only used if 'breaks' not supplied
   ## breaks: the spatial breaks that define the spatial lags to be compared
+  ## log: boolean, if true then the breaks are equidistance  
   ## hmin: the minimum spatial lag, default value of NA is treated as a minimum
   ##   of 1
   ## hmax: the maximum spatial lag, default value of NA is treated as half of 
@@ -886,7 +887,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
   ##   data then soreson index is computed by 'bray'.
   ## univariate: if TRUE then results are computed on a per species basis
   if (univariate) {
-    vobject = vario_uni(x, coord, grain, breaks, hmin, hmax, round.int,
+    vobject = vario_uni(x, coord, grain, breaks, log, hmin, hmax, round.int,
                         pos.neg, binary, snap, median, quants, direction,
                         tolerance, unit.angle, distance.metric)
   }
@@ -947,27 +948,7 @@ vario = function(x, coord, grain=1, breaks=NA, hmin=NA, hmax=NA, round.int=FALSE
       if (is.na(hmax))
         hmax = maxDist / 2
       H = Dist
-      if (is.numeric(breaks[1])) {
-        if (length(breaks) == 1)
-          breaks = seq(hmin, hmax, length.out=breaks)
-      }
-      else {
-        if (breaks[1] == 'log')
-          base = 'exp'
-        else if (breaks[1] == 'log2')
-          base = '2^'
-        else if (breaks[1] == 'log10')
-          base = '10^'
-        else 
-          stop('Specification of breaks using a character string must be log, log2, 
-               or log10')
-        incre = (hmax - hmin) / as.numeric(breaks[2])
-        if (round(hmax,2) == round(maxDist / 2, 2))
-          hmax = hmax + incre
-        breaks = eval(parse(text = paste(base, '(seq(', breaks[1], '(hmin),', 
-                                         breaks[1], '(hmax), length.out=', 
-                                         breaks[2], '))', sep='')))
-      } 
+      breaks = get_breaks(breaks, hmin, hmax, maxDist, log)
       if (round.int)
         breaks = round(breaks)
       for (i in 1:(length(breaks) - 1)) {
