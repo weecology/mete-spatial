@@ -2549,7 +2549,7 @@ dist_bisect = function(i_bisect) {
   return(out)
 }
 
-mete_sor_transform = function(dat, path='./sorensen') {
+mete_sor_transform = function(dat) {
   ## this effectively creates a new distance matrix populated with 
   ## sorensen predictions 
   bisections = unique(dat$i)
