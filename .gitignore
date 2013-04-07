@@ -1,0 +1,16 @@
+.Rproj.user
+.Rhistory
+.RData
+spat.Rproj
+data/
+comms/
+comms.tar.gz
+ddr/
+figs/
+sar/
+sar.tar.gz
+simulated_empirical_results.Rdata
+sorensen/
+sorensen_obs_empir.tar.gz
+sorensen_pred_empir.tar.gz
+scripts/log_files/
