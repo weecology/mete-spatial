@@ -2549,6 +2549,24 @@ dist_bisect = function(i_bisect) {
   return(out)
 }
 
+mete_sor_transform = function(dat, path='./sorensen') {
+  ## this effectively creates a new distance matrix populated with 
+  ## sorensen predictions 
+  bisections = unique(dat$i)
+  out = vector('list', length(bisections))
+  names(out) = paste('sor, i=', bisections, sep='')
+  icount = 1
+  for (i_bisect in bisections) {
+    dat_tmp = dat[dat$i == i_bisect, ]
+    sep_dist = as.matrix(dist_bisect(i_bisect)$dist)
+    n = nrow(sep_dist)
+    sor_vect = dat_tmp$sor[match(as.vector(sep_dist), dat_tmp$j)]
+    out[[icount]] = as.dist(matrix(sor_vect, n, n))
+    icount = icount + 1
+  }
+  return(out)
+}
+
 dimensional_match = function(coord1, coord2) {
   ## Returns boolean indicating whether or not the spatial dimensions of 
   ## two sets of coordinates match each other. 
