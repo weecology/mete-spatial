@@ -1,5 +1,4 @@
 /*
-$Id$
 Purpose: To compute probabilities related to Harte's HEAP model and Conlisk et 
 al.'s Bisection model
 
