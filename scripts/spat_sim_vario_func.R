@@ -2511,13 +2511,15 @@ get_pairs_matrix = function(bisect_coords, j) {
   return(pairs_lower_tri)
 }
 
-get_sep_dist = function(i_bisect) {
-  ## Returns a lower-triangular distance matrix (class dist)
-  ## that is populated with the seperation orders of each unique
-  ## pairwise comparison
+dist_bisect = function(i_bisect) {
+  ## Returns a list with two elements
+  ## dist: a lower-triangular distance matrix (class dist)
+  ## crd: the spatial euclidean coordinates of 
+  ## that is populated with the bisection seperation order of
+  ## each unique pairwise comparison
   N = 2^i_bisect
   coords = get_bisect_coords(i_bisect)
-  coords = coords[order(coords[ , 1], coords[ , 2]), ]
+  coords = coords[order(coords[ , 2], coords[ , 1]), ]
   jdist = matrix(NA, ncol=N, nrow=N)
   icount = 1
   for (i in 1:(N - 1)) {
@@ -2528,10 +2530,11 @@ get_sep_dist = function(i_bisect) {
     }
   }
   jdist = as.dist(jdist)
-  return(jdist)
+  crd = coords[ , 1:2]
+  rownames(crd) = 1:nrow(crd)
+  out = list(dist = jdist, crd = crd)
+  return(out)
 }
-
-## need function to return predicted distance matrix based on sep_dist
 
 dimensional_match = function(coord1, coord2) {
   ## Returns boolean indicating whether or not the spatial dimensions of 
@@ -2581,10 +2584,10 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
   if (!dimensional_match(coord, bisect_coords[ , 1:2]))
     stop('The spatial dimension of the community matrix does not match that expected by the function get_bisect_coords()')
   ## arrange x, coord and bisect_mat so that they are in the same order
-  sort_order = order(coord[ , 1], coord[ , 2])
+  sort_order = order(coord[ , 2], coord[ , 1])
   x = x[sort_order, ]
   coord = coord[sort_order, ]
-  sort_order = order(bisect_coords[ , 1], bisect_coords[ , 2])
+  sort_order = order(bisect_coords[ , 2], bisect_coords[ , 1])
   bisect_coords = bisect_coords[sort_order, ]
   geo_dist_avg = NULL
   sp_dist_avg = NULL
