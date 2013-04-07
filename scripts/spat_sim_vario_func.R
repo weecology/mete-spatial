@@ -810,16 +810,19 @@ getCovFractions = function(x)
 get_breaks = function(breaks, hmin, hmax, maxDist, log=FALSE) {
   ## compute breaks of distance bins used by the function vario()
   ## Arguments:
-  ## breaks: an integer number of breaks to compute
+  ## breaks: either a vector of breaks or an integer number of 
+  ##  breaks to compute.  If a vector of breaks is supplied then
+  ##  the function returns that exact same vector back. 
   ## hmin: minimum distance of interest 
   ## hmax: maximum distance of interest
   ## maxDist: maximum possible distance (greater or equal to hmax)
   ## log: boolean, if true the breaks are equidistance on a log scale
   if (length(breaks) == 1) {
     if (log) {
-      incre = (hmax - hmin) / breaks
-      if (round(hmax, 2) == round(maxDist / 2, 2))
+      if (round(hmax, 2) == round(maxDist / 2, 2)) {
+        incre = (hmax - hmin) / breaks
         hmax = hmax + incre
+      }
       breaks = exp(seq(log(hmin), log(hmax), length.out=breaks))
     }
     else 
