@@ -831,6 +831,41 @@ get_breaks = function(breaks, hmin, hmax, maxDist, log=FALSE) {
   return(breaks)
 }
 
+check_vario_direction_args = function(direction = 'omnidirectional',
+                                      tolerance = pi/8,
+                                      unit.angle = c('radians', 'degrees'))
+{
+  ## This function carries out sanity checks on the directional
+  ## arguments that are supplied to the function vario(), if 
+  ## these checks are failed then vario() will stop with an error message
+  ## Note: this code was copied from geoR in the function variog
+  unit.angle = match.arg(unit.angle)
+  if (mode(direction) == "numeric") {
+    if (length(direction) > 1)
+      stop("only one direction is allowed")
+    if (length(tolerance) > 1)
+      stop("only one tolerance value is allowed")
+    if (unit.angle == "degrees") {
+      ang.deg = direction
+      ang.rad = (ang.deg * pi) / 180
+      tol.deg = tolerance
+      tol.rad = (tol.deg * pi) / 180
+    }
+    else {
+      ang.rad = direction
+      ang.deg = (ang.rad * 180) / pi
+      tol.rad = tolerance
+      tol.deg = (tol.rad * 180) / pi
+    }
+    if (ang.rad > pi | ang.rad < 0)
+      stop("direction must be an angle in the interval [0,pi[ radians")
+    if (tol.rad > pi/2 | tol.rad < 0)
+      stop("tolerance must be an angle in the interval [0,pi/2] radians")
+    if (tol.deg >= 90) {
+      direction = "omnidirectional"
+    }
+  }  
+}
 ##3.2##
 vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
                  hmax=NA, round.int=FALSE, pos.neg=FALSE, binary=TRUE,
@@ -908,34 +943,7 @@ vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
       else
         require(vegan)
     }
-    ## geoR code from function variog starts here'
-    unit.angle = match.arg(unit.angle)
-    if (mode(direction) == "numeric") {
-      if (length(direction) > 1)
-        stop("only one direction is allowed")
-      if (length(tolerance) > 1)
-        stop("only one tolerance value is allowed")
-      if (unit.angle == "degrees") {
-        ang.deg = direction
-        ang.rad = (ang.deg * pi) / 180
-        tol.deg = tolerance
-        tol.rad = (tol.deg * pi) / 180
-      }
-      else {
-       ang.rad = direction
-       ang.deg = (ang.rad * 180) / pi
-       tol.rad = tolerance
-       tol.deg = (tol.rad * 180) / pi
-      }
-      if (ang.rad > pi | ang.rad < 0)
-        stop("direction must be an angle in the interval [0,pi[ radians")
-      if (tol.rad > pi/2 | tol.rad < 0)
-        stop("tolerance must be an angle in the interval [0,pi/2] radians")
-      if (tol.deg >= 90) {
-        direction = "omnidirectional"
-      }
-    }  
-    ## geoR code from function variog ends here'
+    check_vario_direction_args(direction, tolerance, unit.angle)
     Dist = dist(coord)
     maxDist = max(Dist)
     if (is.na(breaks[1])) {
