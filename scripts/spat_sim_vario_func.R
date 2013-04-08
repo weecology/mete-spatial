@@ -2533,19 +2533,30 @@ dist_bisect = function(i_bisect) {
   N = 2^i_bisect
   coords = get_bisect_coords(i_bisect)
   coords = coords[order(coords[ , 2], coords[ , 1]), ]
-  jdist = matrix(NA, ncol=N, nrow=N)
+  vec_coords = as.vector(apply(coords[ , -(1:2)], 1, as.vector))
+  sep_dist = rep(NA, (N * (N - 1)) / 2)
   icount = 1
-  for (i in 1:(N - 1)) {
-    for (j in (i + 1):N) {
-      abs_diff = abs(coords[i, -(1:2)] - coords[j, -(1:2)])
-      jdist[j, i] = min(which(abs_diff == 1))
-      icount = icount + 1 
+  for(i in 1:(N-1)) {
+    for(j in (i + 1):N) {
+      diff = FALSE
+      sep = 0
+      while(!diff) {
+        sep = sep + 1
+        diff = 1 == abs(vec_coords[(i - 1) * i_bisect + sep] -
+                        vec_coords[(j - 1) * i_bisect + sep])
+      }
+      sep_dist[icount] = sep
+      icount = icount + 1
     }
   }
-  jdist = as.dist(jdist)
+  place_matrix = matrix(1:N^2, N, N)
+  places = as.vector(as.dist(place_matrix))
+  sep_dist_mat = matrix(NA, N, N)
+  sep_dist_mat[places] = sep_dist
+  sep_dist = as.dist(sep_dist_mat)
   crd = coords[ , 1:2]
   rownames(crd) = 1:nrow(crd)
-  out = list(dist = jdist, crd = crd)
+  out = list(dist = sep_dist, crd = crd)
   return(out)
 }
 
