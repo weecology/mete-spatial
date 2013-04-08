@@ -2524,31 +2524,51 @@ get_pairs_matrix = function(bisect_coords, j) {
   return(pairs_lower_tri)
 }
 
-dist_bisect = function(i_bisect) {
+load_get_sep_dist = function(c_path='./scripts'){
+  if (!is.loaded('get_sep_dist')) {
+    OS = Sys.info()['sysname']
+    if (OS == 'Linux')
+      dyn.load(file.path(c_path, 'get_sep_dist.so'))
+    else
+      dyn.load(file.path(c_path, 'get_sep_dist.dll'))
+  }
+}
+
+dist_bisect = function(i_bisect, use_c=FALSE, c_path='./scripts') {
   ## Returns a list with two elements
   ## dist: a lower-triangular distance matrix (class dist)
   ## crd: the spatial euclidean coordinates of 
   ## that is populated with the bisection seperation order of
   ## each unique pairwise comparison
+  if (i_bisect > 10) 
+    print("This may take a while, use_c is TRUE to speed up computation")
   N = 2^i_bisect
   coords = get_bisect_coords(i_bisect)
   coords = coords[order(coords[ , 2], coords[ , 1]), ]
   vec_coords = as.vector(apply(coords[ , -(1:2)], 1, as.vector))
-  sep_dist = rep(NA, (N * (N - 1)) / 2)
-  icount = 1
-  for(i in 1:(N-1)) {
-    for(j in (i + 1):N) {
-      diff = FALSE
-      sep = 0
-      while(!diff) {
-        sep = sep + 1
-        diff = 1 == abs(vec_coords[(i - 1) * i_bisect + sep] -
-                        vec_coords[(j - 1) * i_bisect + sep])
-      }
-      sep_dist[icount] = sep
-      icount = icount + 1
-    }
+  sep_dist = rep(0, (N * (N - 1)) / 2)
+  if (use_c) {
+    load_get_sep_dist(c_path)
+    sep_dist = .C("get_sep_dist", vec_coords = as.integer(vec_coords),
+                  i_bisect = as.integer(i_bisect), N = as.integer(N), 
+                  sep_dist = as.integer(sep_dist))$sep_dist
   }
+  else {
+    icount = 1
+    for(i in 1:(N-1)) {
+      for(j in (i + 1):N) {
+        diff = 0
+        sep = 0
+        while (diff == 0) {
+          sep = sep + 1
+          diff = vec_coords[(i - 1) * i_bisect + sep] -
+                 vec_coords[(j - 1) * i_bisect + sep]
+        }
+        sep_dist[icount] = sep
+        icount = icount + 1
+      }
+    }
+  }  
   place_matrix = matrix(1:N^2, N, N)
   places = as.vector(as.dist(place_matrix))
   sep_dist_mat = matrix(NA, N, N)
