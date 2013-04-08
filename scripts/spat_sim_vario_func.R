@@ -2540,8 +2540,6 @@ dist_bisect = function(i_bisect, use_c=FALSE, c_path='./scripts') {
   ## crd: the spatial euclidean coordinates of 
   ## that is populated with the bisection seperation order of
   ## each unique pairwise comparison
-  if (i_bisect > 10) 
-    print("This may take a while, use_c is TRUE to speed up computation")
   N = 2^i_bisect
   coords = get_bisect_coords(i_bisect)
   coords = coords[order(coords[ , 2], coords[ , 1]), ]
@@ -2589,7 +2587,7 @@ mete_sor_transform = function(dat) {
   icount = 1
   for (i_bisect in bisections) {
     dat_tmp = dat[dat$i == i_bisect, ]
-    sep_dist = as.matrix(dist_bisect(i_bisect)$dist)
+    sep_dist = as.matrix(dist_bisect(i_bisect, use_c=TRUE)$dist)
     n = nrow(sep_dist)
     sor_vect = dat_tmp$sor[match(as.vector(sep_dist), dat_tmp$j)]
     out[[icount]] = as.dist(matrix(sor_vect, n, n))
