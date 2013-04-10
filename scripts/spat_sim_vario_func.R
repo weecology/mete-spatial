@@ -2052,7 +2052,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         varWithin = vector('list', length(grains))      
         names(varWithin) = grains
       }  
-      varWithinObs = vario(mat,coords,grain,brks,log,hmin_val,hmax,pos.neg=FALSE,
+      varWithinObs = vario_bisect(mat,coords,grain,brks,log,hmin_val,hmax,pos.neg=FALSE,
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees',univariate=univariate)
       if(!is.null(nperm)){ 
@@ -2071,7 +2071,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         varBetween = vector('list', length(grains))      
         names(varBetween) = grains
       }  
-      varBetweenObs = vario(mat,coords,grain,brks,log,hmin,hmax,pos.neg=TRUE,
+      varBetweenObs = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,pos.neg=TRUE,
                             quants=quants,direction=direction,tolerance=tolerance,
                             unit.angle='degrees',univariate=univariate) 
       if (!is.null(nperm)) { 
@@ -2089,7 +2089,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         jaccard = vector('list', length(grains))  
         names(jaccard) = grains
       }  
-      jaccardObs  = vario(mat,coords,grain,brks,log,hmin,hmax,distance.metric='jaccard',
+      jaccardObs  = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
                           unit.angle='degrees',univariate=univariate) 
       jaccardNull = NULL
@@ -2110,7 +2110,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         names(sorensen) = grains
       }  
       ## bray-curtis is equiv to sorensen        
-      sorensenObs  = vario(mat,coords,grain,brks,log,hmin,hmax,distance.metric='bray',
+      sorensenObs  = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,distance.metric='bray',
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees',univariate=univariate) 
       sorensenNull = NULL
