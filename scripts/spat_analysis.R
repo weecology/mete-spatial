@@ -73,8 +73,8 @@ name = sub('_empirSAD', '', name)
 spat_breaks = read.csv('./data/nbreaks.csv')
 spat_breaks$nbreaks = spat_breaks$nbreaks + 1
 if (any(spat_breaks$comm == name)) {
-  nbreaks = spat_breaks$nbreaks[spat_breaks$comm == name]
-  breaks = sapply(nbreaks, function(x) list(c('log2', x)))
+  breaks = spat_breaks$nbreaks[spat_breaks$comm == name]
+  log = TRUE
 }
 if (!any(spat_breaks$comm == name)) {
   breaks = NA
@@ -100,8 +100,8 @@ for (i in seq_along(comm_ids)) {
   ## aggregate community matrix to other appropriate spatial lags
   comms_aggr = aggr_comm_matrix(mat, coords, bisec, grain_names)
   metrics[[i]] = calcMetrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
-                        quants=quants, direction=direction, tolerance=tolerance,
-                        writeToFile=FALSE)
+                        log=log, quants=quants, direction=direction,
+                        tolerance=tolerance,  writeToFile=FALSE)
   ## update save file as loop progresses
   save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
                            fileSuffix, '_', dataType, '.Rdata', sep=''))

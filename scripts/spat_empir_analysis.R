@@ -33,8 +33,8 @@ comms = read.csv(paste('./data/',commName, '_comms.csv', sep=''))
 spat_breaks = read.csv('./data/nbreaks.csv')
 spat_breaks$nbreaks = spat_breaks$nbreaks + 1
 if (any(spat_breaks$comm == commName)) {
-  nbreaks = spat_breaks$nbreaks[spat_breaks$comm == commName]
-  breaks = sapply(nbreaks, function(x) list(c('log2', x)))
+  breaks = spat_breaks$nbreaks[spat_breaks$comm == commName]
+  log = TRUE
 }
 if (!any(spat_breaks$comm == commName)) {
   breaks = NA
@@ -45,5 +45,5 @@ quants = c(0.25, 0.50, 0.75)
 
 ## compute Dist Decay statistics
 metrics = calcMetrics(comms, metricsToCalc, dataType, breaks=breaks, 
-                      quants=quants, nperm=nperm, npar=npar,
+                      log=log, quants=quants, nperm=nperm, npar=npar,
                       writeToFile=TRUE, fileSuffix=commName)
