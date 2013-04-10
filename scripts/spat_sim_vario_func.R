@@ -2623,7 +2623,8 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
   ## Arguments:
   ## x: a sitexsp matrix
   ## coord: the spatial coordinates
-  ## sep_orders: default is NULL, the serpation orders of interest
+  ## sep_orders: default is NULL, the serpation orders of interest, accepts
+  ##   'all' or a numeric vector of specific seperation orders to examine.
   ## distance.metric': can be one of the speices turnover metrics listed by the
   ##   vegan function vegdist(). Common options include, 'jaccard' and 'bray'.
   ##   If computed on pres/abse data then soreson index is computed by 'bray'.
@@ -2639,6 +2640,15 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
     else
       sep_orders = seq(i_bisect, 1, -2)
   }
+  else if (sep_orders[1] == 'all')
+    sep_orders = floor(log2(nrow(x))) : 1
+  else if (is.numeric(sep_orders[1]))
+    sep_orders = sort(sep_orders, dec=T)
+  else 
+    stop('sep_orders incorrectly specified.
+          Leave blank for geometry preserving comparisons,
+          set to "all" to compute all possible bisections, or
+          set as a numeric vector')
   bisect_coords = get_bisect_coords(i_bisect)
   ## check that spatial dimensions of coord and bisect_coords are identical
   if (!dimensional_match(coord, bisect_coords[ , 1:2]))
