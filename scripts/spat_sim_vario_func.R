@@ -1973,6 +1973,7 @@ spAvgExpBin = function(a, b, areaTot, numOcc) {
 
 ##3.15##
 sorExp = function(mat, areaSampA, areaSampB=NULL){
+  ## the expected binary sorensen similarity index
   if(is.null(areaSampB)) 
     areaSampB = areaSampA
   areaTot = nrow(mat)  
@@ -1992,6 +1993,7 @@ sorExp = function(mat, areaSampA, areaSampB=NULL){
 
 ##3.16##
 jacExp = function(mat, areaSampA, areaSampB=NULL){
+  ## the expected binary jaccard similarity index
   if(is.null(areaSampB)) 
     areaSampB = areaSampA
   areaTot = nrow(mat)  
