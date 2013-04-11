@@ -2053,12 +2053,8 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
     ## because we only consider grains that are perfect squares 
     coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[true, -c(1:3)])
-    if (!is.na(breaks[1])) {
-      if (is.list(breaks))
-        brks = breaks[[i]]
-      else
-        brks = breaks
-    }
+    if (!is.na(breaks[i]))
+      brks = breaks[i]
     else
       brks = NA
     if(dataType == 'binary')
@@ -2068,7 +2064,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         varWithin = vector('list', length(grains))      
         names(varWithin) = grains
       }  
-      varWithinObs = vario_bisect(mat,coords,grain,brks,log,hmin_val,hmax,pos.neg=FALSE,
+      varWithinObs = vario(mat,coords,grain,brks,log,hmin_val,hmax,pos.neg=FALSE,
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees',univariate=univariate)
       if(!is.null(nperm)){ 
@@ -2087,7 +2083,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         varBetween = vector('list', length(grains))      
         names(varBetween) = grains
       }  
-      varBetweenObs = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,pos.neg=TRUE,
+      varBetweenObs = vario(mat,coords,grain,brks,log,hmin,hmax,pos.neg=TRUE,
                             quants=quants,direction=direction,tolerance=tolerance,
                             unit.angle='degrees',univariate=univariate) 
       if (!is.null(nperm)) { 
@@ -2105,7 +2101,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         jaccard = vector('list', length(grains))  
         names(jaccard) = grains
       }  
-      jaccardObs  = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,distance.metric='jaccard',
+      jaccardObs  = vario(mat,coords,grain,brks,log,hmin,hmax,distance.metric='jaccard',
                           quants=quants, direction=direction,tolerance=tolerance,
                           unit.angle='degrees',univariate=univariate) 
       jaccardNull = NULL
@@ -2126,7 +2122,7 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
         names(sorensen) = grains
       }  
       ## bray-curtis is equiv to sorensen        
-      sorensenObs  = vario_bisect(mat,coords,grain,brks,log,hmin,hmax,distance.metric='bray',
+      sorensenObs  = vario(mat,coords,grain,brks,log,hmin,hmax,distance.metric='bray',
                            quants=quants,direction=direction,tolerance=tolerance,
                            unit.angle='degrees',univariate=univariate) 
       sorensenNull = NULL
@@ -2314,6 +2310,151 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
   }
   return(out)
 }
+
+calcMetrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
+                              nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
+                              writeToFile=FALSE,fileSuffix=NULL) {
+  ## Purpose: to compuate spatial distance decay metrics for community data.
+  ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
+  ## indices.  
+  ## Arguments: 
+  ## comms: a site x sp community matrix the first column specifies the
+  ##        community id, the 2nd and 3rd columns specify the spatial
+  ##        coordinates of the quadrat
+  ## metricsToCalc: a string specifing which metrics to calc, can be 'all'
+  ## dataType: if == 'binary' then comms is converted to a pres/absence matrix
+  ##           prior to analysis. If == 'abu' then matrix is not transformed
+  ##           and an additional analytical null expectation is calculated
+  ## grain: interval size for distance classes, only used if 'breaks' not supplied
+  ## breaks: the spatial breaks that define the spatial lags to be compared
+  ## hmin: the minimum spatial lag
+  ## hmax: the maximum spatial lag
+  ## quants: the quantiles to compute
+  ## nperm: number of permutations to carry out for null models
+  ## npar: number of processesors to run null models on
+  ## RPargs: arguments to parameterize the Random Patterns null model
+  ## univariate: if TRUE then results are computed on a per species basis
+  ## writeToFile: if True an .Rdata file is written for each metric calculated
+  ## fileSuffix: add a file identifying string here
+  if(metricsToCalc == 'all')
+    metricsToCalc = c('varWithin', 'varBetween', 'jaccard', 'sorensen')
+  if(writeToFile) {
+    if(direction != 'omnidirectional')
+      fileSuffix = paste(fileSuffix,'_', direction, 'deg', sep='') 
+  }
+  grains = unique(comms[,1])
+  out = vector('list', length(grains))
+  names(out) = paste('comm', grains,sep='')
+  for (i in seq_along(grains)) {
+    true = comms[ , 1] == grains[i]
+    ## because we only consider grains that are perfect squares 
+    coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
+    mat = as.matrix(comms[true, -c(1:3)])
+    if (!is.na(breaks[i]))
+      brks = breaks[i]
+    else
+      brks = NA
+    if(dataType == 'binary')
+      mat = (mat > 0) * 1
+    if(any('varWithin' %in% metricsToCalc)){
+      if(i == 1){
+        varWithin = vector('list', length(grains))      
+        names(varWithin) = grains
+      }  
+      varWithinObs = vario_bisect(mat,coords,quants=quants,univariate=univariate)
+      if(!is.null(nperm)){ 
+        varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
+                                   meth='random',npar=npar)
+      }
+      else{
+        varWithinNull = NULL
+      }       
+      varWithinExp = varExp(mat)
+      varWithin[[i]] = list(varWithinObs=varWithinObs,varWithinNull=varWithinNull,
+                            varWithinExp=varWithinExp)
+    }
+    if (any('varBetween' %in% metricsToCalc)) {
+      if (i == 1) {
+        varBetween = vector('list', length(grains))      
+        names(varBetween) = grains
+      }  
+      varBetweenObs = vario_bisect(mat,coords,quants=quants,univariate=univariate) 
+      if (!is.null(nperm)) { 
+        varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
+                                    meth='randpat',RPargs=RPargs,npar=npar)
+      }
+      else {
+        varBetweenNull = NULL
+      }   
+      varBetween[[i]] = list(varBetweenObs=varBetweenObs,
+                             varBetweenNull=varBetweenNull)
+    }
+    if (any('jaccard' %in% metricsToCalc)) {
+      if (i == 1) {
+        jaccard = vector('list', length(grains))  
+        names(jaccard) = grains
+      }  
+      jaccardObs  = vario_bisect(mat,coords, distance.metric='jaccard',
+                          quants=quants, univariate=univariate) 
+      jaccardNull = NULL
+      if (!is.null(nperm)) {
+        jaccardNull = null.perms(mat, jaccardObs, nperm, coords=coords,
+                                 meth='random', npar=npar, breaks=brks)
+      }        
+      jaccardExp = NULL
+      if(dataType == 'binary') {
+        jaccardExp = 1 - jacExp(mat, 1) #  to convert into a dissimiarlity
+      } 
+      jaccard[[i]] = list(jaccardObs=jaccardObs,jaccardNull=jaccardNull,
+                          jaccardExp=jaccardExp)
+    }
+    if (any('sorensen' %in% metricsToCalc)) {
+      if (i == 1) {
+        sorensen = vector('list', length(grains))
+        names(sorensen) = grains
+      }  
+      ## bray-curtis is equiv to sorensen        
+      sorensenObs  = vario_bisect(mat,coords, distance.metric='bray',
+                                  quants=quants, univariate=univariate) 
+      sorensenNull = NULL
+      if (!is.null(nperm)) {
+        sorensenNull = null.perms(mat, sorensenObs, nperm, coords=coords,
+                                  meth='random', npar=npar, breaks=brks)
+      }    
+      sorensenExp = NULL
+      if (dataType == 'binary') {
+        sorensenExp = 1 - sorExp(mat,1) #  to convert into a dissimiarlity
+      } 
+      sorensen[[i]] = list(sorensenObs=sorensenObs, sorensenNull=sorensenNull,
+                           sorensenExp=sorensenExp)
+    }
+    out[[i]] = list()
+    for (j in metricsToCalc) { 
+      out[[i]][[j]] = eval(parse(text=paste(j,'[[',i,']]')))
+    }
+    if (writeToFile) {      
+      ## update result files as loop proceeds
+      if (any('varWithin' %in% metricsToCalc)) {
+        save(varWithin, file=paste('./varWithin/varWithin_',
+                                   fileSuffix, '_', dataType, '.Rdata', sep=''))  
+      }
+      if (any('varBetween' %in% metricsToCalc)) {
+        save(varBetween, file=paste('./varBetween/varBetween_',
+                                    fileSuffix, '_', dataType, '.Rdata', sep=''))
+      }
+      if (any('jaccard' %in% metricsToCalc)) {
+        save(jaccard, file=paste('./jaccard/jaccard_',
+                                 fileSuffix, '_', dataType, '.Rdata', sep=''))
+      }
+      if (any('sorensen' %in% metricsToCalc)) {
+        save(sorensen, file=paste('./sorensen/sorensen_',
+                                  fileSuffix, '_', dataType, '.Rdata', sep=''))
+      }             
+    }
+  }
+  return(out)
+}
+
 
 
 n_pixels_long = function(i_bisect){
@@ -2684,6 +2825,8 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
     ## arrange x, coord and bisect_mat so that they are in the same order
     sort_order = order(coord[ , 2], coord[ , 1])
     x = x[sort_order, ]
+    if (is.vector(x))
+      x = matrix(x)
     coord = coord[sort_order, ]
     sort_order = order(bisect_coords[ , 2], bisect_coords[ , 1])
     bisect_coords = bisect_coords[sort_order, ]
