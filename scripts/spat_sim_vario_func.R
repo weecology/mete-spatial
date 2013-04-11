@@ -839,7 +839,6 @@ check_vario_direction_args = function(direction = 'omnidirectional',
   ## arguments that are supplied to the function vario(), if 
   ## these checks are failed then vario() will stop with an error message
   ## Note: this code was copied from geoR in the function variog
-  unit.angle = match.arg(unit.angle)
   if (mode(direction) == "numeric") {
     if (length(direction) > 1)
       stop("only one direction is allowed")
@@ -924,25 +923,29 @@ vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
   ##   Common options include, 'jaccard' and 'bray'. If computed on pres/abse
   ##   data then soreson index is computed by 'bray'.
   ## univariate: if TRUE then results are computed on a per species basis
+  if (class(x) == "sim"){
+    coord = x$coords
+    if (is.na(snap))
+      snap = length(sim$snaps)
+  }
+  else if (is.vector(x))
+    x = matrix(x)
+  else if (!is.matrix(x))
+    stop('x must be either of class sim, a vector, or a matrix')
+  #x = ifelse(x == -999, NA, x)  ## best to fix these before entering into the function
   if (univariate) {
-    vobject = vario_uni(x, coord, grain, breaks, log, hmin, hmax, round.int,
-                        pos.neg, binary, snap, median, quants, direction,
+    vobject = vario_uni(x, bisect=FALSE, coord, grain, breaks, log, hmin, hmax,
+                        round.int, pos.neg, binary, snap, median, quants, direction,
                         tolerance, unit.angle, distance.metric)
   }
   else {
-    if (class(x) == "sim"){
-      coord = x$coords
-      if (is.na(snap))
-        snap = length(sim$snaps)
-    }
-    else
-      x = ifelse(x == -999, NA, x)  
     if (distance.metric != 'euclidean') {
       if (pos.neg)
         stop("cannot commpute pos-neg covariance using a turnover metric")
       else
         require(vegan)
     }
+    unit.angle = match.arg(unit.angle)
     check_vario_direction_args(direction, tolerance, unit.angle)
     Dist = dist(coord)
     maxDist = max(Dist)
@@ -978,6 +981,7 @@ vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
       N = nrow(x)
     } 
     vobject = list()
+    class(vobject) = 'vario'
     vobject$parms = data.frame(grain, hmin, hmax, S=S, N=N, pos.neg, median, direction,
                                tolerance, unit.angle, distance.metric, 
                                quants = ifelse(is.na(quants[1]), NA, 
@@ -1078,28 +1082,40 @@ vario = function(x, coord, grain=1, breaks=NA, log=FALSE, hmin=NA,
   return(vobject)
 }
   
-vario_uni = function(x, ...)
+vario_uni = function(x, bisect=FALSE, ...)
 {
   ## Purpose: to compute the multivariate variogram as well as individual univariate 
   ## variograms for evey column of x
   ## Arguments:
   ## x : site x sp matrix
+  ## bisect : if the bisection style vairogram should be computed
   ## ... : arguments supplied to the function vario()
   ## Note: speed gains would be significant if partitioning of computation between
   ## species was carried out within the vario function after computing the
   ## distance matrix because that is a time intensive step
   require(snowfall)
   S = ncol(x)
-  v = vario(x, ...)
+  if (bisect)
+    v = vario_bisect(x, ...)
+  else
+    v = vario(x, ...)
   n_cpus = length(suppressMessages(sfGetCluster()))
   if (n_cpus > 0) {
-    sfExport("vario")
-    exp_var = sfSapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var)
+    sfExport('vario', 'vario_bisect')
+    sfLibrary(vegan)
+    if (bisect) 
+      exp_var = sfSapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$var)
+    else
+      exp_var = sfSapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var)
   }
   else {
-    exp_var = sapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var) 
+    if (bisect)
+      exp_var = sapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$var) 
+    else
+      exp_var = sapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var) 
   }
-  v$exp_var = exp_var  
+  colnames(exp_var) = paste('sp', 1:S, sep='')
+  v$exp.var = exp_var  
   return(v)
 }
 
@@ -2617,7 +2633,8 @@ dimensional_match = function(coord1, coord2) {
   return(flag)
 }
 
-vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
+vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
+                        quants=NA, univariate=FALSE){
   ## Computes a variogram based upon the possible seperation orders
   ## Only seperation orders that compare square samples are considered.
   ## Arguments:
@@ -2631,51 +2648,87 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean'){
   if (distance.metric != 'euclidean') {
     require(vegan)
   }
-  i_bisect = log2(nrow(x))
-  if (i_bisect != round(i_bisect))
-    stop('Number of samples must be consistent with a bisection procedure')
-  if (is.null(sep_orders)) {
-    if (i_bisect %% 2 == 0)
-      sep_orders = seq(i_bisect, 2, -2)
-    else
-      sep_orders = seq(i_bisect, 1, -2)
-  }
-  else if (sep_orders[1] == 'all')
-    sep_orders = floor(log2(nrow(x))) : 1
-  else if (is.numeric(sep_orders[1]))
-    sep_orders = sort(sep_orders, dec=T)
-  else 
-    stop('sep_orders incorrectly specified.
-          Leave blank for geometry preserving comparisons,
-          set to "all" to compute all possible bisections, or
-          set as a numeric vector')
-  bisect_coords = get_bisect_coords(i_bisect)
-  ## check that spatial dimensions of coord and bisect_coords are identical
-  if (!dimensional_match(coord, bisect_coords[ , 1:2]))
-    stop('The spatial dimension of the community matrix does not match that expected by the function get_bisect_coords()')
-  ## arrange x, coord and bisect_mat so that they are in the same order
-  sort_order = order(coord[ , 2], coord[ , 1])
-  x = x[sort_order, ]
-  coord = coord[sort_order, ]
-  sort_order = order(bisect_coords[ , 2], bisect_coords[ , 1])
-  bisect_coords = bisect_coords[sort_order, ]
-  geo_dist_avg = NULL
-  sp_dist_avg = NULL
-  n_pairs = NULL
-  for (j in sep_orders) {
-    pairs_mat = get_pairs_matrix(bisect_coords, j)
-    n_pairs = c(n_pairs, sum(pairs_mat))
-    geo_dist_mat = as.matrix(dist(coord)) * pairs_mat
-    geo_dist_avg = c(geo_dist_avg, mean(geo_dist_mat[geo_dist_mat > 0]))
+  if (is.vector(x)) 
+    x = matrix(x)
+  else if (!is.matrix(x))
+    stop('x must be a vector or a matrix')
+  if (univariate) {
+    vobject = vario_uni(x, bisect=TRUE, coord, sep_orders, distance.metric, quants)
+    class(vobject) = 'vario'
+  } 
+  else {
+    S = ncol(x)
+    N = nrow(x)
+    i_bisect = log2(N)
+    if (i_bisect != round(i_bisect))
+      stop('Number of samples must be consistent with a bisection procedure')
+    if (is.null(sep_orders)) {
+      if (i_bisect %% 2 == 0)
+        sep_orders = seq(i_bisect, 2, -2)
+      else
+        sep_orders = seq(i_bisect, 1, -2)
+    }
+    else if (sep_orders[1] == 'all')
+      sep_orders = floor(i_bisect) : 1
+    else if (is.numeric(sep_orders[1]))
+      sep_orders = sort(sep_orders, dec=T)
+    else 
+      stop('sep_orders incorrectly specified.
+            Leave blank for geometry preserving comparisons,
+            set to "all" to compute all possible bisections, or
+            set as a numeric vector')
+    bisect_coords = get_bisect_coords(i_bisect)
+    ## check that spatial dimensions of coord and bisect_coords are identical
+    if (!dimensional_match(coord, bisect_coords[ , 1:2]))
+      stop('The spatial dimension of the community matrix does not match that expected by the function get_bisect_coords()')
+    ## arrange x, coord and bisect_mat so that they are in the same order
+    sort_order = order(coord[ , 2], coord[ , 1])
+    x = x[sort_order, ]
+    coord = coord[sort_order, ]
+    sort_order = order(bisect_coords[ , 2], bisect_coords[ , 1])
+    bisect_coords = bisect_coords[sort_order, ]
+    geo_dist = dist(coord)
+    geo_dist = as.matrix(geo_dist)
     if (distance.metric == 'euclidean')
       sp_dist = as.matrix(dist(x))
     else
       sp_dist = as.matrix(vegdist(x, method=distance.metric))
-    sp_dist_j = sp_dist * pairs_mat
-    sp_dist_avg = c(sp_dist_avg, mean(sp_dist_j[geo_dist_mat > 0], na.rm=T))
+    geo_dist_avg = rep(NA, length(sep_orders))
+    sp_dist_avg = rep(NA, length(sep_orders))
+    n_pairs = rep(NA, length(sep_orders)) 
+    if (!is.na(quants[1])) {
+      sp_dist_qt = matrix(NA, ncol = length(quants), nrow=length(sep_orders))
+      colnames(sp_dist_qt) = paste(quants * 100)
+    }
+    for (j in seq_along(sep_orders)) {
+      pairs_mat = get_pairs_matrix(bisect_coords, sep_orders[j])
+      n_pairs[j] = sum(pairs_mat)
+      geo_dist_mat = geo_dist * pairs_mat
+      geo_dist_avg[j] = mean(geo_dist_mat[geo_dist_mat > 0])
+      sp_dist_mat = sp_dist * pairs_mat
+      sp_dist_avg[j] = mean(sp_dist_mat[geo_dist_mat > 0], na.rm=T)
+      if (!is.na(quants[1])) {
+        sp_dist_qt[j, ] = quantile(sp_dist_mat[geo_dist_mat > 0], quants, na.rm=TRUE)
+      }
+    }
+    vobject = list() 
+    class(vobject) = 'vario'
+    vobject$parms = data.frame(hmin=NA, hmax=NA, S=S, N=N, pos.neg=FALSE,
+                               median=FALSE, direction='bisected',
+                               tolerance=NA, unit.angle=NA, distance.metric, 
+                               quants = ifelse(is.na(quants[1]), NA, 
+                                               paste(quants* 100, collapse=", ")))
+    vobject$vario = data.frame(j = sep_orders, dist = geo_dist_avg, n = n_pairs,
+                               var = sp_dist_avg)
+    if (!is.na(quants[1]))
+      vobject$vario = cbind(vobject$vario, var.qt = sp_dist_qt)
+    if (is.vector(x))
+      vobject$p = sum(x) / length(x)
+    else
+      vobject$p = apply(x, 2, sum, na.rm=TRUE) / nrow(x)  
+    vobject$perm = FALSE
   }
-  out = data.frame(j = sep_orders, dist = geo_dist_avg, n = n_pairs, var = sp_dist_avg)
-  return(out)
+  return(vobject)
 }
 
 getResults = function(names, metric, dataType, sim_result=FALSE)
