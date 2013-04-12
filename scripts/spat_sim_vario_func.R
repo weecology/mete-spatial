@@ -1121,8 +1121,9 @@ vario_uni = function(x, bisect=FALSE, ...)
 
 
 ##3.3##
-null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=FALSE, 
-                      snap=NULL, npar=1, linux=FALSE, RPargs=FALSE, breaks=NA) {
+null.perms = function(x, vobject, nperm, coords=NULL, meth='both',
+                      sp=TRUE, all=FALSE, snap=NULL, npar=1, linux=FALSE,
+                      RPargs=FALSE, breaks=NA) {
   ##Purpose: to generate statistical null expectations for the variograms
   ##Arguments:
   ##"x" is either an output of class 'sim' that is the output of 'sim.neut.uni' OR an site x species matrix
@@ -1147,7 +1148,7 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
   ###see the notes associated with the function 'null.gen' that indicate how "RPargs" should be parameterized
   ##"breaks" gives either the number or the position of the breaks for the function vario
   ##Note: "meth" and "sp" are arguments to randomization function "SpatPerm2D"
-  dists=vobject$vario$Dist
+  dists = vobject$vario$Dist
   grain = vobject$parms$grain
   hmin = vobject$parms$hmin
   hmax = vobject$parms$hmax
@@ -1159,16 +1160,16 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
     direction = as.numeric(vobject$parms$direction)
   tolerance = vobject$parms$tolerance
   unit.angle = as.character(vobject$parms$unit.angle)
+  if (is.na(unit.angle))
+    unit.angle = 'degrees'
   distance.metric = as.character(vobject$parms$distance.metric)
   if (class(x) == 'sim') {
     coords = x$coords
     if (is.null(snap))
       snap = length(x$snaps)
   }
-  else {
-    if (is.null(coords))
-      stop('need to supply spatial coordinates if not a simulation product')
-  }
+  else if (is.null(coords))
+    stop('need to supply spatial coordinates if not a simulation product')
   r.vals = list()
   r.vals$parms = vobject$parms
   r.vals$p = vobject$p
@@ -1178,41 +1179,53 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
     if (all) { ##all relevant null models
       if (median) { ##will compute mean and median
         r.vals$vario = array(0, dim=c(length(dists), 6, 3, nperm + 1))##dists, results, methods, perms
-        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c(5, 7:11)])   
+        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c('obs.var', 'pos',
+                                                              'neg', 'exp.med',
+                                                              'pos.med', 'neg.med')]) 
       }
       else { ##only compute means
         r.vals$vario = array(0, dim=c(length(dists), 3, 3, nperm+1))##dists, results, methods, perms
-        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c(5, 7:8)])
-      }}
+        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c('obs.var', 'pos', 'neg')])
+      }
+    }  
     else { ##only a single null used
       if (median) {
         r.vals$vario = array(0, dim=c(length(dists), 6, nperm + 1))##dists, results, perms
-        r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c(5, 7:11)])
+        r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c('obs.var', 'pos',
+                                                            'neg', 'exp.med',
+                                                            'pos.med', 'neg.med')]) 
       }
       else {
         r.vals$vario = array(0, dim=c(length(dists), 3, nperm + 1))##dists, results, perms
-        r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c(5, 7:8)])
-      }}}
+        r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c('obs.var', 'pos', 'neg')])
+      }
+    }
+  }
   else {##only exp and obs fractions
     if (all) {
       if (median) { ##will compute mean and median
         r.vals$vario = array(0, dim=c(length(dists), 4, 3, nperm + 1))
-        r.vals$vario[ , , , 1] = as.matrix(vobject$v[ , c(4:5, 7:8)])
+        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var',
+                                                              'obs.med', 'exp.med')])
       }
       else {
         r.vals$vario = array(0, dim=c(length(dists), 2, 3, nperm + 1))
-        r.vals$vario[ , , , 1] = as.matrix(vobject$v[ , 4:5])
-      }}
+        r.vals$vario[ , , , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var')])
+      }
+    }
     else { ##only a single null used
       if (median) {
         r.vals$vario = array(0, dim=c(length(dists), 4, nperm + 1))
-        r.vals$vario[ , , 1] = as.matrix(vobject$v[ , c(4:5, 7:8)])
+        r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var',
+                                                            'obs.med', 'exp.med')])
       }
       else { 
         r.vals$vario = array(0, dim=c(length(dists), 2, nperm + 1))
-        r.vals$vario[ , , 1] = as.matrix(vobject$v[ , 4:5])
-      }}}
-  if (class(x)=='sim') {
+        r.vals$vario[ , , 1] = as.matrix(vobject$vario[, c('exp.var', 'obs.var')])
+      }
+    }
+  }
+  if (class(x) == 'sim') {
     pop = as.logical(x$snaps[[snap]]) ##converts it to a pres/absence vector
     dim(pop) = c(x$p$S, x$p$M, x$p$M)
   }
@@ -1220,7 +1233,7 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
     pop = array(x, dim=c(sqrt(nrow(x)), sqrt(nrow(x)), ncol(x)))
     pop = aperm(pop, c(3, 1, 2))
   }
-  if (RPargs[[1]]&npar == 1) {
+  if (RPargs[[1]] & npar == 1) {
     r.vals$p.conv1 = 0 ##average proportion of species that converged with strata swaps
     r.vals$p.conv2 = 0 ##average proportion of species that converged with pixel swaps
   }
@@ -1232,8 +1245,8 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
                          mtrials2=RPargs[[4]], alpha=RPargs[[5]], npar=RPargs[[6]])
         S = dim(pop)[1]
         n2 = dim(pop)[2] + 2
-        r.vals$p.conv1 = r.vals$p.conv1 + sum(out[2, ]<=RPargs[[5]]) / S / nperm
-        r.vals$p.conv2 = r.vals$p.conv2 + sum(out[4, ]<=RPargs[[5]], na.rm=TRUE) / S / nperm
+        r.vals$p.conv1 = r.vals$p.conv1 + sum(out[2, ] <= RPargs[[5]]) / S / nperm
+        r.vals$p.conv2 = r.vals$p.conv2 + sum(out[4, ] <= RPargs[[5]], na.rm=TRUE) / S / nperm
         rpop = array(0, dim=c(S, n2, n2))
         for (k in 1:S) {
           rpop[k, , ] = array(out[-(1:5), k], dim=c(n2, n2))
@@ -1245,35 +1258,54 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
         rpop = FixUnSamp2(pop, rpop)
       }
       rmat = apply(rpop, 1, as.vector) ##converts to a M^2 x S matrix - same effect as loop in 'census' function 
-      rv = vario(x=rmat, coord=coords, grain=grain, breaks=breaks, hmin=hmin, hmax=hmax, 
-                 pos.neg=pos.neg, median=median, direction=direction, tolerance=tolerance, 
-                 unit.angle=unit.angle, distance.metric=distance.metric)$vario
+      rv = vario(x=rmat, coord=coords, grain=grain, breaks=breaks, hmin=hmin,
+                 hmax=hmax, pos.neg=pos.neg, median=median, direction=direction,
+                 tolerance=tolerance, unit.angle=unit.angle,
+                 distance.metric=distance.metric)$vario
       if (pos.neg) {
         if (all) {
-          if (median)
-            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c(5, 7:11)])
-          else
-            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c(5, 7:8)])
+          if (median) {
+            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , ,
+                                                      c('obs.var','pos','neg',
+                                                        'exp.med','pos.med',
+                                                        'neg.med')])
+          }
+          else {
+            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c('obs.var', 'pos', 'neg')])
+          }
         } 
         else {
-          if (median)
-            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c(5, 7:11)])
-          else
-            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c(5, 7:8)])
-        }}
+          if (median) {
+            r.vals$vario[ , , i + 1] = as.matrix(rv[ , ,
+                                                    c('obs.var','pos','neg',
+                                                      'exp.med','pos.med',
+                                                      'neg.med')])
+          }  
+          else {
+            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c('obs.var', 'pos', 'neg')])
+          }  
+        }
+      }
       else {
         if (all) {
-          if (median)
-            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c(4:5, 7:8)])
-          else
-            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , 4:5])
+          if (median) {
+            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c('exp.var', 'obs.var',
+                                                             'obs.med', 'exp.med')])
+          }
+          else {
+            r.vals$vario[ , , , i + 1] = as.matrix(rv[ , , c('exp.var', 'obs.var')])
+          }
         }
         else {
-          if (median)
-            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c(4:5, 7:8)])
-          else
-            r.vals$vario[ , , i + 1] = as.matrix(rv[ , 4:5])
-        }}
+          if (median) {
+            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c('exp.var', 'obs.var',
+                                                         'obs.med', 'exp.med')])
+          }
+          else {
+            r.vals$vario[ , , i + 1] = as.matrix(rv[ , c('exp.var', 'obs.var')])
+          }
+        }
+      }
       #print(i)
       Sys.sleep(0.1)
       # update progress bar
@@ -1347,8 +1379,9 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both', sp=TRUE, all=
   r.vals$perm = TRUE
   r.vals$vdists = vobject$vario$Dist
   return(r.vals)
-} 
+}
 
+    
 ##3.4##
 null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALSE,breaks=NA){
  ##Purpose: to mediate the generation of statistical null values for the variograms 
@@ -2873,13 +2906,14 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
     }
     vobject = list() 
     class(vobject) = 'vario'
-    vobject$parms = data.frame(hmin=NA, hmax=NA, S=S, N=N, pos.neg=FALSE,
-                               median=FALSE, direction='bisected',
+    direction = 'bisection'
+    vobject$parms = data.frame(grain=1, hmin=NA, hmax=NA, S=S, N=N,
+                               pos.neg=FALSE, median=FALSE, direction,
                                tolerance=NA, unit.angle=NA, distance.metric, 
                                quants = ifelse(is.na(quants[1]), NA, 
                                                paste(quants* 100, collapse=", ")))
-    vobject$vario = data.frame(j = sep_orders, dist = geo_dist_avg, n = n_pairs,
-                               var = sp_dist_avg)
+    vobject$vario = data.frame(j = sep_orders, Dist = geo_dist_avg, n = n_pairs,
+                               exp.var = sp_dist_avg, obs.var = NA)
     if (!is.na(quants[1]))
       vobject$vario = cbind(vobject$vario, var.qt = sp_dist_qt)
     if (is.vector(x))
