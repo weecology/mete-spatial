@@ -2135,10 +2135,10 @@ jacExp = function(mat, areaSampA, areaSampB=NULL){
 }
 
 ##3.17##
-calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=FALSE,
-                       hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
-                       tolerance=NA, nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
-                       writeToFile=FALSE,fileSuffix=NULL) {
+calc_metrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=FALSE,
+                        hmin=NA, hmax=NA, quants=NA, direction='omnidirectional',
+                        tolerance=NA, nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
+                        writeToFile=FALSE,fileSuffix=NULL) {
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -2287,10 +2287,10 @@ calcMetrics = function(comms, metricsToCalc, dataType, grain=1, breaks=NA, log=F
 }
 
 
-calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
-                          hmax=NA,quants=NA,direction='omidirectional',
-                          tolerance=NA,nperm=NULL,RPargs=NULL,writeToFile=FALSE,
-                          fileSuffix=NULL){
+calc_metrics_par = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
+                            hmax=NA,quants=NA,direction='omidirectional',
+                            tolerance=NA,nperm=NULL,RPargs=NULL,writeToFile=FALSE,
+                            fileSuffix=NULL){
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -2433,9 +2433,9 @@ calcMetricsPar = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
   return(out)
 }
 
-calcMetrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
-                              nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
-                              writeToFile=FALSE,fileSuffix=NULL) {
+calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
+                               nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
+                               writeToFile=FALSE,fileSuffix=NULL) {
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -2999,11 +2999,11 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
 
 getResults = function(names, metric, dataType, sim_result=FALSE)
 {
-  ## Purpose: to import the results of the 'calcMetrics' function
+  ## Purpose: to import the results of the 'calc_metrics' function
   ## and to load them into a list
   ## Arguments:
   ## names: the short names that were used in the naming of the output files
-  ## metric: the metric calculated, see 'calcMetrics' for options
+  ## metric: the metric calculated, see 'calc_metrics' for options
   ## dataType: the data type of interest, 'binary' or 'abu'
   ## sim_result: specifies if the object is a simulation result
   results = vector('list', length=length(names))
