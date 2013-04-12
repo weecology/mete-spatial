@@ -2434,8 +2434,9 @@ calc_metrics_par = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
 }
 
 calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
-                               nperm=NULL, npar=1, RPargs=NULL, univariate=FALSE,
-                               writeToFile=FALSE,fileSuffix=NULL) {
+                               nperm=NA, univariate=FALSE,
+                               writeToFile=FALSE, fileSuffix=NULL)
+{
   ## Purpose: to compuate spatial distance decay metrics for community data.
   ## Metrics to choose from are varWithin,varBetween, jaccard, and sorensen
   ## indices.  
@@ -2447,14 +2448,8 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
   ## dataType: if == 'binary' then comms is converted to a pres/absence matrix
   ##           prior to analysis. If == 'abu' then matrix is not transformed
   ##           and an additional analytical null expectation is calculated
-  ## grain: interval size for distance classes, only used if 'breaks' not supplied
-  ## breaks: the spatial breaks that define the spatial lags to be compared
-  ## hmin: the minimum spatial lag
-  ## hmax: the maximum spatial lag
   ## quants: the quantiles to compute
   ## nperm: number of permutations to carry out for null models
-  ## npar: number of processesors to run null models on
-  ## RPargs: arguments to parameterize the Random Patterns null model
   ## univariate: if TRUE then results are computed on a per species basis
   ## writeToFile: if True an .Rdata file is written for each metric calculated
   ## fileSuffix: add a file identifying string here
@@ -2472,10 +2467,6 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
     ## because we only consider grains that are perfect squares 
     coords = as.matrix(comms[true, 2:3]) * sqrt(grains[i])
     mat = as.matrix(comms[true, -c(1:3)])
-    if (!is.na(breaks[i]))
-      brks = breaks[i]
-    else
-      brks = NA
     if(dataType == 'binary')
       mat = (mat > 0) * 1
     if(any('varWithin' %in% metricsToCalc)){
@@ -2485,8 +2476,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varWithinObs = vario_bisect(mat,coords,quants=quants,univariate=univariate)
       if(!is.null(nperm)){ 
-        varWithinNull = null.perms(mat,varWithinObs,nperm,coords=coords,
-                                   meth='random',npar=npar)
+        varWithinNull = random_shuffle(mat,varWithinObs,nperm,coords)
       }
       else{
         varWithinNull = NULL
@@ -2502,8 +2492,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varBetweenObs = vario_bisect(mat,coords,quants=quants,univariate=univariate) 
       if (!is.null(nperm)) { 
-        varBetweenNull = null.perms(mat,varBetweenObs,nperm,coords=coords,
-                                    meth='randpat',RPargs=RPargs,npar=npar)
+        varBetweenNull = random_shuffle(mat,varBetweenObs,nperm,coords)
       }
       else {
         varBetweenNull = NULL
@@ -2520,8 +2509,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                           quants=quants, univariate=univariate) 
       jaccardNull = NULL
       if (!is.null(nperm)) {
-        jaccardNull = null.perms(mat, jaccardObs, nperm, coords=coords,
-                                 meth='random', npar=npar, breaks=brks)
+        jaccardNull = random_shuffle(mat, jaccardObs, nperm, coords)
       }        
       jaccardExp = NULL
       if(dataType == 'binary') {
@@ -2540,8 +2528,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                                   quants=quants, univariate=univariate) 
       sorensenNull = NULL
       if (!is.null(nperm)) {
-        sorensenNull = null.perms(mat, sorensenObs, nperm, coords=coords,
-                                  meth='random', npar=npar, breaks=brks)
+        sorensenNull = random_shuffle(mat, sorensenObs, nperm, coords)
       }    
       sorensenExp = NULL
       if (dataType == 'binary') {
