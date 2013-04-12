@@ -14,6 +14,11 @@ metricsToCalc = "sorensen"
 
 dataType = c("abu", "binary")
 
+if (commName == 'all') {
+  commName = as.character(read.table('../data/shrtnames.txt',
+                                     colClasses='character')[1,])
+}
+
 for (i in commName) {
   for (j in metricsToCalc) {
     for (k in dataType) {
