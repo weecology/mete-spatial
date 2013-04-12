@@ -2465,8 +2465,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
   if(metricsToCalc == 'all')
     metricsToCalc = c('varWithin', 'varBetween', 'jaccard', 'sorensen')
   if(writeToFile) {
-    if(direction != 'omnidirectional')
-      fileSuffix = paste(fileSuffix,'_', direction, 'deg', sep='') 
+      fileSuffix = paste(fileSuffix,'_bisect', sep='') 
   }
   grains = unique(comms[,1])
   out = vector('list', length(grains))
@@ -2484,7 +2483,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
         names(varWithin) = grains
       }  
       varWithinObs = vario_bisect(mat,coords,quants=quants,univariate=univariate)
-      if(!is.null(nperm)){ 
+      if(!is.na(nperm)){ 
         varWithinNull = random_shuffle(mat,varWithinObs,nperm,coords)
       }
       else{
@@ -2500,7 +2499,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
         names(varBetween) = grains
       }  
       varBetweenObs = vario_bisect(mat,coords,quants=quants,univariate=univariate) 
-      if (!is.null(nperm)) { 
+      if (!is.na(nperm)) { 
         varBetweenNull = random_shuffle(mat,varBetweenObs,nperm,coords)
       }
       else {
@@ -2517,7 +2516,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       jaccardObs  = vario_bisect(mat,coords, distance.metric='jaccard',
                           quants=quants, univariate=univariate) 
       jaccardNull = NULL
-      if (!is.null(nperm)) {
+      if (!is.na(nperm)) {
         jaccardNull = random_shuffle(mat, jaccardObs, nperm, coords)
       }        
       jaccardExp = NULL
@@ -2536,7 +2535,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       sorensenObs  = vario_bisect(mat,coords, distance.metric='bray',
                                   quants=quants, univariate=univariate) 
       sorensenNull = NULL
-      if (!is.null(nperm)) {
+      if (!is.na(nperm)) {
         sorensenNull = random_shuffle(mat, sorensenObs, nperm, coords)
       }    
       sorensenExp = NULL
