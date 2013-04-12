@@ -8,6 +8,7 @@ server = clArgs[1]
 npar = clArgs[2]
 nperm = clArgs[3]
 commName = clArgs[4]
+method = clArgs[5]
 
 metricsToCalc = "sorensen"
 
@@ -22,25 +23,25 @@ for (i in commName) {
         if (k == 'abu') {
           system(paste('export OMP_NUM_THREADS=', npar, sep=''))
           system(paste('bsub -q week -M 20 -n', npar, "-R 'span[hosts=1]' -J",
-                       i, '-o' log_file, 'Rscript spat_empir_analysis.R',
-                       i, j, k, nperm, npar, sep=' '))
+                       i, '-o', log_file, 'Rscript spat_empir_analysis.R',
+                       i, j, k, method, npar, nperm, sep=' '))
         }
         else {
           system('export OMP_NUM_THREADS=1')
-          system(paste('bsub -q week -M 20 -n 1 -J', i, '-o' log_file,
+          system(paste('bsub -q week -M 20 -n 1 -J', i, '-o', log_file,
                        'Rscript spat_empir_analysis.R', i, j, k,
-                       'NULL', 1, sep=' '))
+                       method, 1, NA, sep=' '))
         }
       }
       else {
         if (k == 'abu')
           system(paste('Rscript spat_empir_analysis.R', i, j, k,
-                       nperm, npar, '>' log_file, '2>&1 &', sep=' '),
-                 wait=FALSE)
+                       method, npar, nperm, '>', log_file, '2>&1',
+                       sep=' '), wait=FALSE)
         else 
           system(paste('Rscript spat_empir_analysis.R', i, j, k,
-                       'NULL', 1, '>' log_file, '2>&1 &', sep=' '),
-                 wait=FALSE)
+                       method, 1, NA, '>', log_file, '2>&1', sep=' '),
+                       wait=FALSE)
       }
     }
   }

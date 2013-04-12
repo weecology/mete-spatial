@@ -5,7 +5,6 @@
 setwd('~/maxent/spat')
 
 library(vegan)
-#library(danspkg)
 source('./scripts/spat_sim_vario_func.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
@@ -15,17 +14,17 @@ if (length(clArgs) > 1) {
   dataType = clArgs[3]
   method = clArgs[4]
   npar = as.numeric(clArgs[5])
-  nperm = as.numeric(clArg[6])
+  nperm = as.numeric(clArgs[6])
 }
 if (length(clArgs) == 0) {
   stop('Must specify commName, metricsToCalc, dataType, nperm, and npar at
        command line')
   q('no')
 }
-if (method == 'univariate') {
+if (method == 'uni') {
   univariate = TRUE
 }
-if (method == 'multivariate') {
+if (method == 'multi') {
   univariate = FALSE
 }
 if (npar > 1) {
@@ -42,7 +41,7 @@ quants = c(0.25, 0.50, 0.75)
 
 ## compute Dist Decay statistics
 metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, quants,
-                              nperm, univariate, writeToFile=F,
+                              nperm, univariate, writeToFile=TRUE,
                               fileSuffix=commName)
 
 sfStop()
