@@ -1418,9 +1418,9 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
     sfSource('./scripts/spat_sim_vario_func.R')
     sfExport('x', 'coords', 'distance.metric')
     if (direction == 'bisection') {
-      rv = sfLapply(1:nperm, function(...)
+      rv = sfSapply(1:nperm, function(...)
         vario_bisect(x[sample(nrow(x)), ], coords,
-                     distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+                     distance.metric=distance.metric)$vario[ , 'exp.var'])
     }  
     else {
       sfExport('grain','breaks','hmin','hmax','pos.neg','median','direction',
@@ -1434,9 +1434,9 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
   }
   else {
     if (direction == 'bisection')
-      rv = lapply(1:nperm, function(...)
+      rv = sapply(1:nperm, function(...)
         vario_bisect(x[sample(nrow(x)), ], coords,
-                     distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+                     distance.metric=distance.metric)$vario[ , 'exp.var'])
     else
       rv = lapply(1:nperm, function(...)
         vario(x[sample(nrow(x)), ], coords, grain=grain, breaks=breaks, hmin=hmin,
@@ -1444,10 +1444,19 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
               tolerance=tolerance, unit.angle=unit.angle,
               distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
   }
-  rv_dim = dim(rv[[1]])
-  r.vals$vario = array(NA, dim=c(rv_dim, nperm + 1))
-  r.vals$vario[, , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var')])
-  r.vals$vario[, , -1] = array(unlist(rv), dim=c(rv_dim, nperm))  
+  if (is.matrix(rv)) 
+    rv_dim = dim(rv)
+  else if (is.list(rv))
+    rv_dim = dim(rv[[1]])
+  r.vals$vario = array(NA, dim= rv_dim + c(0, 1))
+  if (direction == 'bisection') {
+    r.vals$vario[ , 1] = as.matrix(vobject$vario[ , 'exp.var'])
+    r.vals$vario[ , -1] = rv
+  }
+  else {
+    r.vals$vario[ , , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var')])
+    r.vals$vario[ , , -1] = array(unlist(rv), dim=c(rv_dim, nperm))  
+  }
   r.vals$perm = TRUE
   r.vals$vdists = vobject$vario$Dist
   return(r.vals)
