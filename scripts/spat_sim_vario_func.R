@@ -1381,6 +1381,78 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both',
   return(r.vals)
 }
 
+random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
+  ##Purpose: to generate a random shuffle statistical null expectations for
+  ## the variograms
+  ##Arguments:
+  ##"x" is either an output of class 'sim' that is the output of 'sim.neut.uni' OR an site x species matrix
+  ##"vobject" is the output of 'vario', this informs the function of what parameterization of vario to use
+  ###specifically it indiates if the pos.neg components and median should be calculated
+  ##"nperm" is the number of permutations
+  ##"coords" the spatial coordinates of the sites, not needed if x is of class 'sim'
+  ##"breaks" what spatial breaks to use
+  require(snowfall)
+  npar = length(suppressMessages(sfGetCluster()))
+  dists = vobject$vario$Dist
+  grain = vobject$parms$grain
+  hmin = vobject$parms$hmin
+  hmax = vobject$parms$hmax
+  pos.neg = vobject$parms$pos.neg
+  median = vobject$parms$median
+  if (class(vobject$parms$direction) == "factor") 
+    direction = as.character(vobject$parms$direction)
+  else
+    direction = as.numeric(vobject$parms$direction)
+  tolerance = vobject$parms$tolerance
+  unit.angle = as.character(vobject$parms$unit.angle)
+  if (is.na(unit.angle))
+    unit.angle = 'degrees'
+  distance.metric = as.character(vobject$parms$distance.metric)
+  if (is.null(coords))
+    stop('need to supply spatial coordinates if not a simulation product')
+  r.vals = list()
+  r.vals$parms = vobject$parms
+  r.vals$p = vobject$p
+  if (npar > 0) { ##all permutations option not yet implemented for 1 processor
+    sfClusterSetupRNG()
+    sfSource('./scripts/spat_sim_vario_func.R')
+    sfExport('x', 'coords', 'distance.metric')
+    if (direction == 'bisection') {
+      rv = sfLapply(1:nperm, function(...)
+        vario_bisect(x[sample(nrow(x)), ], coords,
+                     distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+    }  
+    else {
+      sfExport('grain','breaks','hmin','hmax','pos.neg','median','direction',
+               'tolerance','unit.angle')
+      rv = sfLapply(1:nperm, function(...)
+        vario(x[sample(nrow(x)), ], coords, grain=grain, breaks=breaks, hmin=hmin,
+              hmax=hmax, pos.neg=pos.neg, median=median, direction=direction,
+              tolerance=tolerance, unit.angle=unit.angle,
+              distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+    }  
+  }
+  else {
+    if (direction == 'bisection')
+      rv = lapply(1:nperm, function(...)
+        vario_bisect(x[sample(nrow(x)), ], coords,
+                     distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+    else
+      rv = lapply(1:nperm, function(...)
+        vario(x[sample(nrow(x)), ], coords, grain=grain, breaks=breaks, hmin=hmin,
+              hmax=hmax, pos.neg=pos.neg, median=median, direction=direction,
+              tolerance=tolerance, unit.angle=unit.angle,
+              distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
+  }
+  rv_dim = dim(rv[[1]])
+  r.vals$vario = array(NA, dim=c(rv_dim, nperm + 1))
+  r.vals$vario[, , 1] = as.matrix(vobject$vario[ , c('exp.var', 'obs.var')])
+  r.vals$vario[, , -1] = array(unlist(rv), dim=c(rv_dim, nperm))  
+  r.vals$perm = TRUE
+  r.vals$vdists = vobject$vario$Dist
+  return(r.vals)
+}
+
     
 ##3.4##
 null.gen<-function(pop,vobject,coords,meth,sp,all=FALSE,RPargs=FALSE,median=FALSE,breaks=NA){
