@@ -9,10 +9,13 @@ npar = clArgs[2]
 nperm = clArgs[3]
 commName = clArgs[4]
 method = clArgs[5]
+dataType = clArgs[6]
 
 metricsToCalc = "sorensen"
 
-dataType = c("abu", "binary")
+if (dataType == 'both') {
+  dataType = c("abu", "binary")
+}
 
 if (commName == 'all') {
   commName = as.character(read.table('../data/shrtnames.txt',
