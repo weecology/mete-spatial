@@ -44,4 +44,6 @@ metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, quants,
                               nperm, univariate, writeToFile=TRUE,
                               fileSuffix=commName)
 
-sfStop()
+if (npar > 1) {
+  sfStop()
+}
