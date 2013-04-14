@@ -14,3 +14,6 @@ sorensen/
 sorensen_obs_empir.tar.gz
 sorensen_pred_empir.tar.gz
 scripts/log_files/
+scripts/get_sep_dist.so
+scripts/get_sep_dist.o
+core
