@@ -43,11 +43,11 @@ for (i in commName) {
       }
       else {
         if (k == 'abu')
-          system(paste('Rscript spat_empir_analysis.R', i, j, k,
+          system(paste('nice Rscript spat_empir_analysis.R', i, j, k,
                        method, npar, nperm, '>', log_file, '2>&1',
                        sep=' '), wait=FALSE)
         else 
-          system(paste('Rscript spat_empir_analysis.R', i, j, k,
+          system(paste('nice Rscript spat_empir_analysis.R', i, j, k,
                        method, 1, NA, '>', log_file, '2>&1', sep=' '),
                        wait=FALSE)
       }
