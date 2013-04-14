@@ -30,13 +30,13 @@ for (i in commName) {
       if (server == 'unc') {
         if (k == 'abu') {
           system(paste('export OMP_NUM_THREADS=', npar, sep=''))
-          system(paste('bsub -q week -M 20 -n', npar, "-R 'span[hosts=1]' -J",
+          system(paste('bsub -q week -M 40 -n', npar, "-R 'span[hosts=1]' -J",
                        i, '-o', log_file, 'Rscript spat_empir_analysis.R',
                        i, j, k, method, npar, nperm, sep=' '))
         }
         else {
           system('export OMP_NUM_THREADS=1')
-          system(paste('bsub -q week -M 20 -n 1 -J', i, '-o', log_file,
+          system(paste('bsub -q week -M 7 -n 1 -J', i, '-o', log_file,
                        'Rscript spat_empir_analysis.R', i, j, k,
                        method, 1, NA, sep=' '))
         }
