@@ -1101,16 +1101,16 @@ vario_uni = function(x, bisect=FALSE, ...)
     v = vario(x, ...)
   n_cpus = length(suppressMessages(sfGetCluster()))
   if (n_cpus > 0) {
-    sfExport('vario', 'vario_bisect')
+    sfSource('./scripts/spat_sim_vario_func.R')
     sfLibrary(vegan)
     if (bisect) 
-      exp_var = sfSapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$var)
+      exp_var = sfSapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$exp.var)
     else
       exp_var = sfSapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var)
   }
   else {
     if (bisect)
-      exp_var = sapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$var) 
+      exp_var = sapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$exp.var) 
     else
       exp_var = sapply(1:S, function(sp) vario(x[ , sp], ...)$vario$exp.var) 
   }
