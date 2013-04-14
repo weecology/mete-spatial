@@ -2911,6 +2911,15 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
     x = matrix(x)
   else if (!is.matrix(x))
     stop('x must be a vector or a matrix')
+  ## make sure the x-coordinate is the long side of the plot
+  if (length(unique(coord[ , 1])) < length(unique(coord[ , 2]))) {
+    ## assuming x and y coordinates are measured in the same units
+    ## transform x -> y and y -> x so that x is long end of plot
+    tmp_coord = coord
+    coord[ , 1] = tmp_coord[ , 2]
+    coord[ , 2] = tmp_coord[ , 1]
+    rm(tmp_coord)
+  }
   if (univariate) {
     vobject = vario_uni(x, bisect=TRUE, coord, sep_orders, distance.metric, quants)
     class(vobject) = 'vario'
