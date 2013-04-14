@@ -1789,7 +1789,8 @@ mat2psp = function(sp_mat, xy_coord, N=NULL, M=NULL)
   ##place site by species matrix (x) into an S x N x M array where N >= M
   ##a multidimensional array that eases computing 
   ##replaces the old function 'grid.pres'
-  ##Note: function assumes that 
+  ##Note: if area rectangular the first dimension of xy_coord does NOT
+  ## have to be larger than the second dimension
   if (is.null(N) )
     N = sqrt(nrow(sp_mat))
   if (is.null(M) )
@@ -2598,7 +2599,7 @@ make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
   ## spnum : an integer specifying species identities
   ## S : the size of the species pool may be larger than the number of unique 
   ##     spnum
-  ## coords : two column matrix (x,y) specifying the spatial coordinates
+  ## coords : two column matrix (x,y) specifying the spatial coordinates of each stem
   ## n_quadrats : the number of quadrats at each spatial grain
   ## domain : specifies the spatial domain of the area:  (xmin, xmax, ymin, ymax)
   ## abu: abundance associated with each record, if NULL then it is set to 1
