@@ -17,10 +17,12 @@ if (dataType == 'both') {
   dataType = c("abu", "binary")
 }
 
-if (commName == 'all') {
+commName = unlist(strsplit(clArgs[4], ' '))
+if (commName[1] == 'all') {
   commName = as.character(read.table('../data/shrtnames.txt',
-                                     colClasses='character')[1,])
+                                     colClasses='character')[1, ])
 }
+
 
 for (i in commName) {
   for (j in metricsToCalc) {
