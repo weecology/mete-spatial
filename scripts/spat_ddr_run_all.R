@@ -9,6 +9,7 @@ dir.create('./scripts/log_files')
 server = 'unc'
 
 ## empirical data analysis ------------------------------------------------
+setwd('./scripts')
 
 ## filter the empirical data (quick)
 system('Rscript spat_empir_data_filtering.R', wait=TRUE)
@@ -22,12 +23,30 @@ system(paste('Rscript spat_empir_comm_sim.R', server,
              "'", indices, "'", sep=" "), wait=FALSE)
 
 ## analyze emprical observed DDR (very slow)
+## 1) analyze the multivariate DDR with 
+## the permutation based RP for abundance data
 npar = 8
 nperm = 500
-commName = as.character(read.table('../data/shrtnames.txt', colClasses='character'))
-commName = paste("'", paste(commName, collapse=' '), "'", sep='')
+commName = 'all'
+method = 'multi'
+dataType = 'both'
 system(paste("Rscript spat_empir_observed_ddr.R", server,
-             npar, nperm, commName, sep=" "), wait=FALSE)
+             npar, nperm, commName, method, dataType, sep=" "),
+       wait=FALSE)
+
+## 2) analyze the univariate (i.e, species specific) DDR 
+## just for the abundance data.  
+## Note: the number of processers the analysis should run over
+## will depend on availability of system memory and the runs may
+## become very bogged down if care is not taken
+npar = 5
+nperm = NA
+commName = 'all'
+method = 'uni'
+dataType = 'abu'
+system(paste("Rscript spat_empir_observed_ddr.R", server,
+             npar, nperm, commName, method, dataType, sep=" "),
+       wait=FALSE)
 
 ## generate analytical mete DDR expectation for the empirical communities
 
