@@ -2466,6 +2466,9 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
   if(metricsToCalc == 'all')
     metricsToCalc = c('varWithin', 'varBetween', 'jaccard', 'sorensen')
   if(writeToFile) {
+    if (univariate)
+      fileSuffix = paste(fileSuffix,'_uni_bisect', sep='') 
+    else
       fileSuffix = paste(fileSuffix,'_bisect', sep='') 
   }
   grains = unique(comms[,1])
