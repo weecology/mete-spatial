@@ -24,7 +24,8 @@ if (length(clArgs) > 1) {
   direction = clArgs[11]
   tolerance = clArgs[12]
   name = clArgs[13]
-  big = clArgs[14]
+  big = ifelse(clArgs[14], TRUE, FALSE)
+  iteration = as.numeric(clArgs[15])
 }
 if (!exists(as.character(substitute(S)))) {
   S = 10
@@ -41,6 +42,7 @@ if (!exists(as.character(substitute(S)))) {
   tolerance = 'NA'
   name = 'NA'
   big = FALSE
+  iteration = 1
 }
 
 direction = ifelse(direction == 'NA', 'omnidirectional', as.numeric(direction))
@@ -61,7 +63,6 @@ if(name != 'NA'){
 
 fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
-big = ifelse(big, TRUE, FALSE)
 if (big)
   comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
                           type='integer', sep=',', descriptor = fileSuffix)
@@ -91,7 +92,7 @@ if (!any(spat_breaks$comm == name)) {
 quants = c(0.25, 0.50, 0.75)
 
 ## specify bisections levels
-bisect = seq(bisect_fine, bisect_coarse, -2)
+bisect_lvs = seq(bisect_fine, bisect_coarse, -2)
 
 ## specify grain names
 grain_names = round(grain_fine * 2^(max(bisect) - bisect), 2)
@@ -101,20 +102,22 @@ comm_ids = unique(comms[ , 1])
 metrics = vector('list', length(comm_ids))
 names(metrics) = comm_ids      
 for (i in seq_along(comm_ids)) {
-  comm_tmp = comms[comms[ , 1] == comm_ids[i], ]
-  mat = comm_tmp[ , -(1:3)]
-  coords = comm_tmp[ , 2:3]
-  ## aggregate community matrix to other appropriate spatial lags
-  comms_aggr = aggr_comm_matrix(mat, coords, bisect, grain_names)
-  if (bisect)
-    metrics[[i]] = calc_metrics_bisect(comms_aggr, metricsToCalc, dataType, 
-                                       quants, writeToFile=FALSE)
-  else
-    metrics[[i]] = calc_metrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
-                                log=log, quants=quants, direction=direction,
-                                tolerance=tolerance,  writeToFile=FALSE)
-  ## update save file as loop progresses
-  save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
-                           fileSuffix, '_', dataType, '.Rdata', sep=''))
+  if (i >= iteration) {
+    comm_tmp = comms[comms[ , 1] == comm_ids[i], ]
+    mat = comm_tmp[ , -(1:3)]
+    coords = comm_tmp[ , 2:3]
+    ## aggregate community matrix to other appropriate spatial lags
+    comms_aggr = aggr_comm_matrix(mat, coords, bisect_lvs, grain_names)
+    if (bisect)
+      metrics[[i]] = calc_metrics_bisect(comms_aggr, metricsToCalc, dataType, 
+                                         quants, writeToFile=FALSE)
+    else
+      metrics[[i]] = calc_metrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
+                                  log=log, quants=quants, direction=direction,
+                                  tolerance=tolerance,  writeToFile=FALSE)
+    ## update save file as loop progresses
+    save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
+                             fileSuffix, '_', dataType, '.Rdata', sep=''))
+  }
 }
 
