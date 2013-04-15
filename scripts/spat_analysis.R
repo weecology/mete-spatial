@@ -60,6 +60,7 @@ if(name != 'NA'){
 
 fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
+big = ifelse(big, TRUE, FALSE)
 if (big)
   comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
                           type='integer', sep=',', descriptor = fileSuffix)
