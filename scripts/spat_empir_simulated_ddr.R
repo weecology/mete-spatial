@@ -8,9 +8,13 @@ server = clArgs[1]
 commName = clArgs[2]
 dataType = clArgs[3]
 bisect = clArgs[4]
+memory = clArgs[5]
 
 if (dataType == 'both') {
   dataType = c("abu", "binary")
+}
+if (is.na(memory)) {
+  memory = 10
 }
 
 ## arguments for job
@@ -41,7 +45,7 @@ for (i in indices) {
         if (j == 'empirSAD')
           name = paste(names[i], '_empirSAD', sep='')
         if ( server == 'unc') 
-          system(paste('bsub -q week -M 8 -J', names[i],
+          system(paste('bsub -q week -M', memory, '-J', names[i],
                        '-o', log_file, 'Rscript spat_analysis.R',
                        S[i], N[i], 200, bisect_fine[i], bisect_coarse[i],
                        grain_fine[i], FALSE, k, m, bisect, NA, NA,
