@@ -58,6 +58,10 @@ if(name != 'NA'){
                paste(name, '_C', ncomm, '_B', bisect_fine, '_grid', sep=''))
 }
 
+if(bisect) {
+  fileSuffix = paste(fileSuffix, '_bisect', sep='')
+}
+
 fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
 big = ifelse(big, TRUE, FALSE)
