@@ -40,7 +40,7 @@ for (i in indices) {
           name = names[i]
         if (j == 'empirSAD')
           name = paste(names[i], '_empirSAD', sep='')
-        if ( sever == unc) 
+        if ( server == unc) 
           system(paste('bsub -q week -M 8 -J', names[i],
                        '-o', log_file, 'Rscript spat_analysis.R',
                        S[i], N[i], 200, bisect_fine[i], bisect_coarse[i],
