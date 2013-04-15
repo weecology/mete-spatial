@@ -99,8 +99,16 @@ grain_names = round(grain_fine * 2^(max(bisect) - bisect), 2)
 
 ## loop through all the communities
 comm_ids = unique(comms[ , 1])
-metrics = vector('list', length(comm_ids))
-names(metrics) = comm_ids      
+
+if (iteration > 1) {
+  load(paste('./', metricsToCalc, '/', metricsToCalc, '_',
+             fileSuffix, '_', dataType, '.Rdata', sep=''))
+}
+if (iteration == 1) {
+  metrics = vector('list', length(comm_ids))
+  names(metrics) = comm_ids      
+}
+
 for (i in seq_along(comm_ids)) {
   if (i >= iteration) {
     comm_tmp = comms[comms[ , 1] == comm_ids[i], ]
