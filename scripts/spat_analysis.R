@@ -14,27 +14,29 @@ if (length(clArgs) > 1) {
   S = clArgs[1]
   N = clArgs[2]
   ncomm = clArgs[3]
-  bisec_fine = as.numeric(clArgs[4])
-  bisec_coarse = as.numeric(clArgs[5])
+  bisect_fine = as.numeric(clArgs[4])
+  bisect_coarse = as.numeric(clArgs[5])
   grain_fine = as.numeric(clArgs[6])
   transect = clArgs[7]
   dataType = clArgs[8]
   metricsToCalc = clArgs[9]
-  direction = clArgs[10]
-  tolerance = clArgs[11]
-  name = clArgs[12]
-  big = clArgs[13]
+  bisect = clArgs[10]
+  direction = clArgs[11]
+  tolerance = clArgs[12]
+  name = clArgs[13]
+  big = clArgs[14]
 }
 if (!exists(as.character(substitute(S)))) {
   S = 10
   N = 100
   ncomm = 200
-  bisec_fine = 12
-  bisec_coarse = 6
+  bisect_fine = 12
+  bisect_coarse = 6
   grain_fine = 1
   transect = FALSE
   dataType = 'abu'
   metricsToCalc = 'all'
+  bisect = FALSE
   direction = 'NA'
   tolerance = 'NA'
   name = 'NA'
@@ -46,19 +48,18 @@ tolerance = ifelse(tolerance == 'NA', NA, as.numeric(tolerance))
 
 if(name == 'NA'){
   fileSuffix = ifelse(transect,
-               paste('S', S, '_N', N, '_C', ncomm, '_B', bisec_fine, '_transect',
+               paste('S', S, '_N', N, '_C', ncomm, '_B', bisect_fine, '_transect',
                      sep=''),
-               paste('S', S, '_N', N, '_C', ncomm, '_B', bisec_fine, '_grid', sep=''))
+               paste('S', S, '_N', N, '_C', ncomm, '_B', bisect_fine, '_grid', sep=''))
 }
 if(name != 'NA'){
   fileSuffix = ifelse(transect,
-               paste(name, '_C', ncomm, '_B', bisec_fine, '_transect', sep=''),
-               paste(name, '_C', ncomm, '_B', bisec_fine, '_grid', sep=''))
+               paste(name, '_C', ncomm, '_B', bisect_fine, '_transect', sep=''),
+               paste(name, '_C', ncomm, '_B', bisect_fine, '_grid', sep=''))
 }
 
 fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
-big = ifelse(big, TRUE, FALSE)
 if (big)
   comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
                           type='integer', sep=',', descriptor = fileSuffix)
@@ -84,10 +85,10 @@ if (!any(spat_breaks$comm == name)) {
 quants = c(0.25, 0.50, 0.75)
 
 ## specify bisections levels
-bisec = seq(bisec_fine, bisec_coarse, -2)
+bisect = seq(bisect_fine, bisect_coarse, -2)
 
 ## specify grain names
-grain_names = round(grain_fine * 2^(max(bisec) - bisec), 2)
+grain_names = round(grain_fine * 2^(max(bisect) - bisect), 2)
 
 ## loop through all the communities
 comm_ids = unique(comms[ , 1])
@@ -98,13 +99,16 @@ for (i in seq_along(comm_ids)) {
   mat = comm_tmp[ , -(1:3)]
   coords = comm_tmp[ , 2:3]
   ## aggregate community matrix to other appropriate spatial lags
-  comms_aggr = aggr_comm_matrix(mat, coords, bisec, grain_names)
-  metrics[[i]] = calcMetrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
-                        log=log, quants=quants, direction=direction,
-                        tolerance=tolerance,  writeToFile=FALSE)
+  comms_aggr = aggr_comm_matrix(mat, coords, bisect, grain_names)
+  if (bisect)
+    metrics[[i]] = calc_metrics_bisect(comms_aggr, metricsToCalc, dataType, 
+                                       quants, writeToFile=FALSE)
+  else
+    metrics[[i]] = calc_metrics(comms_aggr, metricsToCalc, dataType, breaks=breaks,
+                                log=log, quants=quants, direction=direction,
+                                tolerance=tolerance,  writeToFile=FALSE)
   ## update save file as loop progresses
   save(metrics, file=paste('./', metricsToCalc, '/', metricsToCalc, '_',
                            fileSuffix, '_', dataType, '.Rdata', sep=''))
 }
-
 

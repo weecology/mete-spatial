@@ -5,7 +5,13 @@ setwd('~/maxent/spat/scripts')
 clArgs = commandArgs(trailingOnly=TRUE)
 
 server = clArgs[1]
-indices = clArgs[2]
+commName = clArgs[2]
+dataType = clArgs[3]
+bisect = clArgs[4]
+
+if (dataType == 'both') {
+  dataType = c("abu", "binary")
+}
 
 ## arguments for job
 S = read.table('../data/S_vals.txt')
@@ -15,8 +21,13 @@ bisect_coarse = read.table('../data/bisect_coarse.txt')
 grain_fine = read.table('../data/grain_fine.txt')
 names = as.character(read.table('../data/shrtnames.txt', colClasses='character'))
 
+commName = unlist(strsplit(commName, ' '))
+if (commName[1] == 'all') {
+  commName = names
+}
+indices = match(commName, names)
+
 sadType = c("meteSAD", "empirSAD")
-dataType = c("abu", "binary")
 metrics = "sorensen"
 
 for (i in indices) {
@@ -33,12 +44,12 @@ for (i in indices) {
           system(paste('bsub -q week -M 8 -J', names[i],
                        '-o', log_file, 'Rscript spat_analysis.R',
                        S[i], N[i], 200, bisect_fine[i], bisect_coarse[i],
-                       grain_fine[i], FALSE, k, m, NA, NA,
+                       grain_fine[i], FALSE, k, m, bisect, NA, NA,
                        name, TRUE, sep=' '))
         else
-          system(paste('Rscript spat_analysis.R', S[i], N[i], 200,
+          system(paste('nice Rscript spat_analysis.R', S[i], N[i], 200,
                        bisect_fine[i], bisect_coarse[i],
-                       grain_fine[i], FALSE, k, m, NA, NA,
+                       grain_fine[i], FALSE, k, m, bisect, NA, NA,
                        name, TRUE, '>', log_file, '2>&1 &', sep=' '),
                  wait=FALSE)
       }    
