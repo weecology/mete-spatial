@@ -58,9 +58,6 @@ if(name != 'NA'){
                paste(name, '_C', ncomm, '_B', bisect_fine, '_grid', sep=''))
 }
 
-if(bisect) {
-  fileSuffix = paste(fileSuffix, '_bisect', sep='')
-}
 
 fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
@@ -72,6 +69,10 @@ if (!big)
   comms = read.csv(file.path('./comms', fileName), header=T)
 
 gc()
+
+if(bisect) {
+  fileSuffix = paste(fileSuffix, '_bisect', sep='')
+}
 
 ## specify how to bin the spatial lags
 ## first fix dataset name
