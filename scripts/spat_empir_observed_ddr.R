@@ -17,7 +17,7 @@ if (dataType == 'both') {
   dataType = c("abu", "binary")
 }
 
-commName = unlist(strsplit(clArgs[4], ' '))
+commName = unlist(strsplit(commName, ' '))
 if (commName[1] == 'all') {
   commName = as.character(read.table('../data/shrtnames.txt',
                                      colClasses='character')[1, ])
