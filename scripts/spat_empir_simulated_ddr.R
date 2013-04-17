@@ -8,8 +8,8 @@ server = clArgs[1]
 commName = clArgs[2]
 dataType = clArgs[3]
 bisect = clArgs[4]
-memory = clArgs[5]
-iteration = clArgs[6]
+memory = as.numeric(clArgs[5])
+iteration = as.numeric(clArgs[6])
 
 if (dataType == 'both') {
   dataType = c("abu", "binary")
