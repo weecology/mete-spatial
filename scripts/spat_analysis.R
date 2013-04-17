@@ -95,7 +95,7 @@ quants = c(0.25, 0.50, 0.75)
 bisect_lvs = seq(bisect_fine, bisect_coarse, -2)
 
 ## specify grain names
-grain_names = round(grain_fine * 2^(max(bisect) - bisect), 2)
+grain_names = round(grain_fine * 2^(max(bisect_lvs) - bisect_lvs), 2)
 
 ## loop through all the communities
 comm_ids = unique(comms[ , 1])
