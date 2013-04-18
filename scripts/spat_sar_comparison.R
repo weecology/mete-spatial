@@ -8,7 +8,7 @@ source('./scripts/spat_sar_load_and_avg_data.R')
 
 ## plot an example SAR figure for presentation ---------------------------------
 par(mfrow=c(1,1))
-site = 'bigoak'
+site = 'baldmnt'
 purple = rgb(112, 48, 160, maxColorValue=160)
 lightblue = "#1AB2FF"
 
@@ -18,27 +18,29 @@ i = match(site, names(meteEmpirSAD))
          ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
          xlim=range(c(meteEmpirSAD[[i]]$area, empir[[i]]$area)), log='xy',
          type='n', main=names(meteEmpirSAD)[i], ylab='SR', xlab='Area (m2)')
-    ## meteEmpirSAD CI
+    ## Average simulated EmpirSAD CI
     dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
-#    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
-    lines(sr.avg ~ grains, data=dat, lwd=3, col='grey', lty=2)
+    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+#    lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1, type='o')
     ## RP CI
     dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
 #    addCI('grains', 'S_lo', 'S_hi', data='dat', col='pink')
     lines(S_binom ~ grains, data=dat, col='red', lwd=3)
     ## analytical meteEmpirSAD    
     lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
-    lines(sr_iter ~ area, data=meteEmpirSAD[[i]], col='grey', lwd=3, lty=1)
+    lines(sr_iter ~ area, data=meteEmpirSAD[[i]], col='grey25', lwd=3, lty=1)
     ## data
     lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
-    legend('bottomright', c('Empirical','RP','meteEmpirSAD sim', 'meteEmpirSAD noniter'),
-           pch=c(19, rep(NA, 3)), col=c(1, 'red', 'grey', 'dodgerblue'),
-           bty='n', lwd=3)
+    legend('bottomright', c('Empirical','RP','meteEmpirSAD noniter sim', 
+           'meteEmpirSAD iter analy', 'meteEmpirSAD noniter'),
+           pch=c(19, rep(NA, 4)), col=c(1, 'red', 'grey',
+           'grey25', 'dodgerblue'), bty='n', lwd=3)
 
 
 
 ## Compare METE SAR predictions--------------------------------------------
 pdf('./figs/mete_sar_predictions.pdf', width=7 * 2, height=7 * 2)
+jpeg('./figs/mete_sar_predictions.jpeg', width=480 * 2, height=480 * 2, quality=100)
   par(mfrow=c(4,4))
   for (i in seq_along(meteLogSer)) {
     plot(sr_iter ~ area, data=meteLogSer[[i]], log='xy',
@@ -151,107 +153,52 @@ as.matrix(sort(apply(abs(sar_res[!is.na(sar_res[,4]), 3:10]), 2, mean, na.rm=T))
 ## this keeps sites with lots of spatial scales from dominating
 ## the residuals
 
-avg_sar_res = aggregate(sar_res[ , -c(1:2, 11:13)]/sar_res$richness, by=list(sar_res$site), 
+## normailized residuals = (obs - pred) / obs
+avg_sar_res = aggregate(sar_res[ , -c(1:2, 11:14)]/sar_res$richness,
+                        by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
 indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x, na.rm=T) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:8)]) - 1)
 res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
-                    res_avg
-empirsad_avg     0 2.321328
-empirsad_iter    0 4.245373
-empirsad_noniter 6 1.472516
-empirsad_rp      1 3.309048
-logser_avg       3 3.447583
-logser_iter      2 4.023770
-logser_noniter   2 3.095267
-logser_rp        2 2.831572
+                       res_avg
+empirsad_avg      0 0.23282627
+empirsad_iter     0 0.25007382
+empirsad_noniter 10 0.07169277
+empirsad_rp       1 0.16460877
+logser_avg        0 0.23540504
+logser_iter       1 0.16211174
+logser_noniter    3 0.08868510
+logser_rp         1 0.17045269
 
-## normalized by mean(Savg + Spred)
-
-
-## compare only at the empirical SAD models
-avg_sar_res = aggregate(sar_res[ , 7:10] / sar_res$richness, by=list(sar_res$site), 
-                        FUN = function(x) mean(x^2, na.rm=T))
-indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
-wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
-cbind(wins, res_avg)
-                     res_avg
-empirsad_avg      3 2.321328
-empirsad_iter     1 4.245373
-empirsad_noniter 10 1.472516
-empirsad_rp       2 3.309048
-
-## normalized by mean(Savg + Spred)
-
-
-## compare only at the empirical SAD models simulated iterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] / sar_res$richness,
+## compare only analytical models
+avg_sar_res = aggregate(sar_res[ , c(4:5, 8:9)] / sar_res$richness,
                         by=list(sar_res$site), 
                         FUN = function(x) mean(x^2, na.rm=T))
-
-indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
+indices =apply(avg_sar_res[ , -1], 1, function(x) which(min(x, na.rm=T) == x))
 wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
 res_avg = apply(sqrt(avg_sar_res[ , -1]), 2, mean, na.rm=T)[order(names(avg_sar_res[,-1]))]
 cbind(wins, res_avg)
-                 res_avg
-empirsad_avg 12 2.321328
-empirsad_rp   4 3.309048
+## (Sobs - Spred) / Sobs
+                       res_avg
+empirsad_iter     0 0.25007382
+empirsad_noniter 12 0.07169277
+logser_iter       1 0.16211174
+logser_noniter    3 0.08868510
+## Sobs - Spred
+res_avg
+empirsad_iter     0 4.137159
+empirsad_noniter 11 1.460210
+logser_iter       1 3.861738
+logser_noniter    4 2.861911
 
-## normalized by Savg
-                  res_avg
-empirsad_avg  4 0.1981773
-empirsad_rp  12 0.1640317
-
-## normalized by habitat type
-avg_sar_res = aggregate(sar_res[ , c('empirsad_avg','empirsad_rp')] / sar_res$richness,
+## averaged by habitat type
+avg_sar_res = aggregate(sar_res[ , c(4:5, 8:9)] / sar_res$richness,
                         by=list(sar_res$hab), 
                         FUN = function(x) mean(x^2, na.rm=T))
-data.frame(avg_sar_res, 
-           mete_rank=rank(avg_sar_res$empirsad_avg),
-           rp_rank=rank(avg_sar_res$empirsad_rp))
-          Group.1 empirsad_avg empirsad_rp mete_rank rp_rank
-1       grassland   0.01060391  0.10498694         1       6
-2 mixed evergreen   0.04279890  0.08064803         4       5
-3     oak savanna   0.06290683  0.03961006         6       4
-4     oak-hickory   0.04757971  0.02055527         5       2
-5            pine   0.03226573  0.02051344         2       1
-6        tropical   0.03736493  0.02878478         3       3
+write.csv(avg_sar_res, file='./sar/sar_avg_normalized_residuals_habitat.csv',
+          row.names=F)
 
-## compare empirical analytical iterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_iter','empirsad_rp')] / sar_res$richness,
-                        by=list(sar_res$site), 
-                        FUN = function(x) mean(x^2, na.rm=T))
-indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
-wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
-cbind(wins, res_avg)
-                 res_avg
-empirsad_iter  6 54.45989
-empirsad_rp   10 28.08008
-
-## normalized by Savg
-                    res_avg
-empirsad_iter  2 0.06645979
-empirsad_rp   14 0.03270415
-
-## compare empirical analytical noniterative and rp
-avg_sar_res = aggregate(sar_res[ , c('empirsad_noniter','empirsad_rp')] / sar_res$richness,
-                        by=list(sar_res$site), 
-                        FUN = function(x) mean(x^2, na.rm=T))
-indices = apply(avg_sar_res[ , -1], 1, function(x) which(min(x) == x))
-wins = as.matrix(table(names(avg_sar_res[ , -1])[c(indices,1:4)]) - 1)
-res_avg = apply(avg_sar_res[ , -1], 2, mean)[order(names(avg_sar_res[,-1]))]
-cbind(wins, res_avg)
-                     res_avg
-empirsad_noniter 12  3.40553
-empirsad_rp       4 28.08008
-
-## normalized by Savg
-                        res_avg
-empirsad_noniter 15 0.007523939
-empirsad_rp       1 0.032704148
 
 ## plot residuals---------------------------------------------------------------
 pdf('./figs/sar_residuals.pdf', width=7 * 2, height=7 * 2)
@@ -421,7 +368,7 @@ pdf('./figs/sar_stud_residuals.pdf', width=7 * 2, height=7 * 2)
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_noniter / std ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_noniter / sr_std ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=col[habindex])
   }
   legend('bottomright', hab, col=col, lwd=2, bty='n')
@@ -433,7 +380,7 @@ pdf('./figs/sar_stud_residuals.pdf', width=7 * 2, height=7 * 2)
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_iter / std ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_iter / sr_std ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=col[habindex])
   }
   plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
@@ -444,7 +391,7 @@ pdf('./figs/sar_stud_residuals.pdf', width=7 * 2, height=7 * 2)
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_avg / std ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_avg / sr_std ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=col[habindex])
   }
   plot(empirsad_noniter ~ area, data=sar_res, log='x', ylim=ylims, 
@@ -455,8 +402,52 @@ pdf('./figs/sar_stud_residuals.pdf', width=7 * 2, height=7 * 2)
   abline(h=0, lwd=5)
   for (i in seq_along(sites)) {
     habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    lines(empirsad_rp / std ~ area, data=sar_res, subset= site == sites[i],
+    lines(empirsad_rp / sr_std ~ area, data=sar_res, subset= site == sites[i],
           lwd=4, col=col[habindex], lty=1)
+  }
+dev.off()
+
+## plot one-to-one curves-------------------------------------------------------
+
+## analytical predictions
+indices = c(4:5, 8:9)
+
+pred_sar = sar_res$richness - sar_res[ , indices] 
+pred_sar = data.frame(pred_sar, richness = sar_res$richness,
+                      hab = sar_res$hab)
+
+xlim = range(pred_sar[ , 1:4], na.rm=T)
+ylim = range(pred_sar$richness)
+
+jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
+     width = 480 * 2, height= 480 * 2, quality = 100)
+  par(mfrow=c(2,2))
+  for(i in 1:4) {
+    plot(richness ~ pred_sar[ , i], data = pred_sar, log='xy',
+         axes=F, frame.plot=F, xlab='', ylab='',
+         xlim=2^(c(-3, 9)), ylim=2^(c(-3, 9)))
+    ticks = 2^seq(-3, 9, 2)
+    addAxis1(at = ticks, lab = as.character(ticks))
+    addAxis2(at = ticks, lab = as.character(ticks))
+    lines(2^(c(-3, 9)), 2^(c(-3, 9)), lwd=2)
+  }
+dev.off()
+
+jpeg('./figs/sar_one_to_one_mete_analytical_color.jpeg',
+     width = 480 * 2, height= 480 * 2, quality = 100)
+  par(mfrow=c(2,2))
+  for (i in 1:4) {
+    plot(richness ~ pred_sar[ , i], data = pred_sar, log='xy',
+         axes=F, frame.plot=F, xlab='', ylab='', type='n',
+         xlim=2^(c(-3, 9)), ylim=2^(c(-3, 9)))
+    for (j in seq_along(hab))
+      points(pred_sar[pred_sar$hab == hab[j] , i],
+             pred_sar$richness[pred_sar$hab == hab[j]],
+             col=col[j])
+    ticks = 2^seq(-3, 9, 2)
+    addAxis1(at = ticks, lab = as.character(ticks))
+    addAxis2(at = ticks, lab = as.character(ticks))
+    lines(2^(c(-3, 9)), 2^(c(-3, 9)), lwd=2)
   }
 dev.off()
 
