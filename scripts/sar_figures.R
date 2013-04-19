@@ -91,6 +91,8 @@ dev.off()
 xlim = range(pred_sar[ , 1:4], na.rm=T)
 ylim = range(pred_sar$richness)
 
+titles = c('iterative', 'iterative observed SAD', 'noniterative', 'noniterative observed SAD')
+
 jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
      width = 480 * 2, height= 480 * 2, quality = 100)
 par(mfrow=c(2,2))
@@ -99,13 +101,14 @@ for(i in 1:4) {
        axes=F, frame.plot=F, xlab='', ylab='',
        xlim=2^(c(-3, 9)), ylim=2^(c(-3, 9)))
   ticks = 2^seq(-3, 9, 2)
-  addAxis1(at = ticks, lab = as.character(ticks))
-  addAxis2(at = ticks, lab = as.character(ticks))
+  addAxis(side=1, at = ticks, lab = as.character(ticks))
+  addAxis(side=2, at = ticks, lab = as.character(ticks))
   lines(2^(c(-3, 9)), 2^(c(-3, 9)), lwd=2)
   r2 = get_R2(log(pred_sar$richness),
               log(pred_sar[ ,i]), na.rm=T)
   text(x=.2, y= 300, expression(italic(R^2) == ''), cex=3)
   text(x= 1, y = 275, round(r2, 3), cex=3)
+  mtext(side=3, titles[i], cex=2)
   mtext(side=3, paste(letters[i], ')', sep=''), adj=0, cex=3)
 }
 dev.off()
