@@ -4079,8 +4079,13 @@ get_sar_resids = function(obs_dat, pred_dat, obs_field, pred_field) {
   return(data.frame(site, area, res))
 }  
 
-get_R2 = function(obs, exp) {
-  SSerr = sum((obs - exp)^2)
+get_R2 = function(obs, pred, na.rm=FALSE) {
+  if (na.rm) {
+    true = !(is.na(obs) | is.na(pred))
+    obs = obs[true]
+    pred = pred[true]
+  }
+  SSerr = sum((obs - pred)^2)
   SStot = sum((obs - mean(obs))^2)
   R2 = 1 - SSerr / SStot
   return(R2)
