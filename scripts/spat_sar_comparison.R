@@ -414,7 +414,7 @@ indices = c(4:5, 8:9)
 
 pred_sar = sar_res$richness - sar_res[ , indices] 
 pred_sar = data.frame(pred_sar, richness = sar_res$richness,
-                      hab = sar_res$hab)
+                      hab = sar_res$hab, site=sar_res$site)
 
 xlim = range(pred_sar[ , 1:4], na.rm=T)
 ylim = range(pred_sar$richness)
@@ -430,6 +430,11 @@ jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
     addAxis1(at = ticks, lab = as.character(ticks))
     addAxis2(at = ticks, lab = as.character(ticks))
     lines(2^(c(-3, 9)), 2^(c(-3, 9)), lwd=2)
+    r2 = get_R2(log(pred_sar$richness),
+                log(pred_sar[ ,i]), na.rm=T)
+    text(x=.2, y= 300, expression(italic(R^2) == ''), cex=3)
+    text(x= 1, y = 275, round(r2, 3), cex=3)
+    mtext(side=3, paste(letters[i], ')', sep=''), adj=0, cex=3)
   }
 dev.off()
 
@@ -448,8 +453,25 @@ jpeg('./figs/sar_one_to_one_mete_analytical_color.jpeg',
     addAxis1(at = ticks, lab = as.character(ticks))
     addAxis2(at = ticks, lab = as.character(ticks))
     lines(2^(c(-3, 9)), 2^(c(-3, 9)), lwd=2)
+    r2 = get_R2(log(pred_sar$richness),
+                log(pred_sar[ ,i]), na.rm=T)
+    text(x=.2, y= 300, expression(italic(R^2) == ''), cex=3)
+    text(x= 1, y = 275, round(r2, 3), cex=3)  
+    mtext(side=3, paste(letters[i], ')', sep=''), adj=0, cex=3)
   }
 dev.off()
+
+
+r2 = vector('list', 4)
+for (i in 1:4) {
+ r2[[i]] = sapply(unique(as.character(pred_sar$site)), function(x) 
+                  get_R2(pred_sar$richness[pred_sar$site == x],
+                         pred_sar[pred_sar$site == x , i],
+                         na.rm=T))
+}
+par(mfrow=c(2,2))
+for (i in 1:4) 
+  plot(density(r2[[i]], na.rm=T), xlim=c(0, 1))
 
 
 ## plot universal curve --------------------------------------------------------
