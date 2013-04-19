@@ -3990,8 +3990,8 @@ addCI = function(x, y_lo, y_hi, col, data=NULL) {
 }
 
 addAxes = function(cex.axis=1.75, padj=.5, lwd=4, ...) {
-  addAxis(side=1, ...)
-  addAxis(side=2, ...)
+  addAxis(side=1, cex.axis, padj, lwd, ...)
+  addAxis(side=2, cex.axis, padj, lwd, ...)
 }
 
 addAxis = function(side=1, cex.axis=1.75, padj=.5, lwd=4, ...) {
