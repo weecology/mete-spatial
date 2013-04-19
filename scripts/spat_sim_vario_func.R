@@ -3989,11 +3989,13 @@ addCI = function(x, y_lo, y_hi, col, data=NULL) {
   polygon(xvals, yvals, border=NA, col=col)
 }
 
-addAxis1 = function(...) {
-  axis(side=1, cex.axis=1.75, padj=.5, lwd=4, ...)
+addAxes = function(cex.axis=1.75, padj=.5, lwd=4, ...) {
+  addAxis(side=1, ...)
+  addAxis(side=2, ...)
 }
-addAxis2 = function(...) {
-  axis(side=2, cex.axis=1.75, lwd=4, ...)
+
+addAxis = function(side=1, cex.axis=1.75, padj=.5, lwd=4, ...) {
+  axis(side, cex.axis=cex.axis, padj=padj, lwd=lwd, ...)
 }
 
 addxlab = function(...) {
