@@ -143,3 +143,44 @@ for(i in 1:4) {
 }
 dev.off()
 
+## supplemental cocoli and sherman study site figure ---------------------------
+
+cocoli = read.csv('./data/filtered_data/cocoli_census3_filtered.csv')
+sherman = read.csv('./data/filtered_data/sherman_census3_filtered.csv')
+
+## split plot into two 200 x 100 m rectangles
+cocoli1 = cocoli[cocoli$y>=100,]
+cocoli2 = cocoli[cocoli$y<100,]
+
+## split plot into three quadrats (two 200 x 100 m rectangles and one 140 x 140m)
+sherman1 = sherman[sherman$x >= 140 & sherman$y >= 240, ]  ## one of the 200 x 100 m rectangles
+sherman2 = sherman[sherman$x >= 140 & sherman$y < 240, ] ## the other 200 x 100 m rectangle
+sherman3 = sherman[sherman$x < 140, ]  ## the 140 x 140 square
+
+cex = 2
+
+jpeg('./figs/cocoli_sherman_study_sites.jpeg', width=262 * 2 *2, height=480 * 2,
+     quality=100)
+  par(mfrow=c(1,2))
+  plot(cocoli1$x,cocoli1$y,col='red', pch='.', ylim=range(sherman$y),
+       xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
+       axes=F, frame.plot=T, cex=cex)
+  points(cocoli2$x,cocoli2$y,col='blue',pch='.', cex=cex)
+  axis(side=1, at = c(0, 100, 200))
+  axis(side=2)
+  mtext(side=3, 'Cocoli', cex=2.5)
+  legend('topleft', c('Cocoli subplot 1', 'Cocoli subplot 2'),
+         col=c('red','blue'), pch=19, bty='n', cex=cex)
+  ##
+  plot(sherman1$x,sherman1$y,col='red', pch='.', ylim=range(sherman$y),
+       xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
+       axes=F, frame.plot=T, cex=cex)
+  points(sherman2$x,sherman2$y,col='blue',pch='.', cex=cex)
+  points(sherman3$x,sherman3$y,col='green3',pch='.', cex=cex)
+  axis(side=1, at = c(0, 100, 200))
+  axis(side=2)
+  mtext(side=3, 'Sherman', cex=2.5)
+  legend('topleft', c('Sherman subplot 1', 'Sherman subplot 2',
+         'Sherman subplot 3'),  col=c('red','blue', 'green3'), pch=19,
+         bty='n', cex=cex)
+dev.off()
