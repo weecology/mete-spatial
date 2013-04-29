@@ -17,8 +17,6 @@ download_data = function(urls, output_path) {
   }
 }
 
-path = './data/raw_data'
-
 download_data(urls$url, './data/raw_data')
 
 
