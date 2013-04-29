@@ -29,14 +29,15 @@ def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
         return None
     N0 = sum(n0)
     rad = get_mete_rad(S0, N0)[0]
-    out = np.empty((len(n0), 2))
-    out[ : , 0] = n0
-    out[ : , 1] = rad
+    out = np.empty((len(n0), 3))
+    out[ : , 0] = site_name
+    out[ : , 1] = n0
+    out[ : , 2] = rad
     if to_file:
         filename = output_dir + site_name + '_obs_pred_sad.txt'
         writer = open(filename, 'wb') 
         datawriter = csv.writer(writer)
-        datawriter.writerow(['observed', 'predicted'])
+        datawriter.writerow(['site', 'observed', 'predicted'])
         for i in range(0, np.shape(out)[0]):
             datawriter.writerow(out[i, ])
         writer.close()
