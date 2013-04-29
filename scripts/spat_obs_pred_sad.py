@@ -29,10 +29,10 @@ def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
         return None
     N0 = sum(n0)
     rad = get_mete_rad(S0, N0)[0]
-    out = np.empty((len(n0), 3))
-    out[ : , 0] = site_name
-    out[ : , 1] = n0
-    out[ : , 2] = rad
+    out = np.zeros((len(n0), ), dtype = ('S10, i8, i8'))
+    out['f0'] = site_name
+    out['f1'] = n0
+    out['f2'] = rad
     if to_file:
         filename = output_dir + site_name + '_obs_pred_sad.txt'
         writer = open(filename, 'wb') 
