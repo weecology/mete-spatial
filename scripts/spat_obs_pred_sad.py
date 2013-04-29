@@ -37,7 +37,6 @@ def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
         filename = output_dir + site_name + '_obs_pred_rad.csv'
         writer = open(filename, 'wb') 
         datawriter = csv.writer(writer)
-        datawriter.writerow(['site', 'observed', 'predicted'])
         for i in range(0, np.shape(out)[0]):
             datawriter.writerow(out[i, ])
         writer.close()
