@@ -121,23 +121,12 @@ for(i in 1:4) {
   addAxis(side=1, at = ticks, lab = as.character(ticks))
   addAxis(side=2, at = ticks, lab = as.character(ticks), padj=0)
   lines(2^(c(-1, 9)), 2^(c(-1, 9)), lwd=2)
-  r2_wo_cross = get_R2(log(pred_sar$richness[pred_sar$site != 'cross']),
-                       log(pred_sar[pred_sar$site != 'cross' ,i]), na.rm=T)
-  r2_wo_cross = as.character(round(r2_wo_cross, 3))
-  if (nchar(r2_wo_cross) < 5)
-    r2_wo_cross = paste(r2_wo_cross, rep(0, 5 - nchar(r2_wo_cross)),
-                        sep='')
+  r2 = get_R2(log(pred_sar$richness), log(pred_sar), na.rm=T)
+  r2 = as.character(round(r2, 3))
+  if (nchar(r2) < 5)
+    r2 = paste(r2, rep(0, 5 - nchar(r2)), sep='')
   text(x=.9, y= 300, expression(italic(R^2) == ''), cex=2.5)
   text(x=2.75, y= 275, r2_wo_cross, cex=2.5)
-  if (i != 3) {
-    r2_all = get_R2(log(pred_sar$richness), log(pred_sar[ ,i]), na.rm=T)
-    r2_all = as.character(round(r2_all, 3))
-    if (nchar(r2_all) < 5)
-      r2_all = paste(r2_all, rep(0, 5 - nchar(r2_all)), sep='')
-    text(x=.9, y= 150, expression(italic(R^2) == ''), cex=2.5)
-    text(x=2.75, y= 140, r2_all, cex=2.5)  
-    text(x=1.64, y=140, '(               )', cex=3)
-  }
   mtext(side=3, titles[i], cex=2)
   mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
 }
