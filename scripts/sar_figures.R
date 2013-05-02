@@ -112,24 +112,24 @@ titles = c('recursive', 'recursive, observed SAD', 'non-recursive',
 
 jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
      width = 480 * 2, height= 480 * 2, quality = 100)
-par(mfrow=c(2,2))
-for(i in 1:4) {
-  plot(richness ~ pred_sar[ , i], data = pred_sar, log='xy',
-       axes=F, frame.plot=F, xlab='', ylab='',
-       xlim=2^(c(-1, 9)), ylim=2^(c(-1, 9)))
-  ticks = 2^seq(-1, 9, 2)
-  addAxis(side=1, at = ticks, lab = as.character(ticks))
-  addAxis(side=2, at = ticks, lab = as.character(ticks), padj=0)
-  lines(2^(c(-1, 9)), 2^(c(-1, 9)), lwd=2)
-  r2 = get_R2(log(pred_sar$richness), log(pred_sar), na.rm=T)
-  r2 = as.character(round(r2, 3))
-  if (nchar(r2) < 5)
-    r2 = paste(r2, rep(0, 5 - nchar(r2)), sep='')
-  text(x=.9, y= 300, expression(italic(R^2) == ''), cex=2.5)
-  text(x=2.75, y= 275, r2_wo_cross, cex=2.5)
-  mtext(side=3, titles[i], cex=2)
-  mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
-}
+  par(mfrow=c(2,2))
+  for(i in 1:4) {
+    plot(richness ~ pred_sar[ , i], data = pred_sar, log='xy',
+         axes=F, frame.plot=F, xlab='', ylab='',
+         xlim=2^(c(-1, 9)), ylim=2^(c(-1, 9)))
+    ticks = 2^seq(-1, 9, 2)
+    addAxis(side=1, at = ticks, lab = as.character(ticks))
+    addAxis(side=2, at = ticks, lab = as.character(ticks), padj=0)
+    lines(2^(c(-1, 9)), 2^(c(-1, 9)), lwd=2)
+    r2 = get_R2(log(pred_sar$richness), log(pred_sar[ , i]), na.rm=T)
+    r2 = as.character(round(r2, 3))
+    if (nchar(r2) < 5)
+      r2 = paste(r2, rep(0, 5 - nchar(r2)), sep='')
+    text(x=.9, y= 300, expression(italic(R^2) == ''), cex=2.5)
+    text(x=2.75, y= 275, r2, cex=2.5)
+    mtext(side=3, titles[i], cex=2)
+    mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+  }
 dev.off()
 
 ## supplemental cocoli and sherman study site figure ---------------------------
