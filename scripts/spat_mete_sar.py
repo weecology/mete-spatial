@@ -69,7 +69,7 @@ for shrt_name in site_names:
         
         try:
             if sadType == 'meteSAD':
-                sar_down_noniterative = mete.sar_noniterative(Avals, Amax, S0, N0)
+                sar_down_noniterative = mete.sar_noniterative(Avals, Amax, S0, N0, 'precise')
             else:
                 sar_down_noniterative = mete.sar_noniterative_fixed_abu(Avals, Amax, n0vals)
             sar_noniterative_worked = True
