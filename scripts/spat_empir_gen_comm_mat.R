@@ -205,9 +205,9 @@ dat$spnum = as.integer(dat$CODE)
 
 i_bisections = c(12, 10, 8, 6, 4)
 n_quadrats = 2^i_bisections
-domain = c(0,160,0,160)
+domain = c(0, 256.00001, 0, 256.00001)
 
-comms = make_comm_matrix(dat$spnum, S, cbind(dat$NX, dat$NY), n_quadrats, domain)
+comms = make_comm_matrix(dat$spnum, S, cbind(dat$TX, dat$TY), n_quadrats, domain)
 
 ## output results
 write.csv(comms,file='./data/oosting_comms.csv',row.names=F)
