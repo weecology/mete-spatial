@@ -116,4 +116,7 @@ shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character')
 habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
 sar_res$hab = habitat[match(sar_res$site, shrtnm)]
 
+sar_data = sar_res
+names(sar_data)
+sar_data[ , 3:10] = sar_data$richness - sar_data[ , 3:10] 
 
