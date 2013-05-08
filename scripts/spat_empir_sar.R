@@ -34,7 +34,7 @@ Ms = n_pixels_wide(bisect_fine)
 psp = vector('list',length(dat))
 names(psp) = names(dat)
 for(i in seq_along(dat))
-  psp[[i]] = mat2psp(dat[[i]][ , -(1:3)], dat[[i]][ , 2:3]
+  psp[[i]] = mat2psp(dat[[i]][ , -(1:3)], dat[[i]][ , 2:3],
                      Ns[i], Ms[i])
 
 ## compute SARs, non-movinging window 
