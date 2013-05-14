@@ -3,6 +3,8 @@
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
+print('Computing empirical SARs...')
+
 fileNames = dir('./data')
 commFiles = grep('comms', fileNames)
 
@@ -63,6 +65,4 @@ for (i in seq_along(sar)) {
 
 write.csv(dat, file='./sar/empir_sars.csv', row.names=FALSE)
 
-
-
-
+print('Computing empirical SARs, complete!')

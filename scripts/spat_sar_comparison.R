@@ -4,7 +4,8 @@ setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
 ## load data
-source('./scripts/spat_sar_load_and_avg_data.R')
+sar_res = read.csv('./sar/sar_residuals.csv')
+sar_data = read.csv('./sar/sar_raw_data.csv')
 
 ## plot an example SAR figure for presentation ---------------------------------
 par(mfrow=c(1,1))

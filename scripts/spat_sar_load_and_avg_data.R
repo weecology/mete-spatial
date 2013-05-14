@@ -3,6 +3,8 @@
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
+print('Aggregating SAR results, ...')
+
 fileNames = dir('./sar')
 
 ## empirical SARs
@@ -117,6 +119,10 @@ habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
 sar_res$hab = habitat[match(sar_res$site, shrtnm)]
 
 sar_data = sar_res
-names(sar_data)
 sar_data[ , 3:10] = sar_data$richness - sar_data[ , 3:10] 
 
+## export files
+write.csv(sar_res, file='./sar/sar_residuals.csv', row.names=F)
+write.csv(sar_data, file='./sar/sar_raw_data.csv', row.names=F)
+
+print('Aggregating SAR results, complete!')

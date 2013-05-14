@@ -1,7 +1,8 @@
 
 setwd('~/maxent/spat')
-
 source('./scripts/spat_sim_vario_func.R')
+
+print('Computing binomial expected SARs, ...')
 
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
@@ -47,10 +48,4 @@ for (i in seq_along(srExp)) {
 
 save(srExp, file='./sar/expected_empir_sars.Rdata')
 
-plot(srCol ~ grains, data=srExp[[1]], type='o', log='xy')
-lines(sr.lo ~ grains, data=srExp[[1]], col='red')
-lines(sr.hi ~ grains, data=srExp[[1]], col='red')
-lines(sr_logser_binom ~ grains, data=srExp[[1]], col='blue')
-
-
-  
+print('Computing binomial expected SARs, complete!')

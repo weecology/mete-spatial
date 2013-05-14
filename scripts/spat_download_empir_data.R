@@ -24,6 +24,8 @@ download_data = function(urls, delim, output_path) {
   }
 }
 
+print('Downloading datasets, ...')
+
 download_data(urls$url, urls$delim, './data/raw_data')
 
-
+print('Downloading datasets, complete!')

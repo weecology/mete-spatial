@@ -3,6 +3,9 @@
 ## datasets that are employed in the distance decay study
 
 setwd('~/maxent/spat')
+
+print('Exporting empirical data summaries, ...')
+
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
@@ -46,7 +49,7 @@ datSummary = data.frame(datnames, shrtnames, habitat, shape, area_ha = area,
                         S, N)
 write.csv(datSummary, file='empir_data_summary.csv', row.names=FALSE)
 
-## output shrtnames, S, N, and bisectoin info for the simulation routines
+## output shrtnames, S, N, and bisection info for the simulation routines
 write.table(matrix(shrtnames, nrow=1), file=file.path('./data', 'shrtnames.txt'),
             sep=' ', row.names=FALSE, col.names=FALSE, quote=FALSE)
 write.table(matrix(S, nrow=1), file=file.path('./data', 'S_vals.txt'), sep=' ', 
@@ -81,3 +84,6 @@ pdf('./figs/empirical_rads.pdf', width=7 * 2, height=7)
   for (i in seq_along(dat))
     lines(1:S[i], as.numeric(freq[[i]]), col=col[i], lwd=2)
 dev.off()
+
+print('Exporting empirical data summaries, complete!')
+

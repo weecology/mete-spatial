@@ -43,6 +43,8 @@ def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
     else:
         return out
 
+print 'Comparing METE and empirical SADs, ...'
+
 site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
@@ -53,3 +55,5 @@ if len(sys.argv) > 1:
     site_names = [site_names[site_index]]
 
 map(lambda x: get_obs_pred_sad(x, to_file=True), site_names)
+
+print 'Comparing METE and empirical SADs, complete!'

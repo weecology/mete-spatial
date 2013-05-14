@@ -6,6 +6,8 @@
 
 setwd('~/maxent/spat')
 
+print('Filtering and cleaning empirical data, ...')
+
 dat = read.table('./data/raw_data/bci_census7.txt', sep='\t', header=TRUE)
 
 goodData = dat$Status=='alive' & !is.na(dat$DBH) & 
@@ -121,7 +123,7 @@ write.csv(ferp, file='./data/filtered_data/ferp_2007_filtered.csv', row.names=F)
 
 ##------------------------------------------------------------------------------
 
-## Purpose: to clearn the Luquillo forest dataset for analysis of 
+## Purpose: to clean the Luquillo forest dataset for analysis of 
 ## spatial biodiversity patterns, this survey is from 2006/2007
 ## Metadata: http://luq.lternet.edu/data/luqmetadata119
 ## see the following page for the status codes defined:
@@ -517,4 +519,5 @@ for (i in seq_along(dat_names)) {
                              yrs[i], '_filtered.csv', sep=''), row.names=FALSE)
 }
 
+print('Filtering and cleaning empirical data, complete!')
 

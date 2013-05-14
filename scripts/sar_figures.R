@@ -1,8 +1,10 @@
 setwd('~/maxent/spat')
 source('./scripts/spat_sim_vario_func.R')
 
+print('Generating SAR figures, ...')
+
 ## load data
-source('./scripts/spat_sar_load_and_avg_data.R')
+sar_res = read.csv('./sar/sar_residuals.csv')
 
 ## drop all rows in which density of indivdiuals is less than 2
 sar_res = sar_res[sar_res$indiv > 2, ]
@@ -15,20 +17,19 @@ pred_sar = data.frame(pred_sar, richness = sar_res$richness,
                       area = sar_res$area, site = sar_res$site,
                       hab = sar_res$hab)
 
-
-
-
 ## plot individual site relationships-------------------------------------------
 
 site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
 site_names = unlist(strsplit(site_names, split=', '))
 site_titles = sub('1', '', site_names)
-capwords <- function(s, strict = FALSE) {
-  cap <- function(s) paste(toupper(substring(s,1,1)),
-           {s <- substring(s,2); if(strict) tolower(s) else s},
-                           sep = "", collapse = " " )
+
+capwords = function(s, strict = FALSE) {
+  cap = function(s) paste(toupper(substring(s, 1, 1)),
+                          {s = substring(s, 2); if(strict) tolower(s) else s},
+                          sep = "", collapse = " " )
   sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
 }
+
 site_titles = capwords(site_titles)
 site_titles[1] = "BCI"
 site_titles[11] = "Bald Mtn."
@@ -39,9 +40,8 @@ site_titles[16] = "Cross Timbers"
 col = c('red', 'red', 'dodgerblue', 'dodgerblue')
 lty = c(1, 3, 1, 3)
 
-## mete 
+## arthimetic plots
 jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
-#pdf('./figs/mete_&_empir_sar.pdf', width=7 * 4, height=7 * 4)
   par(mfrow=c(4,4))
   ## log-log
   for (i in seq_along(site_names)) {
@@ -73,36 +73,36 @@ jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
   }
 dev.off()
 
+## log-log plots
 jpeg('./figs/mete_&_empir_sar_log2.jpeg', width=480 * 4, height=480 * 4, quality=100)
-#pdf('./figs/mete_&_empir_sar_log2.pdf', width=7 * 4, height=7 * 4)
-par(mfrow=c(4,4))
-## log2-log2
-for (i in seq_along(site_names)) {
-  true = as.character(pred_sar$site) == site_names[i]
-  xlim = log2(range(pred_sar$area[true], na.rm=T))
-  ylim = log2(range(pred_sar[true , 1:5], na.rm=T))
-  xlim = c(floor(xlim[1]), ceiling(xlim[2]))
-  ylim = c(floor(ylim[1]), ceiling(ylim[2]))
-  plot(log2(richness) ~ log2(area), data=pred_sar[true, ],
-       xlim=xlim, ylim=ylim, type='n',
-       xlab='', ylab='', frame.plot=F, axes=F)
-  addAxis(side=1, cex.axis=3, padj=.75)
-  addAxis(side=2, cex.axis=3, padj=0)
-  mtext(side=3, paste(site_titles[i], '-', unique(pred_sar$hab[true])),
-        cex=2)
-  mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
-  for (j in 1:4) 
-    lines(log2(pred_sar[true, j]) ~ log2(area), data=pred_sar[true, ], col=col[j],
-          lwd=4, lty=lty[j])
-  ## data
-  points(log2(richness) ~ log2(area), data = pred_sar[true, ], pch=1, cex=3,
-         lwd=2)
-  if(i == 1)
-    legend('bottomright', 
-           c('observed', 'recursive', 'recursive, observed SAD', 'non-recursive',
-             'non-recursive, observed SAD'), pch=c(1, rep(NA, 4)), col=c(1, col),
-           cex=2.5, bty='n', lwd=c(2, rep(4, 4)), lty=c(NA, lty))
-}
+  par(mfrow=c(4,4))
+  ## log2-log2
+  for (i in seq_along(site_names)) {
+    true = as.character(pred_sar$site) == site_names[i]
+    xlim = log2(range(pred_sar$area[true], na.rm=T))
+    ylim = log2(range(pred_sar[true , 1:5], na.rm=T))
+    xlim = c(floor(xlim[1]), ceiling(xlim[2]))
+    ylim = c(floor(ylim[1]), ceiling(ylim[2]))
+    plot(log2(richness) ~ log2(area), data=pred_sar[true, ],
+         xlim=xlim, ylim=ylim, type='n',
+         xlab='', ylab='', frame.plot=F, axes=F)
+    addAxis(side=1, cex.axis=3, padj=.75)
+    addAxis(side=2, cex.axis=3, padj=0)
+    mtext(side=3, paste(site_titles[i], '-', unique(pred_sar$hab[true])),
+          cex=2)
+    mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+    for (j in 1:4) 
+      lines(log2(pred_sar[true, j]) ~ log2(area), data=pred_sar[true, ], col=col[j],
+            lwd=4, lty=lty[j])
+    ## data
+    points(log2(richness) ~ log2(area), data = pred_sar[true, ], pch=1, cex=3,
+           lwd=2)
+    if(i == 1)
+      legend('bottomright', 
+             c('observed', 'recursive', 'recursive, observed SAD', 'non-recursive',
+               'non-recursive, observed SAD'), pch=c(1, rep(NA, 4)), col=c(1, col),
+             cex=2.5, bty='n', lwd=c(2, rep(4, 4)), lty=c(NA, lty))
+  }
 dev.off()
 
 
@@ -174,3 +174,6 @@ jpeg('./figs/cocoli_sherman_study_sites.jpeg', width=262 * 2 *2, height=480 * 2,
          'Sherman subplot 3'),  col=c('red','blue', 'green3'), pch=19,
          bty='n', cex=cex)
 dev.off()
+
+print('Generating SAR figures, complete!.')
+
