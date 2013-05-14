@@ -33,7 +33,7 @@ write.csv(dat, file='./data/filtered_data/bci_census7_filtered.csv', row.names=F
 setwd('~/maxent/spat')
 
 dat = read.table('./data/raw_data/cocoli.txt', header=TRUE)
-spNames = read.table('.data/raw_data/cocolisp.txt', header=TRUE)
+spNames = read.table('./data/raw_data/cocolisp.txt', header=TRUE)
 
 goodData = dat$dbh3 > 0 & dat$recr3 == 'A' & dat$spcode != '*'
 
