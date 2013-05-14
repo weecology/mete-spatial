@@ -11,6 +11,8 @@ import os
 
 import mete
 
+print 'Computing METE SAR, ...'
+
 site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
               'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
@@ -111,3 +113,5 @@ for shrt_name in site_names:
             datawriter.writerow(out[i, ])
     
         writer.close()
+
+print 'Computing METE SAR, complete!'
