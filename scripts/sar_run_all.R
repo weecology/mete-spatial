@@ -16,13 +16,16 @@ system('Rscript spat_download_empir_data.R')
 ## filter the empirical data 
 system('Rscript spat_empir_data_filtering.R')
 
-## calculate species-abundance distributions
+## calculate empirical SAD
 system('Rscript spat_empir_sad.R')
 
 ## summarize the empirical data
 system('Rscript spat_empir_data_summary.R')
 
 ## data analysis ---------------------------------------------------------
+
+## compare METE and empirical SAD
+system('python spat_obs_pred_sad.py')
 
 ## analyze empirical observed SAR (approx 3 min)
 system('Rscript spat_empir_sar.R')
