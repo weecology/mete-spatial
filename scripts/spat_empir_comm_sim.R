@@ -23,14 +23,14 @@ for (i in indices) {
     else
       abu_file = paste('../data/', names[i], '_sad.csv', sep='')
     if (server == 'unc')
-      system(paste('bsub -q week -M 8 -J' names[i], '-o'
+      system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python spat_community_generation.py',
                    S[i], N[i], 200, bisect[i], 'False', 'None',
                    names[i], sep=' '))
     else
-      system(paste('python spat_community_generation.py',
+      system(paste('nice python spat_community_generation.py',
                    S[i], N[i], 200, bisect[i], 'False', 'None',
-                   names[i], '>', log_file, '2>&1 &', sep=' '),
+                   names[i], '>', log_file, '2>&1', sep=' '),
              wait=FALSE)
   }
 }
