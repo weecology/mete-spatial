@@ -25,11 +25,11 @@ for (i in indices) {
     if (server == 'unc')
       system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python spat_community_generation.py',
-                   S[i], N[i], 200, bisect[i], 'False', 'None',
+                   S[i], N[i], 200, bisect[i], 'False', abu_file,
                    names[i], sep=' '))
     else
       system(paste('nice python spat_community_generation.py',
-                   S[i], N[i], 200, bisect[i], 'False', 'None',
+                   S[i], N[i], 200, bisect[i], 'False', abu_file,
                    names[i], '>', log_file, '2>&1', sep=' '),
              wait=FALSE)
   }
