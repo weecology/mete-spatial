@@ -65,7 +65,7 @@ fileName = paste('simulated_comms_', fileSuffix, '.txt', sep='')
 
 if (big)
   comms = read.big.matrix(file.path('./comms', fileName), header=TRUE, 
-                          type='integer', sep=',', descriptor = fileSuffix)
+                          type='short', sep=',', descriptor = fileSuffix)
 if (!big)
   comms = read.csv(file.path('./comms', fileName), header=T)
 
