@@ -33,7 +33,7 @@ capwords = function(s, strict = FALSE) {
 site_titles = capwords(site_titles)
 site_titles[1] = "BCI"
 site_titles[11] = "Bald Mtn."
-site_titles[14] = "FERP"
+site_titles[14] = "UCSC"
 site_titles[15] = "Serpentine"
 site_titles[16] = "Cross Timbers"
 
