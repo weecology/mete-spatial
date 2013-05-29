@@ -3,7 +3,7 @@
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
 grains = as.numeric(read.table('./data/grain_fine.txt'))

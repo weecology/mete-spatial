@@ -1,7 +1,7 @@
 ## METE analytical SAR predictions vs Empirical SARs
 
 setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## load data
 sar_res = read.csv('./sar/sar_residuals.csv')

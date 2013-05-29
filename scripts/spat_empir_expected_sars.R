@@ -1,6 +1,6 @@
 
 setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 print('Computing binomial expected SARs, ...')
 

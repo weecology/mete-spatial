@@ -1,5 +1,5 @@
 setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## Figure 2 - example Simulated DDR with simulation results---------------------
 #pdf('./figs/fig2_example_ddr_w_sim_results.pdf', width=7 * 3, height=7)

@@ -1,7 +1,7 @@
 options(scipen=10) 
 
 setwd('~/maxent/spat/')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 S = round(10^seq(log10(10), log10(100), length.out=20))
 N = round(10^seq(log10(120), log10(5e5), length.out=20))

@@ -1,5 +1,5 @@
 setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## read in empirical data---------------------------------
 fileNames = dir('./data')

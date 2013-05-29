@@ -5,7 +5,7 @@
 setwd('~/maxent/spat')
 
 library(vegan)
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)
 if (length(clArgs) > 1) {

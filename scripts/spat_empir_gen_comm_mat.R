@@ -4,7 +4,7 @@
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## read in data from the 2010 census (i.e. census 7)
 
@@ -36,7 +36,7 @@ write.csv(comms, file='./data/bci_comms.csv', row.names=FALSE)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## read in data from the 1998 census (i.e. census 3)
 
@@ -82,7 +82,7 @@ write.csv(comms2,file='./data/cocoli2_comms.csv',row.names=F)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## read in data from the 1999 census (i.e. census 3)
 
@@ -140,7 +140,7 @@ write.csv(comms3,file='./data/sherman3_comms.csv',row.names=F)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat = read.csv('./data/filtered_data/cross1998_filtered.csv')
 
@@ -166,7 +166,7 @@ write.csv(comms, file='./data/cross_comms.csv', row.names=FALSE)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat = read.csv('./data/filtered_data/ferp_2007_filtered.csv')
 
@@ -196,7 +196,7 @@ write.csv(comms, file='./data/ferp_comms.csv', row.names=FALSE)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat = read.csv('./data/filtered_data/oosting_trees_1990_filtered.csv')
 
@@ -222,7 +222,7 @@ write.csv(comms,file='./data/oosting_comms.csv',row.names=F)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat = read.csv('./data/filtered_data/luquillo_census4_filtered.csv')
 
@@ -252,7 +252,7 @@ write.csv(comms, file='./data/luquillo_comms.csv', row.names=FALSE)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat = read.csv('./data/raw_data/serpentine_data.csv')
 
@@ -283,7 +283,7 @@ write.csv(comms, file='./data/serp_comms.csv',row.names=FALSE)
 
 setwd('~/maxent/spat')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 dat_names = paste('m', c('04','07','12','13',91:94), sep='')
 plc_names = c('graveyard','landsend','rocky','bormann',
