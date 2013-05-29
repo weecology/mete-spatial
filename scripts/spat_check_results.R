@@ -24,7 +24,7 @@ load_list = function(filenames, R_obj=FALSE, obj_name=NULL) {
 ## bisected binary empirical results
 
 tmp = files[grep('_bisect_binary.Rdata', files)]
-tmp = tmp[grep('_C200_B13_', tmp, invert=TRUE)]
+tmp = tmp[grep('_C200_', tmp, invert=TRUE)]
 tmp_sites = as.character(sapply(tmp, function(x) strsplit(x, '_')[[1]][2]))
 sites[!sites %in% tmp_sites]
 
@@ -35,8 +35,6 @@ tmp = tmp[grep('_C200_', tmp, invert=TRUE)]
 tmp = tmp[grep('_uni_', tmp, invert=TRUE)]
 tmp_sites = as.character(sapply(tmp, function(x) strsplit(x, '_')[[1]][2]))
 sites[!sites %in% tmp_sites] 
-## sherman1, luquillo, ferp on killdevil
-## bigoak on zoe
 
 dat = load_list(tmp, TRUE, 'sorensen')
 for(i in seq_along(dat)) {
