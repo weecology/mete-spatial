@@ -137,6 +137,9 @@ dev.off()
 
 cocoli = read.csv('./data/filtered_data/cocoli_census3_filtered.csv')
 sherman = read.csv('./data/filtered_data/sherman_census3_filtered.csv')
+ucsc = read.csv('./data/filtered_data/ferp_2007_filtered.csv')
+luquillo = read.csv('./data/filtered_data/luquillo_census4_filtered.csv')
+
 
 ## split plot into two 200 x 100 m rectangles
 cocoli1 = cocoli[cocoli$y>=100,]
@@ -149,13 +152,19 @@ sherman3 = sherman[sherman$x < 140, ]  ## the 140 x 140 square
 
 cex = 2
 
-jpeg('./figs/cocoli_sherman_study_sites.jpeg', width=262 * 2 *2, height=480 * 2,
-     quality=100)
-  par(mfrow=c(1,2))
+jpeg('./figs/subplot_maps.jpeg',
+     width=480 * 2, height=480 * 2, quality=100)
+  par(mfrow=c(2,2))
   plot(cocoli1$x,cocoli1$y,col='red', pch='.', ylim=range(sherman$y),
        xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
        axes=F, frame.plot=T, cex=cex)
   points(cocoli2$x,cocoli2$y,col='blue',pch='.', cex=cex)
+  lines(c(0, 0), c(0, 300), lwd=2)
+  lines(c(0, 200), c(0, 0), lwd=2)
+  lines(c(200, 200), c(0, 100), lwd=2)
+  lines(c(0, 200), c(100, 100), lwd=2)
+  lines(c(100, 100), c(100, 300), lwd=2)
+  lines(c(0, 100), c(300, 300), lwd=2)
   axis(side=1, at = c(0, 100, 200))
   axis(side=2)
   mtext(side=3, 'Cocoli', cex=2.5)
@@ -166,13 +175,48 @@ jpeg('./figs/cocoli_sherman_study_sites.jpeg', width=262 * 2 *2, height=480 * 2,
        xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
        axes=F, frame.plot=T, cex=cex)
   points(sherman2$x,sherman2$y,col='blue',pch='.', cex=cex)
-  points(sherman3$x,sherman3$y,col='green3',pch='.', cex=cex)
+  points(sherman3$x,sherman3$y,col='grey',pch='.', cex=cex)
+  lines(c(140, 240), c(40, 40), lwd=2)
+  lines(c(140, 140), c(40, 440), lwd=2)
+  lines(c(140, 240), c(440, 440), lwd=2)
+  lines(c(240, 240), c(40, 440), lwd=2)
+  lines(c(140, 240), c(240, 240), lwd=2)
   axis(side=1, at = c(0, 100, 200))
   axis(side=2)
   mtext(side=3, 'Sherman', cex=2.5)
-  legend('topleft', c('Sherman subplot 1', 'Sherman subplot 2',
-         'Sherman subplot 3'),  col=c('red','blue', 'green3'), pch=19,
-         bty='n', cex=cex)
+  legend('topleft', c('Sherman subplot 1', 'Sherman subplot 2'),
+         col=c('red','blue'), pch=19, bty='n', cex=cex)
+  ##
+  trim = (320 - 250) / 2
+  domain = c(trim, 320 - trim, 0, 500) # spatial domain in meters defined here
+  true = luquillo$GX >= domain[1] & luquillo$GX < domain[2]
+  plot(luquillo$GX[!true], luquillo$GY[!true], col='grey', pch='.', xlab='X-coordinate',
+       ylab='Y-coordinate', xlim=range(luquillo$GX), ylim=range(luquillo$GY),
+       axes=F, frame.plot=T, cex=cex)
+  points(luquillo$GX[true], luquillo$GY[true], col='red', pch='.')
+  lines(c(trim, 320 - trim), c(0, 0), lwd=2)
+  lines(c(trim, trim), c(0, 500), lwd=2)
+  lines(c(trim, 320 - trim), c(500, 500), lwd=2)
+  lines(c(320 - trim, 320 - trim), c(0, 500), lwd=2)
+  axis(side=1, c(0, 100, 200, 300))
+  axis(side=2, c(0, 100, 200, 300, 400, 500))
+  mtext(side=3, 'Luquillo', cex=2.5)
+  ## 
+  trim = (200 - 150) / 2
+  domain = c(trim, 200 - trim, 0, 300) # spatial domain in meters defined here
+  true = ucsc$gx >= domain[1] & ucsc$gx < domain[2]
+  plot(ucsc$gx[!true], ucsc$gy[!true], col='grey', pch='.', xlab='X-coordinate',
+       ylab='Y-coordinate', xlim=range(ucsc$gx), ylim=range(ucsc$gy),
+       axes=F, frame.plot=T, cex=cex)
+  points(ucsc$gx[true], ucsc$gy[true], col='red', pch='.')
+  lines(c(trim, 200 - trim), c(0, 0), lwd=2)
+  lines(c(trim, trim), c(0, 300), lwd=2)
+  lines(c(trim, 200 - trim), c(300, 300), lwd=2)
+  lines(c(200 - trim, 200 - trim), c(0, 300), lwd=2)
+  axis(side=1, c(0, 100, 200))
+  axis(side=2, c(0, 100, 200, 300))
+  mtext(side=3, 'UCSC', cex=2.5)
+
 dev.off()
 
 print('Generating SAR figures, complete!.')
