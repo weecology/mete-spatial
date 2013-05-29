@@ -33,7 +33,7 @@ freqs = cnts/nrow(commMat)
 freqAvg = apply(freqs,1,mean)
 
 plot(n,out[1,],ylim=range(out,na.rm=TRUE),type='n',ylab='Probabiliy',
-     main=paste('No = ',no,', A = Ao/',Ao,sep=''))
+     main=paste('No = ',n0,', A = Ao/',A0,sep=''))
 for(i in 1:3)
   lines(n,out[i,],col=i,type='l',lwd=2)
 points(n,out[4,],col=4,pch=19,cex=1.5)
@@ -137,8 +137,8 @@ abu = matrix(rep(200, S), ncol=S)
 write.table(abu, file='../tst_abu.csv', sep=',',
             row.names=FALSE, col.names=FALSE)
 
-system('python ./spat_community_generation.py 20 100 500 7 False ../tst_abu.csv S20_N100 ')
-comms = read.csv('../comms/simulated_comms_S20_N100_empirSAD_C500_B7_grid.txt')
+system('python ./spat_community_generation.py 20 100 500 8 False ../tst_abu.csv S20_N100 ')
+comms = read.csv('../comms/simulated_comms_S20_N100_empirSAD_C500_B8_grid.txt')
 comms = as.matrix(comms)
 #comms[ , 5] = comms[ , 4]
 #comms = read.csv('../comms/simulated_comms_baldmnt_C200_B5_grid.txt')
@@ -178,25 +178,63 @@ comms = data.frame(comm = 1,
 comms = as.matrix(comms)
 1 - vario_bisect(comms[, -(1:3)], comms[,2:3], 4:5, 'bray')$var 
 
-
-system('python spat_heap_ddr.py 1 128 rect ../tst_abu.csv ../tst_heap_ddr.csv')
+system('python spat_heap_ddr.py 8 8 empirSAD ../tst_abu.csv ../tst_heap_ddr.csv')
 heap_ddr = read.csv('../tst_heap_ddr.csv')
 
-sim_ddr = matrix(NA, nrow=500, ncol=4)
+sim_ddr1 = matrix(NA, nrow=500, ncol=4)
 for(i in 1:500) {
   tmp_comm = comms[comms[,1] == i, ]
   v = vario_bisect(tmp_comm[ , -(1:3)] > 0, 
                    tmp_comm[ , 2:3],
                    distance.metric='bray')
-  sim_ddr [i, ] = v$var
+  sim_ddr1 [i, ] = v$vario$var
 }
-1 - apply(sim_ddr, 2, mean)
+1 - apply(sim_ddr1, 2, mean)
 heap_ddr
 
+pdf('../figs/heap_ddr_check_geo_dist_raw.pdf', width=7 *2 , height=7)
+  par(mfrow=c(1, 2))
+  plot(v$vario$dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
+       ylim=c(.2, .6), xlim=c(0.05, .8), col='red', xlab='Dist',ylab='Sor',
+       pch=19)
+  lines(heap_ddr$dist, heap_ddr$sor, col='blue', type='o', pch=19)
+  ##
+  plot(v$vario$dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
+       ylim=c(.2, .6), xlim=c(0.05, .8), col='red', xlab='Dist',ylab='Sor',
+       log='xy', pch=19)
+  lines(heap_ddr$dist, heap_ddr$sor, col='blue', type='o', pch=19)
+  legend('topright',c('simul','analy'), col=c('red','blue'),pch=19, lty=1,
+         bty='n')
+dev.off()
+
+
+vals = dist_bisect(8)
+gdist = dist(vals$crd)
+jdist = vals$dist
+H = as.vector(round(gdist))
+split(gdist, H)
+sapply(split(jdist, H), table)
+heap_sor = c((4 * heap_ddr$sor[1] + 
+              8 * heap_ddr$sor[2] +
+              4 * heap_ddr$sor[3])/16, 
+             heap_ddr$sor[3], heap_ddr$sor[3])
+Dist = sapply(split(gdist, H), mean)
+
+sim_sor2 = matrix(NA, nrow=500, ncol=21)
+for(i in 1:500) {
+  tmp_comm = comms[comms[,1] == i, ]
+  tmp_comm = tmp_comm[order(tmp_comm[,3], tmp_comm[,2]),]
+  sim_sor2[i,] = sapply(split(1-vegdist(tmp_comm[,-(1:3)], binary=T),
+                         H), mean, na.rm=T)
+}
+apply(sim_sor2, 2, mean)
+heap_sor
+
+  
 pdf('../figs/heap_ddr_check_geo_dist.pdf')
   par(mfrow=c(1,1))
-  plot(gdist, heap_ddr$sor, type='p', log='xy')
-  lines(gdist, sim_sor, type='o', col='red')
+  plot(heap_ddr$dist, heap_ddr$sor, type='p', log='xy')
+  lines(Dist, apply(sim_sor, 2, mean), type='o', col='red')
   legend('bottomright', c('analytical', 'simulated'), col=c('black', 'red'),
          lty=1, bty='n')
 dev.off()
@@ -243,6 +281,62 @@ abline(h=sim_sor[1])
 ## difference we expect but the bias appears to be larger than expected
 ## the difference between the analytical and simulated also slightly
 ## decreases as distance increases (i.e., j dec).
+
+setwd('~/maxent/spat')
+
+load('./sorensen/empirSorBin.Rdata')
+load('./sorensen/simEmpirSorAvg.Rdata')
+
+source('./scripts/spat_sim_vario_func.R')
+
+area = 76.56
+obs = empirSorBin$bormann[empirSorBin$bormann$Comm == area, ]
+pred = simSorBinAvg$bormann_empirSAD_C200_B12_grid[simSorBinAvg$bormann_empirSAD_C200_B12_grid$Comm == area, ]
+
+dat = read.csv('./sorensen/bormann_empirSAD_mete_sor.csv')
+dat_tmp = dat[dat$i == 8, ]
+sor_pred = mete_sor_transform(dat_tmp)
+
+nbreaks = read.csv('./data/nbreaks.csv')
+breaks = subset(nbreaks, comm == 'bormann' & grain == 3)$nbreaks + 1
+log=TRUE
+comms = read.csv('./data/bormann_comms.csv')
+comms = comms[comms$grain == area, ]
+Dist = dist(comms[ , 2:3] * sqrt(area))
+hmin = min(Dist)  ## potentially this should be set when breaks is NA as well
+maxDist = max(Dist)
+hmax = maxDist / 2
+H = Dist
+breaks = get_breaks(breaks, hmin, hmax, maxDist, log)
+
+for (i in 1:(length(breaks) - 1)) {
+  H[H >= breaks[i] & H < breaks[i + 1]] = breaks[i]
+}  
+H[H < hmin] = NA
+H[H > hmax] = NA
+H = as.vector(H)
+exp.split = split(sor_pred$sor, H)
+sor_pred_avg = sapply(exp.split, mean, na.rm=TRUE)
+dist_avg = sapply(split(Dist, H), mean, na.rm=TRUE)
+
+crd = dist_bisect(8, use_c=TRUE)$crd
+
+pdf('./figs/compare_mete_predictions.pdf', width=7*2, height=7)
+  par(mfrow=c(1,2))
+  plot(pred$Dist, pred$Avg, col='red', lwd=2, type='l',
+       ylim=c(.23, .5), xlab='Dist', ylab='Sor')
+  lines(dist_avg, sor_pred_avg, col='blue', lwd=2)
+  lines(dat_tmp$dist, dat_tmp$sor, col='green3', lwd=2)
+##
+  plot(pred$Dist, pred$Avg, col='red', lwd=2, type='l',
+       ylim=c(.23, .5), xlab='Dist', ylab='Sor', log='xy')
+  lines(dist_avg, sor_pred_avg, col='blue', lwd=2)
+  lines(dat_tmp$dist, dat_tmp$sor, col='green3', lwd=2)
+##
+  legend('topright', c('sim avg','analytical','analytical transformed'),
+         col=c('red','green3', 'blue'), lty=1, bty='n')
+dev.off()
+
 
 
 ### checking chi_heap calculation
