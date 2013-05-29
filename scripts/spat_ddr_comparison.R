@@ -1,25 +1,20 @@
 ## Purpose: to compare the fit of the simulated ddr to the empirical ddr
 
 setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 ## load the simulated and empirical DDR results---------------------------------
-load('./simulated_empirical_results.Rdata')
-load('./sorensen/empirSorBin.Rdata') 
-load('./sorensen/empirSorAbu.Rdata') 
-load('./varWithin/empirVarBin.Rdata')
-load('./varWithin/empirVarAbu.Rdata')
+load('./simulated_empirical_results_bisect.Rdata')
+load('./sorensen/empirSorBin_bisect.Rdata') 
+load('./sorensen/empirSorAbu_bisect.Rdata') 
 
 ## compute residuals between observed and expected-------------------------------
 resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
 resSorAbuLogSer = get_ddr_resid(empirSorAbu, simSorAbuLogSer)
-resVarAbuFixed = get_ddr_resid(empirVarAbu, simVarAbuFixed)
-resVarAbuLogSer = get_ddr_resid(empirVarAbu, simVarAbuLogSer)
 ##
 resSorBinFixed = get_ddr_resid(empirSorBin, simSorBinFixed)
 resSorBinLogSer = get_ddr_resid(empirSorBin, simSorBinLogSer)
-resVarBinFixed = get_ddr_resid(empirVarBin, simVarBinFixed)
-resVarBinLogSer = get_ddr_resid(empirVarBin, simVarBinLogSer)
+
 
 ## examine empirical fit for a single dataset------------------------------------
 tmp = empirSorAbu['bigoak']
@@ -156,7 +151,7 @@ abline(mod)
 summary(mod)
 
 ## residuals vs distance summarized per dataset via lowess lines
-pdf('./figs/sor_abu_fixed_residuals.pdf', width = 7 *2 , height=7)
+pdf('./figs/sor_abu_fixed_bisect_residuals.pdf', width = 7 *2 , height=7)
 ylims = c(-.05,.6) #c(-.05, .3)
 par(mfrow=c(1,2))
 for(k in 1:2){
@@ -191,7 +186,7 @@ mk_legend('center', hab, col=habcol, lty=1, lwd=7, cex=2, bty='n')
 dev.off()
 
 ## normalized residuals
-pdf('./figs/sor_abu_fixed_norm_residuals.pdf', width = 7 *2 , height=7)
+pdf('./figs/sor_abu_fixed_norm_bisect_residuals.pdf', width = 7 *2 , height=7)
 ylims = c(-.1, .8)
 par(mfrow=c(1,2))
 for(k in 1:2){
@@ -279,16 +274,6 @@ simStatsSorAbuFixedAvg = getStats(simSorAbuFixed, 'average')
 simStatsSorAbuLogSerMed = getStats(simSorAbuLogSer, 'median')
 simStatsSorAbuLogSerAvg = getStats(simSorAbuLogSer, 'average')
 
-##
-empirStatsVarAbuMed = getStats(empirVarAbu, 'median')
-empirStatsVarAbuAvg = getStats(empirVarAbu, 'average')
-
-simStatsVarAbuFixedMed = getStats(simVarAbuFixed, 'median')
-simStatsVarAbuFixedAvg = getStats(simVarAbuFixed, 'average')
-
-simStatsVarAbuLogSerMed = getStats(simVarAbuLogSer, 'median')
-simStatsVarAbuLogSerAvg = getStats(simVarAbuLogSer, 'average')
-
 ##-----------------------------------------------------------------------------
 
 empirStatsSorBinMed = getStats(empirSorBin, 'median')
@@ -299,16 +284,6 @@ simStatsSorBinFixedAvg = getStats(simSorBinFixed, 'average')
 
 simStatsSorBinLogSerMed = getStats(simSorBinLogSer, 'median')
 simStatsSorBinLogSerAvg = getStats(simSorBinLogSer, 'average')
-
-##
-empirStatsVarBinMed = getStats(empirVarBin, 'median')
-empirStatsVarBinAvg = getStats(empirVarBin, 'average')
-
-simStatsVarBinFixedMed = getStats(simVarBinFixed, 'median')
-simStatsVarBinFixedAvg = getStats(simVarBinFixed, 'average')
-
-simStatsVarBinLogSerMed = getStats(simVarBinLogSer, 'median')
-simStatsVarBinLogSerAvg = getStats(simVarBinLogSer, 'average')
 
 ## generate pdfs of r2 values, exponential or pwr function better
 pl_r2 = function() {
@@ -328,7 +303,7 @@ pl_r2 = function() {
 }
 
 stats = list(empirStatsSorAbuAvg,  simStatsSorAbuFixedAvg)
-pdf('./figs/exp_vs_pwr_avg_sor_abu_empirical.pdf', width= 7 * 2, height=7) 
+pdf('./figs/exp_vs_pwr_avg_sor_abu_empirical_bisect.pdf', width= 7 * 2, height=7) 
   pl_r2()
 dev.off()  
 ##----------------------------------------------------------------------------
@@ -378,7 +353,7 @@ pl_coef = function(stats1, stats2, stats3=NULL, xlim=NULL, ylim=NULL) {
   abline(a=0, b=1)
 }
 
-pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*2)
+pdf('./figs/coef_one_to_one_sor_abu_bin_avg_wtr_bisect.pdf', width=7 * 2, height=7*2)
   stats1 = empirStatsSorAbuAvg
   stats2 = simStatsSorAbuFixedAvg
   stats1 = stats1[-grep('serp', names(stats1))]
@@ -468,165 +443,4 @@ pdf('./figs/coef_one_to_one_var_abu_bin_avg_wtr.pdf', width=7 * 2, height=7*1.5)
   cof = 'b1'
   pl_coef(stats1, stats2)
 dev.off()  
-
-##-----------------------------------------------------------------------------
-## examine scale collapse from simualted parameter space with empirical data----
-ddr = read.csv('./sorensen/param_ddr_wtr_pwr_stats.csv')
-## read in stats for the empirical datasets
-load('./sorensen/empirSorAbu.Rdata')
-empirStatsSorAbuAvg = getStats(empirSorAbu, 'average')
-
-fileNames = dir('./sar')
-empirFiles = grep('empir_sar.csv', fileNames)
-empir = vector('list', length(empirFiles))
-names(empir) = sub('_empir_sar.csv', '', fileNames[empirFiles])
-for (i in seq_along(empirFiles)) {
-  empir[[i]] = read.csv(paste('./sar/', fileNames[empirFiles[i]], sep=''))
-  ## add rounded areas for lookup matching purposes
-  empir[[i]]$area_r = round(empir[[i]]$area, 2)
-}
-
-## convert to flat file
-stats = empirStatsSorAbuAvg
-mod = 'pwr'
-meth = 'wtr'
-rm(dd_stats)
-for (i in seq_along(stats)) {
-  site = names(stats)[i]
-  index = match(site, names(empir))
-  grains = as.numeric(dimnames(stats[[i]])[[4]])
-  ## get areas unrounded
-  areas = empir[[index]]$area[ empir[[index]]$area_r %in% grains]
-  S0 = max(empir[[index]]$richness)
-  N0 = max(empir[[index]]$indiv)
-  A0 = max(empir[[index]]$area)
-  for (g in seq_along(grains)) {
-    empir_tmp = empir[[index]][empir[[index]]$area_r == grains[g], ]
-    b0 = stats[[i]][mod, 'b0', meth, g]
-    b1 = stats[[i]][mod, 'b1', meth, g]
-    navg = empir_tmp$indiv
-    savg = empir_tmp$richness
-    A = areas[g]
-    ratio_b0 = log(N0 / S0) / log(navg / savg)
-    ratio_b1 = log(N0 / S0) / log(navg / savg) / log(A0 / A)
-    if (exists('dd_stats'))
-      dd_stats = rbind(dd_stats, 
-                       data.frame(site, area=grains[g], S, N, savg, navg, b0, b1, ratio_b0, ratio_b1))
-    else
-      dd_stats = data.frame(site, area=grains[g], S, N, savg, navg, b0, b1, ratio_b0, ratio_b1)
-  }
-}
-
-## bring in scale collapse information from the parameter space analysis
-
-sites = unique(dd_stats$site)
-
-## set up graphic parameters 
-shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
-habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
-hab = c('tropical', 'oak-hickory', 'pine', 'oak savanna', 'mixed evergreen',
-        'grassland')
-habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
-        "#FF8000")
-
-#pdf('./figs/mete_ddr_scale_collapse_with_empir_data.pdf', width= 7 * 2, height=7 * 1)
-#windows(width = 7 * 2, height=7 * 1)
-
-ddr$ratio_b0 = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg)
-ddr$ratio_b1 = log(ddr$N / ddr$S) / log(ddr$ind.avg / ddr$sr.avg) / log(4096 / ddr$grains)
-
-par(mfrow=c(1,2))
-  col = colorRampPalette(c('dodgerblue', 'red'))(5)
-  plot(10^b0 ~ ratio_b0 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, log='', ylim=c(0, 2))
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S)))), padj=2.25)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) { 
-    tmp = subset(ddr, grains == grains[g])
-    points(tmp$ratio_b0, 10^tmp$b0, col='grey', lwd=1, pch=19)
-  }  
-  for (i in seq_along(sites)) {
-    habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    points(10^b0 ~ ratio_b0, data=dd_stats, subset= site == sites[i] & navg >= 20, 
-           col=habcol[habindex], lwd=2, lty=2)
-  }
-##
-  plot(b1 ~ ratio_b1 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, ylim=c(-.7, .1), log='')
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S))) / log(italic(A[0])/italic(A))), padj=2.25)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) {
-    tmp = subset(ddr, grains == grains[g])
-    points(tmp$ratio_b1, tmp$b1, col='grey', lwd=1, pch=19)
-#    lines(lowess(tmp$ratio_b1, tmp$b1), col=col[g], lwd=4)
-  }  
-  for (i in seq_along(sites)) {
-    habindex = match(habitat[match(sites[i], shrtnm)], hab)
-    points(b1 ~ ratio_b1, data=dd_stats, subset= site == sites[i] & navg >= 20, 
-           col=habcol[habindex], lwd=2, lty=2)
-  }
-  legend('topright', c('METE Simulated', hab), cex=1.5,
-         col=c('grey', habcol), lty=NA, lwd=3, pch=c(19, rep(1,5)), bty='n')
-
-## Examine both possible ways of scaling the x-axis for the collapse-------------
-
-pdf('./figs/mete_ddr_scale_collapse_both_scalings.pdf',
-    width= 7 * 2, height=7 * 2)
-
-par(mfrow=c(2,2))
-  col = colorRampPalette(c('dodgerblue', 'red'))(5)
-  plot(10^b0 ~ ratio_b0 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=T, axes=F, log='', ylim=c(0, 1))
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S)))),
-          padj=1.75)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) { 
-    tmp = subset(ddr, grains == grains[g])
-    lines(lowess(tmp$ratio_b0, 10^tmp$b0), col=col[g], lwd=2)
-  }  
-##
-  plot(b1 ~ ratio_b0 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, ylim=c(-.7, .1), log='')
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S)))),
-          padj=1.75)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) {
-    tmp = subset(ddr, grains == grains[g])
-    lines(lowess(tmp$ratio_b0, tmp$b1), col=col[g], lwd=2)
-  }  
-  legend('topright', legend=c('Grains',  unique(ddr$grains)), cex=2,
-         col=c(NA, col), lwd=c(NA, rep(4, 5)), bty='n')
-####
-  plot(10^b0 ~ ratio_b1 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=F, axes=F, log='', ylim=c(0, 1))
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S))) / log(italic(A[0])/italic(A))),
-          padj=1.75)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) { 
-    tmp = subset(ddr, grains == grains[g])
-    lines(lowess(tmp$ratio_b1, 10^tmp$b0), col=col[g], lwd=2)
-  }  
-##
-  plot(b1 ~ ratio_b1 , data=ddr, xlab='', ylab='', type='n',
-       frame.plot=T, axes=F, ylim=c(-.7, .1), log='')
-  addAxis1()
-  addAxis2()
-  addxlab(expression(log(italic(N)[0]/italic(S)[0]) / log(bar(italic(N))/bar(italic(S))) / log(italic(A[0])/italic(A))),
-          padj=1.75)
-  addylab('Decay Rate')
-  for (g in seq_along(grains)) {
-    tmp = subset(ddr, grains == grains[g])
-    lines(lowess(tmp$ratio_b1, tmp$b1), col=col[g], lwd=2)
-  }  
-dev.off()
 
