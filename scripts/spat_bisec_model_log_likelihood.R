@@ -3,13 +3,13 @@ setwd('/home/danmcglinn/maxent/spat')
 source('spat_analytical_prob_funcs.R')
 
 
-piHEAP(5,1,5,4)
+heap_prob(5,1,5,4)
 (1/(5+1))^2
 
-piHEAP(4,1,5,4)
+heap_prob(4,1,5,4)
 (1/(5+1))*(1/(5+1))+(1/(5+1)*(1/(4+1)))
 
-piHEAP(3,1,5,4)
+heap_prob(3,1,5,4)
 (1/(5+1))*(1/(5+1))+(1/(5+1)*(1/(4+1))) + (1/(5+1)*(1/(3+1)))
 
 
@@ -22,7 +22,7 @@ factHash = hash(keys = logFactorialTab[,1], values = logFactorialTab[,2])
 
 
 serp = read.csv('./data/serp_comms.csv')
-dat = as.matrix(serp[serp$grain==16,-(1:3)])
+dat = as.matrix(serp[serp$grain==.25,-(1:3)])
 colSums(dat)
 
 no = 2^(1:9) 
