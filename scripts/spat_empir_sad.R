@@ -5,10 +5,7 @@ setwd('~/maxent/spat')
 print('Computing empirical SAD, ...')
 
 ## read in community matrix files
-shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2',
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-              'bigoak')
+shrtnames = as.character(as.matrix(read.table('./data/shrtnames.txt')))
 
 comms = vector("list", length=length(shrtnames))
 names(comms) = shrtnames

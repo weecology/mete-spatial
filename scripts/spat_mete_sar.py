@@ -13,16 +13,20 @@ import mete
 
 print 'Computing METE SAR, ...'
 
-site_names = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-              'bigoak']
+datafile = open('../data/shrtnames.txt', 'r')
+datareader = csv.reader(datafile)
+shrtnames = []
+for row in datareader:
+    shrtnames.append(row)
+
+shrtnames = shrtnames[0][0].split()
 
 if len(sys.argv) > 1:
     site_index = int(sys.argv[1])
-    site_names = [site_names[site_index]]
+    shrtnames = [shrtnames[site_index]]
 
-for shrt_name in site_names:
+
+for shrt_name in shrtnames:
     for sadType in ['meteSAD', 'empirSAD']:
         datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
         datareader = csv.reader(datafile)

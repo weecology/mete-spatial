@@ -4,10 +4,7 @@ source('./scripts/spat_functions.R')
 
 print('Computing binomial expected SARs, ...')
 
-shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
-              'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-              'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-              'bigoak')
+shrtnames = as.character(as.matrix(read.table('./data/shrtnames.txt')))
 
 dat = vector("list", length=length(shrtnames))
 names(dat) = shrtnames
@@ -15,7 +12,6 @@ for (i in seq_along(dat))
   dat[[i]] = read.csv(paste('./data/', shrtnames[i], '_sad.csv', sep=''),
                       header=FALSE)
 
-shrtnm = read.table('./data/shrtnames.txt', colClasses='character')
 bisect = read.table('./data/bisect_fine.txt')
 grain_fine = read.table('./data/grain_fine.txt')
 S0 = sapply(dat, length)
@@ -23,9 +19,8 @@ N0 = sapply(dat, sum)
 grains = vector("list", length=length(shrtnames))
 names(grains) = shrtnames
 for (i in seq_along(grains)) {
-  index = match(names(dat[i]), shrtnm)
-  B = as.numeric(bisect[index])
-  Amin = as.numeric(grain_fine[index])
+  B = as.numeric(bisect)[i]
+  Amin = as.numeric(grain_fine)[i]
   grains[[i]] = 2^(0:B) * Amin
 }
 
