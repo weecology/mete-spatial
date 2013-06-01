@@ -31,11 +31,11 @@ capwords = function(s, strict = FALSE) {
 }
 
 site_titles = capwords(site_titles)
-site_titles[1] = "BCI"
-site_titles[11] = "Bald Mtn."
-site_titles[14] = "UCSC"
-site_titles[15] = "Serpentine"
-site_titles[16] = "Cross Timbers"
+#site_titles[1] = "BCI"
+#site_titles[11] = "Bald Mtn."
+#site_titles[14] = "UCSC"
+#site_titles[15] = "Serpentine"
+#site_titles[16] = "Cross Timbers"
 
 col = c('red', 'red', 'dodgerblue', 'dodgerblue')
 lty = c(1, 3, 1, 3)
@@ -134,26 +134,27 @@ jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
 dev.off()
 
 ## supplemental cocoli and sherman study site figure ---------------------------
-
-cocoli = read.csv('./data/filtered_data/cocoli_census3_filtered.csv')
-sherman = read.csv('./data/filtered_data/sherman_census3_filtered.csv')
-ucsc = read.csv('./data/filtered_data/ferp_2007_filtered.csv')
-luquillo = read.csv('./data/filtered_data/luquillo_census4_filtered.csv')
-
-
-## split plot into two 200 x 100 m rectangles
-cocoli1 = cocoli[cocoli$y>=100,]
-cocoli2 = cocoli[cocoli$y<100,]
-
-## split plot into three quadrats (two 200 x 100 m rectangles and one 140 x 140m)
-sherman1 = sherman[sherman$x >= 140 & sherman$y >= 240, ]  ## one of the 200 x 100 m rectangles
-sherman2 = sherman[sherman$x >= 140 & sherman$y < 240, ] ## the other 200 x 100 m rectangle
-sherman3 = sherman[sherman$x < 140, ]  ## the 140 x 140 square
-
-cex = 2
-
-jpeg('./figs/subplot_maps.jpeg',
-     width=480 * 2, height=480 * 2, quality=100)
+mk_sup_figs = FALSE
+if (mk_sup_figs) {
+  cocoli = read.csv('./data/filtered_data/cocoli_census3_filtered.csv')
+  sherman = read.csv('./data/filtered_data/sherman_census3_filtered.csv')
+  ucsc = read.csv('./data/filtered_data/ferp_2007_filtered.csv')
+  luquillo = read.csv('./data/filtered_data/luquillo_census4_filtered.csv')
+  
+  
+  ## split plot into two 200 x 100 m rectangles
+  cocoli1 = cocoli[cocoli$y>=100,]
+  cocoli2 = cocoli[cocoli$y<100,]
+  
+  ## split plot into three quadrats (two 200 x 100 m rectangles and one 140 x 140m)
+  sherman1 = sherman[sherman$x >= 140 & sherman$y >= 240, ]  ## one of the 200 x 100 m rectangles
+  sherman2 = sherman[sherman$x >= 140 & sherman$y < 240, ] ## the other 200 x 100 m rectangle
+  sherman3 = sherman[sherman$x < 140, ]  ## the 140 x 140 square
+  
+  cex = 2
+  
+  jpeg('./figs/subplot_maps.jpeg',
+       width=480 * 2, height=480 * 2, quality=100)
   par(mfrow=c(2,2))
   plot(cocoli1$x,cocoli1$y,col='red', pch='.', ylim=range(sherman$y),
        xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
@@ -216,8 +217,9 @@ jpeg('./figs/subplot_maps.jpeg',
   axis(side=1, c(0, 100, 200))
   axis(side=2, c(0, 100, 200, 300))
   mtext(side=3, 'UCSC', cex=2.5)
-
-dev.off()
+  
+  dev.off()
+}
 
 print('Generating SAR figures, complete!.')
 
