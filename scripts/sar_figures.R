@@ -1,5 +1,8 @@
 setwd('~/maxent/spat')
+
 source('./scripts/spat_functions.R')
+
+dir.create('./figs')
 
 print('Generating SAR figures, ...')
 
@@ -9,7 +12,7 @@ sar_res = read.csv('./sar/sar_residuals.csv')
 ## drop all rows in which density of indivdiuals is less than 2
 sar_res = sar_res[sar_res$indiv > 2, ]
 
-indices = c(4:5, 8:9)
+indices = c(3:4, 6:7)
 
 pred_sar = sar_res$richness - sar_res[ , indices]
 pred_sar = pred_sar[ , c(1, 3, 2, 4)]
@@ -19,8 +22,9 @@ pred_sar = data.frame(pred_sar, richness = sar_res$richness,
 
 ## plot individual site relationships-------------------------------------------
 
-site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
-site_names = unlist(strsplit(site_names, split=', '))
+site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
+#site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
+#site_names = unlist(strsplit(site_names, split=', '))
 site_titles = sub('1', '', site_names)
 
 capwords = function(s, strict = FALSE) {
@@ -48,15 +52,11 @@ jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
     true = as.character(pred_sar$site) == site_names[i]
     xlim = range(pred_sar$area[true], na.rm=T)
     ylim = range(pred_sar[true , 1:5], na.rm=T)
-    xlim = 2^c(floor(log2(xlim[1])), ceiling(log2(xlim[2])))
-    ylim = 2^c(floor(log2(ylim[1])), ceiling(log2(ylim[2])))
     plot(richness ~ area, data=pred_sar[true, ],
-         xlim=xlim, ylim=ylim, log='xy', type='n',
+         xlim=xlim, ylim=ylim, log='', type='n',
          xlab='', ylab='', frame.plot=F, axes=F)
-    xticks = 2^seq(log2(xlim[1]), log2(xlim[2]), 2)
-    yticks = 2^seq(log2(ylim[1]), log2(ylim[2]), 2)
-    addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=xticks)
-    addAxis(side=2, cex.axis=3, padj=0, at=xticks, lab=xticks)
+    addAxis(side=1, cex.axis=3, padj=.75)
+    addAxis(side=2, cex.axis=3, padj=0)
     mtext(side=3, paste(site_titles[i], '-', unique(pred_sar$hab[true])),
           cex=2)
     mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
