@@ -15,7 +15,7 @@ get_dependencies = function(pkgs, ...) {
 
 get_dependencies(c('RCurl', 'vegan'))
 
-setwd('./scripts')
+setwd('~/maxent/spat/scripts')
 
 ## download and prepare data ---------------------------------------------
 ## requires R package: RCurl
