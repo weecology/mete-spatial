@@ -4,7 +4,7 @@ print('Finding and exporting site names, ...')
 
 file_names = dir('./data/raw_data/')
 
-raw_names = c("FERP_CTFS_2007_data.txt", "species.csv",
+raw_names = c("FERP07data.csv",          "species.csv",
               "LFDP_Census4-Part1.csv",  "LFDP_Census4-Part2.csv",
               "LFDP_spp.txt",            "Oosting_Trees_1998.txt",
               "bci_census7.txt",         "cocoli.txt",

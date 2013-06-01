@@ -103,25 +103,11 @@ if ('cross' %in% shrtnames) {
 ## Metadata: http://ferp.ucsc.edu/ferp/about/using/
 
 if ('ucsc' %in% shrtnames) {
-  dat= read.csv('./data/raw_data/FERP_CTFS_2007_data.txt')
+  dat = read.csv('./data/raw_data/FERP07data.csv')
   
-  ## drop dead stems
-  ## drop secondary stem data
-  ## drop records without a DBH
-  ## drop records without spatial coordinates
-  
-  goodData = dat$Status == 'alive' &
-             dat$Stem == 'main' &
-             !is.na(dat$DBH) &
-             !is.na(dat$gx) &
-             !is.na(dat$gy) 
-  
-  ucsc = dat[goodData, ]
-  
-  ## drop records that are less than zero
-  ucsc = ucsc[ucsc$gx > 0 & ucsc$gy > 0, ]
-  
-  write.csv(ucsc, file='./data/filtered_data/ucsc_2007_filtered.csv', row.names=F)
+  dat = dat[ , c('code', 'east', 'north')]
+  ## this file was already filtered by the data owner
+  write.csv(dat, file='./data/filtered_data/ucsc_2007_filtered.csv', row.names=F)
 }  
 
 ##------------------------------------------------------------------------------

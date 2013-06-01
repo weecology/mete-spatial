@@ -167,12 +167,12 @@ if ('cross' %in% shrtnames) {
 if ('ucsc' %in% shrtnames) {
   dat = read.csv('./data/filtered_data/ucsc_2007_filtered.csv')
   
-  uniSpeciesNames = as.character(sort(unique(dat$Latin)))
-  dat$spnum = match(dat$Latin, uniSpeciesNames)
+  uniSpeciesNames = as.character(sort(unique(dat$code)))
+  dat$spnum = match(dat$code, uniSpeciesNames)
   S = max(dat$spnum) 
   
-  range(dat$gx) ## max 200
-  range(dat$gy) ## max 300
+  range(dat$east) ## max 200
+  range(dat$north) ## max 300
   ## change into a single 150 x 300 quadrat
   trim = (200 - 150) / 2
   
@@ -182,7 +182,7 @@ if ('ucsc' %in% shrtnames) {
   
   ## generate a site x species matrix for each spatial scale
   
-  comms = make_comm_matrix(dat$spnum, S, cbind(dat$gx, dat$gy), n_quadrats, domain)
+  comms = make_comm_matrix(dat$spnum, S, cbind(dat$east, dat$north), n_quadrats, domain)
   
   write.csv(comms, file='./data/ucsc_comms.csv', row.names=FALSE)
 }

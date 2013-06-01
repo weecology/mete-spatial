@@ -13,7 +13,7 @@ get_dependencies = function(pkgs, ...) {
   }
 } 
 
-get_dependencies(c('RCurl', 'vegan'))
+get_dependencies('RCurl')
 
 setwd('~/maxent/spat/scripts')
 
