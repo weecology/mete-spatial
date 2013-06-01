@@ -55,3 +55,5 @@ system('Rscript spat_sar_load_and_avg_data.R')
 
 system('Rscript sar_figures.R')
 
+system('python spat_plot_obs_pred_sad.py')
+

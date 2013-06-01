@@ -2,15 +2,18 @@ from working_functions import *
 
 print 'Plotting obs-pred plot for SAD, ...'
 
-datasets = ['bci','cocoli1','cocoli2','cross','sherman1','sherman2',
-            'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
-            'landsend', 'rocky', 'bormann', 'woodbridge', 'baldmnt', 'bryan',
-            'bigoak']
+datafile = open('../data/shrtnames.txt', 'r')
+datareader = csv.reader(datafile)
+shrtnames = []
+for row in datareader:
+    shrtnames.append(row)
 
-plot_obs_pred_sad(datasets, data_dir='../sad/',
+shrtnames = shrtnames[0][0].split()
+
+plot_obs_pred_sad(shrtnames, data_dir='../sad/',
                   dest_dir='../figs/sad_figs/')
 
-for shrt_name in datasets:
+for shrt_name in shrtnames:
     plot_obs_pred_sad([shrt_name], data_dir='../sad/', 
                       dest_dir='../figs/sad_figs/' + shrt_name + '_')
     
