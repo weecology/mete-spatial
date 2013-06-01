@@ -1,10 +1,19 @@
+#!/usr/bin/Rscript
 
-setwd('~/maxent/spat')
+get_dependencies = function(pkgs, ...) {
+  ## arguments
+  ## pkgs : a character vector of the names of the packages to check for
+  ## ... : other optiomal arguments to supply to install.packages()
+  local_pkgs = installed.packages()[ , 1]
+  for (p in pkgs) {
+    if (is.element(p, local_pkgs)) 
+      print(paste(p, 'already installed'))
+    else
+      install.packages(p, ...)
+  }
+} 
 
-install.packages(c('RCurl', 'vegan'))
-
-## ToDo: make it so that the sitenames are supplied once and 
-## not within each individual script
+get_dependencies(c('RCurl', 'vegan'))
 
 setwd('./scripts')
 
@@ -44,5 +53,5 @@ system('Rscript spat_empir_expected_sars.R')
 ## aggregated results and generate figures ------------------------------
 system('Rscript spat_sar_load_and_avg_data.R')
 
-system('Rscript sar_figures_generic.R')
+system('Rscript sar_figures.R')
 
