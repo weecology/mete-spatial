@@ -99,17 +99,18 @@ jpeg('./figs/mete_&_empir_sar_log2.jpeg', width=480 * 4, height=480 * 4, quality
            lwd=2)
     if(i == 1)
       legend('bottomright', 
-             c('observed', 'recursive', 'recursive, observed SAD', 'non-recursive',
-               'non-recursive, observed SAD'), pch=c(1, rep(NA, 4)), col=c(1, col),
-             cex=2.5, bty='n', lwd=c(2, rep(4, 4)), lty=c(NA, lty))
+             c('observed', 'recursive, METE SAD', 'recursive, observed SAD',
+               'non-recursive, METE SAD', 'non-recursive, observed SAD'),
+             pch=c(1, rep(NA, 4)), col=c(1, col), cex=2.5, bty='n',
+             lwd=c(2, rep(4, 4)), lty=c(NA, lty))
   }
 dev.off()
 
 
 ## plot one-to-one curves-------------------------------------------------------
 
-titles = c('recursive', 'recursive, observed SAD', 'non-recursive',
-           'non-recursive, observed SAD')
+titles = c('recursive, METE SAD', 'recursive, observed SAD',
+           'non-recursive, METE SAD', 'non-recursive, observed SAD')
 
 jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
      width = 480 * 2, height= 480 * 2, quality = 100)
