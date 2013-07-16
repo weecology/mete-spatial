@@ -6,6 +6,50 @@ dir.create('./figs')
 
 print('Generating SAR figures, ...')
 
+## plot conceptual diagram -----------------------------------------------------
+
+S = 10
+N = 200
+
+system(paste('python ./scripts/spat_sar_demo.py', S, N))
+
+sads = read.csv('./demo/abu_sar_demo.txt')
+sars = read.csv('./demo/rich_sar_demo.txt')
+
+# 
+jpeg('./figs/sad_conceptual.jpeg', width=480 * 2, height=480 * 2, quality=100)
+  par(mfrow=c(1,1))
+  plot(sads[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=1.25, lwd=2, axes=F)
+  lines(sads[ , 2], lwd=2)
+  addAxis(1)
+  addAxis(2)
+dev.off()
+
+A = c(.25, .5, 1)
+
+jpeg('./figs/sar_conceptual.jpeg', width=480 * 4, height=480 * 4, quality=100)
+#
+par(mfrow=c(1,2))
+plot(A, sars[ , 1], pch=1, cex=1.75, lwd=2, xlab='', ylab='', frame.plot=F,
+     axes=F, log='xy', ylim=range(sars))
+points(A, sars[ , 2], pch=19, cex=1.25, lwd=2)
+addAxis(1, at=c(0.25, 0.5, 1), cex.axis=1.25)
+addAxis(2, cex.axis=1.25)
+mtext(side=1, 'log Area', padj=2.5, cex=1.5)
+mtext(side=2, 'log Richness', padj=-2.5, cex=1.5)
+#
+plot(A, sars[ , 3], type='l', lty=1, cex=1.25, lwd=2, xlab='', ylab='', frame.plot=F,
+     axes=F, log='xy', ylim=range(sars))
+lines(A, sars[ , 4], lty=2, cex=1.25, lwd=2)
+addAxis(1, at=c(0.25, 0.5, 1), cex.axis=1.25)
+addAxis(2, cex.axis=1.25)
+mtext(side=1, 'log Area', padj=2.5, cex=1.5)
+mtext(side=2, 'log Richness', padj=-2.5, cex=1.5)
+#
+dev.off()
+
+
+## plot individual site relationships-------------------------------------------
 ## load data
 sar_res = read.csv('./sar/sar_residuals.csv')
 
@@ -19,8 +63,6 @@ pred_sar = pred_sar[ , c(1, 3, 2, 4)]
 pred_sar = data.frame(pred_sar, richness = sar_res$richness, 
                       area = sar_res$area, site = sar_res$site,
                       hab = sar_res$hab)
-
-## plot individual site relationships-------------------------------------------
 
 site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
 #site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
