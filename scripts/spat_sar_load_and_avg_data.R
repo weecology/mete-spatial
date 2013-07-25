@@ -36,7 +36,7 @@ for (i in seq_along(meteEmpirSADFiles)) {
 load('./sar/expected_empir_sars.Rdata')
 
 sites = names(empir)
-if (all(as.vector(sapply(c('sherman', 'cocoli'), grepl, sites)))) {
+if (any(as.vector(sapply(c('sherman', 'cocoli'), grepl, sites)))) {
   ## average cocoli and sherman plots
   sherman = c('sherman1', 'sherman2')
   cocoli = c('cocoli1', 'cocoli2')
@@ -52,13 +52,13 @@ if (all(as.vector(sapply(c('sherman', 'cocoli'), grepl, sites)))) {
   meteEmpirSAD = avg_site_results(meteEmpirSAD, cocoli)
   meteEmpirSAD = meteEmpirSAD[-match('sherman3', names(meteEmpirSAD))]
   
-  meteAvgLogSer = avg_site_results(meteAvgLogSer, sherman)
-  meteAvgLogSer = avg_site_results(meteAvgLogSer, cocoli)
-  meteAvgLogSer = meteAvgLogSer[-match('sherman3', names(meteAvgLogSer))]
+#  meteAvgLogSer = avg_site_results(meteAvgLogSer, sherman)
+#  meteAvgLogSer = avg_site_results(meteAvgLogSer, cocoli)
+#  meteAvgLogSer = meteAvgLogSer[-match('sherman3', names(meteAvgLogSer))]
   
-  meteAvgEmpirSAD = avg_site_results(meteAvgEmpirSAD, sherman)
-  meteAvgEmpirSAD = avg_site_results(meteAvgEmpirSAD, cocoli)
-  meteAvgEmpirSAD = meteAvgEmpirSAD[-match('sherman3', names(meteAvgEmpirSAD))]
+#  meteAvgEmpirSAD = avg_site_results(meteAvgEmpirSAD, sherman)
+#  meteAvgEmpirSAD = avg_site_results(meteAvgEmpirSAD, cocoli)
+#  meteAvgEmpirSAD = meteAvgEmpirSAD[-match('sherman3', names(meteAvgEmpirSAD))]
   
   srExp = avg_site_results(srExp, sherman)
   srExp = avg_site_results(srExp, cocoli)
