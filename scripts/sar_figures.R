@@ -24,14 +24,14 @@ sads2 = read.csv('./demo/abu_sar_demo.txt')
 
 A = c(.25, .5, 1)
 
-sads[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
+sads1[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
 
 #
 jpeg('./figs/sad_obs_ex.jpeg', width=480, 480, quality=100)
-  plot(sads[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+  plot(sads1[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
        ylim=range(sads), log='')
-  addAxis(1, at=c(1, S), label=c('',''), cex.axis=3, padj=1)
-  addAxis(2, at=range(sads), labels=F)
+  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads1), labels=F)
 dev.off()
 
 jpeg('./figs/sad_pred_ex1.jpeg', width=480, 480, quality=100)
@@ -64,9 +64,9 @@ pred_sar = data.frame(pred_sar, richness = sar_res$richness,
                       area = sar_res$area, site = sar_res$site,
                       hab = sar_res$hab)
 
-site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
-#site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
-#site_names = unlist(strsplit(site_names, split=', '))
+#site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
+site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
+site_names = unlist(strsplit(site_names, split=', '))
 site_titles = sub('1', '', site_names)
 
 capwords = function(s, strict = FALSE) {
