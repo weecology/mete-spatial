@@ -6,50 +6,50 @@ dir.create('./figs')
 
 print('Generating SAR figures, ...')
 
-## plot conceptual diagram -----------------------------------------------------
+## conceptual SADs -------------------------------------------------------------
 
 S = 10
-N = 200
+N = 1000
 
-system(paste('python ./scripts/spat_sar_demo.py', S, N))
+setwd('./scripts')
+system(paste('python spat_sar_demo.py', S, N))
+setwd('..')
 
-sads = read.csv('./demo/abu_sar_demo.txt')
-sars = read.csv('./demo/rich_sar_demo.txt')
+sads1 = read.csv('./demo/abu_sar_demo.txt')
 
-# 
-jpeg('./figs/sad_conceptual.jpeg', width=480 * 2, height=480 * 2, quality=100)
-  par(mfrow=c(1,1))
-  plot(sads[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=1.25, lwd=2, axes=F)
-  lines(sads[ , 2], lwd=2)
-  addAxis(1)
-  addAxis(2)
-dev.off()
+S = 7
+N = 250
+
+sads2 = read.csv('./demo/abu_sar_demo.txt')
 
 A = c(.25, .5, 1)
 
-jpeg('./figs/sar_conceptual.jpeg', width=480 * 4, height=480 * 4, quality=100)
+sads[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
+
 #
-par(mfrow=c(1,2))
-plot(A, sars[ , 1], pch=1, cex=1.75, lwd=2, xlab='', ylab='', frame.plot=F,
-     axes=F, log='xy', ylim=range(sars))
-points(A, sars[ , 2], pch=19, cex=1.25, lwd=2)
-addAxis(1, at=c(0.25, 0.5, 1), cex.axis=1.25)
-addAxis(2, cex.axis=1.25)
-mtext(side=1, 'log Area', padj=2.5, cex=1.5)
-mtext(side=2, 'log Richness', padj=-2.5, cex=1.5)
-#
-plot(A, sars[ , 3], type='l', lty=1, cex=1.25, lwd=2, xlab='', ylab='', frame.plot=F,
-     axes=F, log='xy', ylim=range(sars))
-lines(A, sars[ , 4], lty=2, cex=1.25, lwd=2)
-addAxis(1, at=c(0.25, 0.5, 1), cex.axis=1.25)
-addAxis(2, cex.axis=1.25)
-mtext(side=1, 'log Area', padj=2.5, cex=1.5)
-mtext(side=2, 'log Richness', padj=-2.5, cex=1.5)
-#
+jpeg('./figs/sad_obs_ex.jpeg', width=480, 480, quality=100)
+  plot(sads[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+       ylim=range(sads), log='')
+  addAxis(1, at=c(1, S), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads), labels=F)
+dev.off()
+
+jpeg('./figs/sad_pred_ex1.jpeg', width=480, 480, quality=100)
+  plot(sads1[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+       ylim=range(sads1[,2], sads2[,2]), xlim=c(0,10), log='')
+  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads1[,2], sads2[,2]), labels=F)
+dev.off()
+
+jpeg('./figs/sad_pred_ex2.jpeg', width=480, 480, quality=100)
+  plot(sads2[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+       ylim=range(sads1[,2], sads2[,2]), xlim=c(0,10), log='')
+  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads1[,2], sads2[,2]), labels=F)
 dev.off()
 
 
-## plot individual site relationships-------------------------------------------
+## plot individual site SARs----------------------------------------------------
 ## load data
 sar_res = read.csv('./sar/sar_residuals.csv')
 
