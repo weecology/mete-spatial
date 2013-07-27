@@ -64,9 +64,9 @@ pred_sar = data.frame(pred_sar, richness = sar_res$richness,
                       area = sar_res$area, site = sar_res$site,
                       hab = sar_res$hab)
 
-#site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
-site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
-site_names = unlist(strsplit(site_names, split=', '))
+site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
+#site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
+#site_names = unlist(strsplit(site_names, split=', '))
 site_titles = sub('1', '', site_names)
 
 capwords = function(s, strict = FALSE) {
