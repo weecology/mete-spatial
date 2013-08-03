@@ -1,7 +1,7 @@
 library(maps)
 library(rgdal)
 
-setwd('~/GIS/country')
+setwd('~/gis/country')
 country = readOGR('country.shp','country')
 
 setwd('~/maxent/spat')
