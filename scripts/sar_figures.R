@@ -6,49 +6,6 @@ dir.create('./figs')
 
 print('Generating SAR figures, ...')
 
-## conceptual SADs -------------------------------------------------------------
-
-S = 10
-N = 1000
-
-setwd('./scripts')
-system(paste('python spat_sar_demo.py', S, N))
-setwd('..')
-
-sads1 = read.csv('./demo/abu_sar_demo.txt')
-
-S = 7
-N = 250
-
-sads2 = read.csv('./demo/abu_sar_demo.txt')
-
-A = c(.25, .5, 1)
-
-sads1[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
-
-#
-jpeg('./figs/sad_obs_ex.jpeg', width=480, 480, quality=100)
-  plot(sads1[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
-       ylim=range(sads), log='')
-  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
-  addAxis(2, at=range(sads1), labels=F)
-dev.off()
-
-jpeg('./figs/sad_pred_ex1.jpeg', width=480, 480, quality=100)
-  plot(sads1[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
-       ylim=range(sads1[,2], sads2[,2]), xlim=c(0,10), log='')
-  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
-  addAxis(2, at=range(sads1[,2], sads2[,2]), labels=F)
-dev.off()
-
-jpeg('./figs/sad_pred_ex2.jpeg', width=480, 480, quality=100)
-  plot(sads2[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
-       ylim=range(sads1[,2], sads2[,2]), xlim=c(0,10), log='')
-  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
-  addAxis(2, at=range(sads1[,2], sads2[,2]), labels=F)
-dev.off()
-
-
 ## plot individual site SARs----------------------------------------------------
 ## load data
 sar_res = read.csv('./sar/sar_residuals.csv')
@@ -261,6 +218,36 @@ if (mk_sup_figs) {
   axis(side=2, c(0, 100, 200, 300))
   mtext(side=3, 'UCSC', cex=2.5)
   
+  dev.off()
+}
+
+## conceptual SADs -------------------------------------------------------------
+mk_concept_figs = FALSE
+if (mk_concept_figs) {
+  S = 10
+  N = 1000
+
+  setwd('./scripts')
+  system(paste('python spat_sar_demo.py', S, N))
+  setwd('..')
+ 
+  sads1 = read.csv('./demo/abu_sar_demo.txt')
+
+  sads1[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
+
+  #
+  jpeg('./figs/sad_obs_ex.jpeg', width=480, 480, quality=100)
+  plot(sads1[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+       ylim=range(sads1), log='')
+  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads1), labels=F)
+  dev.off()
+
+  jpeg('./figs/sad_pred_ex1.jpeg', width=480, 480, quality=100)
+  plot(sads1[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
+       ylim=range(sads1[,2]), xlim=c(0,10), log='')
+  addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
+  addAxis(2, at=range(sads1[,2]), labels=F)
   dev.off()
 }
 
