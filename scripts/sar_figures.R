@@ -1,7 +1,5 @@
 setwd('~/maxent/spat')
 
-source('./scripts/spat_functions.R')
-
 dir.create('./figs')
 
 print('Generating SAR figures, ...')
@@ -247,9 +245,7 @@ if (mk_concept_figs) {
   S = 10
   N = 1000
 
-  setwd('./scripts')
-  system(paste('python spat_sar_demo.py', S, N))
-  setwd('..')
+  system(paste('python ./scripts/spat_sar_demo.py', S, N))
  
   sads1 = read.csv('./demo/abu_sar_demo.txt')
 

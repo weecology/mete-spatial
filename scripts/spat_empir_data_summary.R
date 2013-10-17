@@ -2,8 +2,6 @@
 ## Purpose: to generate a table that summarizes characteristics of the empirical
 ## datasets that are employed in the distance decay study
 
-setwd('~/maxent/spat')
-
 print('Exporting empirical data summaries, ...')
 
 shrtnames = as.character(as.matrix(read.table('./data/shrtnames.txt')))

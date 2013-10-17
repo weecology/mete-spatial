@@ -2,8 +2,6 @@
 ## which was surveyed in 2010 for each spatial scale of interest
 ## Metadata: bci50ha.doc 
 
-setwd('~/maxent/spat')
-
 source('./scripts/spat_functions.R')
 
 print('Creating site x species matrices, ...')

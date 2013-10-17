@@ -4,8 +4,6 @@
 ## appropriate for analyses targeted at other topics
 ## Metadata: ~/datasets/CTFSplots/BCI/bci50ha.doc 
 
-setwd('~/maxent/spat')
-
 dir.create('./data/filtered_data')
 
 print('Filtering and cleaning empirical data, ...')

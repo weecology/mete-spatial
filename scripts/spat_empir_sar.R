@@ -1,7 +1,5 @@
 ## Purpose: to compute the empirical SARs
 
-setwd('~/maxent/spat')
-
 source('./scripts/spat_functions.R')
 
 dir.create('./sar')

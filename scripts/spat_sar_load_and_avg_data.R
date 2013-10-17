@@ -1,7 +1,5 @@
 ## Loads and averages the species area anaylsis data products
 
-setwd('~/maxent/spat')
-
 source('./scripts/spat_functions.R')
 
 print('Aggregating SAR results, ...')

@@ -1,4 +1,3 @@
-setwd('~/maxent/spat')
 
 dir.create('./data/raw_data')
 

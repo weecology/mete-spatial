@@ -13,7 +13,7 @@ import mete
 
 print 'Computing METE SAR, ...'
 
-datafile = open('../data/shrtnames.txt', 'r')
+datafile = open('./data/shrtnames.txt', 'r')
 datareader = csv.reader(datafile)
 shrtnames = []
 for row in datareader:
@@ -28,7 +28,7 @@ if len(sys.argv) > 1:
 
 for shrt_name in shrtnames:
     for sadType in ['meteSAD', 'empirSAD']:
-        datafile = open('../sar/' + shrt_name + '_empir_sar.csv', 'r')
+        datafile = open('./sar/' + shrt_name + '_empir_sar.csv', 'r')
         datareader = csv.reader(datafile)
         data = []
         for row in datareader:
@@ -52,7 +52,7 @@ for shrt_name in shrtnames:
         # get parameters needed for computing the mete sar
         if sadType == 'empirSAD':
             # read in SAD information  
-            sad_file = open('../data/' + shrt_name + '_sad.csv', 'r')
+            sad_file = open('./data/' + shrt_name + '_sad.csv', 'r')
             sadreader = csv.reader(sad_file)
             sad = []
             for row in sadreader:
@@ -101,9 +101,9 @@ for shrt_name in shrtnames:
             out[ : , 2] = sar_down_noniterative[1]
               
         if sadType == 'meteSAD':
-            filename = '../sar/' + shrt_name + '_mete_sar.txt'
+            filename = './sar/' + shrt_name + '_mete_sar.txt'
         else:
-            filename = '../sar/' + shrt_name + '_empirSAD_mete_sar.txt'
+            filename = './sar/' + shrt_name + '_empirSAD_mete_sar.txt'
         
         writer = open(filename, 'wb') 
         datawriter = csv.writer(writer)

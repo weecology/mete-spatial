@@ -45,7 +45,7 @@ def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
 
 print 'Comparing METE and empirical SADs, ...'
 
-datafile = open('../data/shrtnames.txt', 'r')
+datafile = open('./data/shrtnames.txt', 'r')
 datareader = csv.reader(datafile)
 shrtnames = []
 for row in datareader:
@@ -57,6 +57,6 @@ if len(sys.argv) > 1:
     site_index = int(sys.argv[1])
     shrtnames = [shrtnames[site_index]]
 
-map(lambda x: get_obs_pred_sad(x, to_file=True), shrtnames)
+map(lambda x: get_obs_pred_sad(x, sad_path='./data/', to_file=True), shrtnames)
 
 print 'Comparing METE and empirical SADs, complete!'

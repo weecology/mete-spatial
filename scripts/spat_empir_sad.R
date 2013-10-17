@@ -1,7 +1,5 @@
 ## Purpose: To generate the empirical SAD files
 
-setwd('~/maxent/spat')
-
 print('Computing empirical SAD, ...')
 
 ## read in community matrix files

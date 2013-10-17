@@ -1,4 +1,3 @@
-setwd('~/maxent/spat')
 
 print('Finding and exporting site names, ...')
 
