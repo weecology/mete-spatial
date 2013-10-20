@@ -5,7 +5,7 @@ import os
 
 from mete import *
 
-def get_sad_data(site_name, sad_path='../data/'):
+def get_sad_data(site_name, sad_path='./data/'):
     datafile = open(sad_path + site_name + '_sad.csv', 'r')
     datareader = csv.reader(datafile)
     n0 = []
@@ -17,11 +17,11 @@ def get_sad_data(site_name, sad_path='../data/'):
     n0 = map(int, n0)
     return n0
 
-def get_obs_pred_sad(site_name, sad_path='../data/', S_cutoff=1,
-                     to_file=False, output_dir='../sad/'):
+def get_obs_pred_sad(site_name, sad_path='./data/', S_cutoff=1,
+                     to_file=False, output_dir='./sad/'):
     if to_file:    
         if os.path.exists(output_dir) is False:
-            os.mkdir('../sad')
+            os.mkdir('./sad')
     n0 = get_sad_data(site_name, sad_path)
     S0 = len(n0)
     if S0 <= S_cutoff:
@@ -57,6 +57,6 @@ if len(sys.argv) > 1:
     site_index = int(sys.argv[1])
     shrtnames = [shrtnames[site_index]]
 
-map(lambda x: get_obs_pred_sad(x, sad_path='./data/', to_file=True), shrtnames)
+map(lambda x: get_obs_pred_sad(x, to_file=True), shrtnames)
 
 print 'Comparing METE and empirical SADs, complete!'
