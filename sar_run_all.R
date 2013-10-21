@@ -8,6 +8,11 @@ setwd('./METE')
 system('python setup.py install')
 setwd('..')
 
+system('git clone git@github.com:weecology/macroecotools.git')
+setwd('./macroecotools')
+system('python setup.py install')
+setwd('..')
+
 ## download and prepare data ---------------------------------------------
 ## requires R package: RCurl
 system('Rscript ./scripts/spat_download_empir_data.R')
