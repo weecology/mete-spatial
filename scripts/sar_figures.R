@@ -1,6 +1,6 @@
-setwd('~/maxent/spat')
-
 dir.create('./figs')
+
+source('./scripts/spat_functions.R')
 
 print('Generating SAR figures, ...')
 
