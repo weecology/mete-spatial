@@ -13,6 +13,9 @@ setwd('./macroecotools')
 system('python setup.py install')
 setwd('..')
 
+## Additional python packages required include:
+## matplotlib, mpmath, numpy, scipy
+
 ## download and prepare data ---------------------------------------------
 ## requires R package: RCurl
 system('Rscript ./scripts/spat_download_empir_data.R')
@@ -51,5 +54,5 @@ system('Rscript ./scripts/spat_sar_load_and_avg_data.R')
 
 system('Rscript ./scripts/sar_figures.R')
 
-#system('python ./scripts/spat_plot_obs_pred_sad.py')
+system('python ./scripts/spat_plot_obs_pred_sad.py')
 
