@@ -1,7 +1,6 @@
 #!/usr/bin/Rscript
 
-## install dependencies
-install.packages('RCurl')
+## install custom python dependencies
 
 system('git clone git@github.com:weecology/METE.git')
 setwd('./METE')
