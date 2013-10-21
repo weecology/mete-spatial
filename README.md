@@ -17,7 +17,7 @@ variants of a universal species-area relationship. PeerJ.
 
 ### Setup
 
-Requirements: Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
+Requirements: R ≥ 2.7.0 with the R package RCurl installed. Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
 These modules can be installed by running the following commands from the command
 line (with sufficient permissions):
 
