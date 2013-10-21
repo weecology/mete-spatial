@@ -3,6 +3,53 @@ mete-spatial
 
 Code for working with the spatial predictions of John Harte and colleagues' Maximum Entropy Theory of Ecology.
 
+The code in this project is for two projects, one that investigates the species-area relationship (SAR) and another that investigates the distance decay relationship
+(DDR). 
+
+Species-area Project
+--------------------
+
+The SAR code provides the supplemental material to: 
+
+McGlinn, D.J., X. Xiao, E.P. White. in revision. An empirical evaluation of four
+variants of a universal species-area relationship. PeerJ.
+
+
+### Setup
+
+Requirements: Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
+These modules can be installed by running the following commands from the command
+line (with sufficient permissions):
+
+```sh
+git clone https://github.com/weecology/METE.git
+cd METE
+python setup.py install
+git clone https://github.com/weecology/macroecotools.git
+cd macroecotools
+python setup.py install
+```
+
+### Replicate analyses
+
+The analyses can be replicated by running the following commands from the
+command line.
+
+Run all analyses and generate figures:
+`Rscript sar_run_all.R`
+
+On Windows `./data/` should be replaced with `.\data\` to match the relevant path conventions.
+
+Please note that these analyses involve both a large amount of data and a lot of
+computational work and therefore take a while to run. Expect the empirical
+analysis to take a few hours. 
+
+Distance-decay project
+----------------------
+
+The DDR code is currently still actively in development for a forth coming manuscript.  
+
+
 License
 -------
 mete-spatial is licensed under the open source [MIT License](http://opensource.org/licenses/MIT)
