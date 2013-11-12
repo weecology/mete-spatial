@@ -42,7 +42,7 @@ col = c('red', 'red', 'dodgerblue', 'dodgerblue')
 lty = c(1, 3, 1, 3)
 
 ## arthimetic plots
-jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
+png('./figs/mete_&_empir_sar.png', width=480 * 4, height=480 * 4, res=120)
   par(mfrow=c(4,4))
   ## log-log
   for (i in seq_along(site_names)) {
@@ -56,7 +56,7 @@ jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
     addAxis(side=2, cex.axis=3, padj=0)
     mtext(side=3, paste(site_titles[i], '-', unique(pred_sar$hab[true])),
           cex=2)
-    mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
     for (j in 1:4) 
       lines(pred_sar[true, j] ~ area, data=pred_sar[true, ], col=col[j], lwd=4,
             lty=lty[j])
@@ -71,7 +71,7 @@ jpeg('./figs/mete_&_empir_sar.jpeg', width=480 * 4, height=480 * 4, quality=100)
 dev.off()
 
 ## log-log plots
-jpeg('./figs/mete_&_empir_sar_log2.jpeg', width=480 * 4, height=480 * 4, quality=100)
+png('./figs/mete_&_empir_sar_log2.png', width=480 * 4, height=480 * 4)
   par(mfrow=c(4,4))
   ## log2-log2
   for (i in seq_along(site_names)) {
@@ -87,19 +87,19 @@ jpeg('./figs/mete_&_empir_sar_log2.jpeg', width=480 * 4, height=480 * 4, quality
     addAxis(side=2, cex.axis=3, padj=0)
     mtext(side=3, paste(site_titles[i], '-', unique(pred_sar$hab[true])),
           cex=2)
-    mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
     for (j in 1:4) 
       lines(log2(pred_sar[true, j]) ~ log2(area), data=pred_sar[true, ], col=col[j],
-            lwd=4, lty=lty[j])
+            lwd=5, lty=lty[j])
     ## data
     points(log2(richness) ~ log2(area), data = pred_sar[true, ], pch=1, cex=3,
-           lwd=2)
+           lwd=3)
     if(i == 1)
       legend('bottomright', 
              c('observed', 'recursive, METE SAD', 'recursive, observed SAD',
                'non-recursive, METE SAD', 'non-recursive, observed SAD'),
              pch=c(1, rep(NA, 4)), col=c(1, col), cex=2.5, bty='n',
-             lwd=c(2, rep(4, 4)), lty=c(NA, lty))
+             lwd=c(3, rep(5, 4)), lty=c(NA, lty))
   }
 dev.off()
 
@@ -109,8 +109,8 @@ dev.off()
 titles = c('recursive, METE SAD', 'recursive, observed SAD',
            'non-recursive, METE SAD', 'non-recursive, observed SAD')
 
-jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
-     width = 480 * 2, height= 480 * 2, quality = 100)
+png('./figs/sar_one_to_one_mete_analytical.png',
+     width = 480 * 2, height= 480 * 2)
   par(mfrow=c(2,2))
   for(i in 1:4) {
     plot(richness ~ pred_sar[ , i], data = pred_sar, log='xy',
@@ -127,12 +127,11 @@ jpeg('./figs/sar_one_to_one_mete_analytical.jpeg',
     text(x=.9, y= 300, expression(italic(R^2) == ''), cex=2.5)
     text(x=2.75, y= 275, r2, cex=2.5)
     mtext(side=3, titles[i], cex=2)
-    mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
   }
 dev.off()
 
-jpeg('./figs/sar_one_to_one_mete_analytical_arith.jpeg',
-     width = 480 * 2, height= 480 * 2, quality = 100)
+png('./figs/sar_one_to_one_mete_analytical_arith.png', width = 480 * 2, height= 480 * 2)
 par(mfrow=c(2,2))
 for(i in 1:4) {
   plot(richness ~ pred_sar[ , i], data = pred_sar, log='',
@@ -146,7 +145,7 @@ for(i in 1:4) {
   text(x=.9, y= 300, expression(italic(R^2) == ''), cex=2.5)
   text(x=2.75, y= 275, r2, cex=2.5)
   mtext(side=3, titles[i], cex=2)
-  mtext(side=3, paste('(', letters[i], ')', sep=''), adj=0, cex=2, font=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
 }
 dev.off()
 
@@ -171,8 +170,7 @@ if (mk_sup_figs) {
   
   cex = 2
   
-  jpeg('./figs/subplot_maps.jpeg',
-       width=480 * 2, height=480 * 2, quality=100)
+  png('./figs/subplot_maps.png', width=480 * 2, height=480 * 2)
   par(mfrow=c(2,2))
   plot(cocoli1$x,cocoli1$y,col='red', pch='.', ylim=range(sherman$y),
        xlim=range(sherman$x), xlab='X-coordinate', ylab='Y-coordinate',
@@ -252,14 +250,14 @@ if (mk_concept_figs) {
   sads1[ , 1] = c(400, 300, 100,  85, 35, 4, 3, 1, 1, 1)
 
   #
-  jpeg('./figs/sad_obs_ex.jpeg', width=480, 480, quality=100)
+  png('./figs/sad_obs_ex.png', width=480, 480)
   plot(sads1[ , 1], pch=1, xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
        ylim=range(sads1), log='')
   addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
   addAxis(2, at=range(sads1), labels=F)
   dev.off()
 
-  jpeg('./figs/sad_pred_ex1.jpeg', width=480, 480, quality=100)
+  png('./figs/sad_pred_ex1.png', width=480, 480)
   plot(sads1[ , 2], type='l', xlab='', ylab='', frame.plot=F, cex=2, lwd=3, axes=F,
        ylim=range(sads1[,2]), xlim=c(0,10), log='')
   addAxis(1, at=c(1, 10), label=c('',''), cex.axis=3, padj=1)
