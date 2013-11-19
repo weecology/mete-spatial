@@ -1,6 +1,5 @@
 ## Purpose: to graphically summarize the simulated DDR results for each
 ## empirical dataset
-setwd('~/maxent/spat')
 source('./scripts/spat_functions.R')
 
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 

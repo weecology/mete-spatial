@@ -1,8 +1,6 @@
 ## Purpose: to simulate communities that are parameterized by the empirically 
 ## observed communities.
 
-setwd('~/maxent/spat/scripts')
-
 clArgs = commandArgs(trailingOnly=TRUE)
 server = clArgs[1]
 indices=clArgs[2]

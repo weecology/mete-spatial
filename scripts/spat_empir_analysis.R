@@ -1,8 +1,5 @@
-## Author: Dan McGlinn
 ## Purpose: to analyze the spatial patterns of community structure
 ## in the empirical datasets
-
-setwd('~/maxent/spat')
 
 library(vegan)
 source('./scripts/spat_functions.R')

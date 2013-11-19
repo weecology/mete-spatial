@@ -5,8 +5,6 @@
 library(vegan)
 library(bigmemory)
 
-setwd('~/maxent/spat')
-
 source('./scripts/spat_functions.R')
 
 clArgs = commandArgs(trailingOnly=TRUE)

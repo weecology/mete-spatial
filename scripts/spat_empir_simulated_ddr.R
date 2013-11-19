@@ -1,7 +1,5 @@
 ## Purpose: to compute the empirical simulated DDR 
 
-setwd('~/maxent/spat/scripts')
-
 clArgs = commandArgs(trailingOnly=TRUE)
 
 server = clArgs[1]

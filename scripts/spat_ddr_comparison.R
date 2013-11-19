@@ -1,6 +1,5 @@
 ## Purpose: to compare the fit of the simulated ddr to the empirical ddr
 
-setwd('~/maxent/spat')
 source('./scripts/spat_functions.R')
 
 ## load the simulated and empirical DDR results---------------------------------
