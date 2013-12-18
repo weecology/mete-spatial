@@ -44,7 +44,7 @@ system('Rscript ./scripts/spat_empir_data_summary.R')
 
 ## simulate communities that are parameterized by the empirical communities (slow)
 indices = paste(1:19, collapse=' ')
-system(paste('Rscript spat_empir_comm_sim.R', server,
+system(paste('Rscript ./scripts/spat_empir_comm_sim.R', server,
              "'", indices, "'", sep=" "), wait=FALSE)
 
 ## data analysis ---------------------------------------------------------
@@ -83,12 +83,8 @@ system(paste('Rscript spat_mete_ddr.R', server, site_index, sadType), wait=FALSE
 commName = 'all'
 dataType = 'both'
 bisect = TRUE
-
 system(paste("Rscript spat_empir_simulated_ddr.R", server,
              commName, dataType, bisect, sep=" "), wait=FALSE)
-
-## compute the empirical observed DDR using spat_empir_analysis.R
-system('Rscript ./scripts/spat_empir_observed_ddr.R')
 
 ## aggregate, save, and graph the simulated and empirical results
 system('Rscript ./scripts/spat_sim_results_summary.R')
