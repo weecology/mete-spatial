@@ -2625,13 +2625,14 @@ getResults = function(names, metric, dataType, bisect=FALSE, sim_result=FALSE)
   results = vector('list', length=length(names))
   names(results) = names
   for (i in seq_along(results)) {
-    if (bisect)
-      if (sim_result)
-        load(paste('./', metric, '/' ,metric, '_', names[i], '_bisect_', dataType,
-                 '.Rdata', sep=''))
-    else
+    if (bisect) {
+      load(paste('./', metric, '/' ,metric, '_', names[i], '_bisect_', dataType, '.Rdata',
+                 sep=''))
+    }
+    else {
       load(paste('./', metric, '/' ,metric, '_', names[i], '_', dataType, '.Rdata',
                  sep=''))
+    }
     if (sim_result)
       results[[i]] = metrics
     else
