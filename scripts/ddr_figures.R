@@ -12,9 +12,12 @@ hab = c('tropical', 'oak-hickory', 'pine', 'oak woodland', 'mixed evergreen',
 habcol = c("forestgreen", "#1AB2FF", "medium purple", "#E61A33", "#B2FF8C",
         "#FF8000")
 
-load('./sorensen/empirSorAbu.Rdata')
-load('simulated_empirical_results.Rdata')
+load('./sorensen/empirSorAbu_bisect.Rdata')
+load('simulated_empirical_results_bisect.Rdata')
+
 resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
+resSorAbuLogSer = get_ddr_resid(empirSorAbu, simSorAbuLogSer)
+
 
 #pdf('./figs/fig2_ddr_empirical.pdf', width= 7 * 2, height= 7)
 #windows(width= 7 * 3, height= 7 * 2)
@@ -78,6 +81,80 @@ resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
     }  
   }  
 dev.off()
+
+## altnerative plots for Fig. 2
+## site specific plots
+
+dat = resSorAbuFixed
+dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
+sar_data = read.csv('./sar/empir_sars.csv')
+sar_data$area = round(sar_data$area, 2)
+dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
+## subset so that has at least 20 individuals
+dat = subset(dat, indiv >= 20)
+## bring in habitat type
+dat$hab = habitat[match(dat$site, shrtnm)]
+## compute raw mete and RP values
+dat$mete = dat$Metric.avg - dat$avg.res
+dat$rp = dat$Metric.avg - dat$exp.res
+
+sites = unique(dat$site)
+
+site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
+site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
+site_names = unlist(strsplit(site_names, split=', '))
+site_titles = sub('1', '', site_names)
+
+capwords = function(s, strict = FALSE) {
+  cap = function(s) paste(toupper(substring(s, 1, 1)),
+{s = substring(s, 2); if(strict) tolower(s) else s},
+                          sep = "", collapse = " " )
+  sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
+}
+
+site_titles = capwords(site_titles)
+site_titles[1] = "BCI"
+site_titles[11] = "Bald Mtn."
+site_titles[14] = "UCSC"
+site_titles[15] = "Serpentine"
+site_titles[16] = "Cross Timbers"
+
+col = c('red', 'dodgerblue')
+lty = c(2, 3)
+
+## arith-arith plots
+png('./figs/ddr_arith_resid_by_sites.png', width=480 * 4, height=480 * 4)
+  par(mfrow=c(4,4))
+  for (i in seq_along(site_names)) {
+    metrics = c('avg.res', 'exp.res')
+    true = as.character(dat$site) == site_names[i]
+    xlim = (range(dat$Dist[true], na.rm=T))
+    ylim = (range(dat[true , metrics, ], na.rm=T))
+    xlim = c(floor(xlim[1]), ceiling(xlim[2]))
+    plot((Dist) ~ (Metric.avg), data=dat[true, ],
+         xlim=xlim, ylim=ylim, type='n',
+         xlab='', ylab='', frame.plot=F, axes=F)
+    addAxis(side=1, cex.axis=3, padj=.75)
+    addAxis(side=2, cex.axis=3, padj=0)
+    mtext(side=3, paste(site_titles[i], '-', unique(dat$hab[true])),
+          cex=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+    abline(h=0, col='grey', lwd=5)
+    for (j in seq_along(metrics)) {
+      lines(lowess((dat[true, 'Dist']), 
+                   (dat[true, metrics[j]]), f=3/4), lwd=5, lty=lty[j], col=col[j])
+    }
+    if(i == 1)
+      legend('right', 
+             c('observed', 'recursive, METE SAD', 'recursive, observed SAD',
+               'non-recursive, METE SAD', 'non-recursive, observed SAD'),
+             pch=c(1, rep(NA, 4)), col=c(1, col), cex=2.5, bty='n',
+             lwd=c(3, rep(5, 4)), lty=c(NA, lty))
+  }
+dev.off()
+
+
+  
 
 ## Supplemental Figure 1--------------------------------------------------------
 ## r2 of model fits to simulated results
