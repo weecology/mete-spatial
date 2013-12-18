@@ -1,3 +1,461 @@
+##Part II - FUNCTIONS FOR Spatial Permutations-----------------------------------
+
+##2.1##
+SpatPerm2D<-function(psp,shiftpos=NULL,rotate=NULL,meth='shift',sp=FALSE){
+  ##Purpose: to permute an array of occurances under a given set of constraints in 2-dimensions of space
+  ##Arguments:
+  ##psp is the sp x row x col array, where rows and columns specify where on the spatial grid the sample was located
+  ##shiftpos: two numbers that are the x and y places to shift the grid, this is generated randomly if needed
+  ##rotate: a single number 1-4 that indicates how many counterclockwise rotations to perform, generated randomly
+  ##meth the type of permutation to use, options include:
+  ###"reflect": random reflection/rotations of species (only makes sence when sp are not fixed
+  ###"shift": random torodial shifting with or with sp fixed
+  ###"both": both reflection and shifting
+  ###"random": random shuffle
+  ##if 'sp' is FALSE then obs composition of quadrats is fixed to the observed pattern
+  ##if 'sp' is TRUE then species are each shuffled independently
+  n<-dim(psp)[2]
+  if(length(dim(psp))==3){
+    S<-dim(psp)[1]
+    flag<-FALSE
+  }
+  else{
+    S<-1
+    psp<-array(psp,dim=c(S,n,n))
+    flag<-TRUE
+  }
+  Rpsp<-psp
+  if(sp){##then between sp associations nullified
+    if(meth!='reflect'){
+      if(meth!='random'){
+        ##generate vectors of random shifts, one for the x- and one for y-coord
+        for(j in 1:S){
+          if(is.null(shiftpos)){
+            shift.x <- sample(n,size=1) ; shift.y <- sample(n,size=1);
+          }
+          else{
+            shift.x <- shiftpos[1] ; shift.y <- shiftpos[2]
+          }
+          #gen new coords
+          if(shift.x==1) ncoord.x <- 1:n
+          else ncoord.x<-c(shift.x:n,1:(shift.x-1))
+          if(shift.y==1) ncoord.y <- 1:n
+          else ncoord.y<-c(shift.y:n,1:(shift.y-1))
+          if(meth=='shift'){
+            ##begin rearranging the rows of matrix for jth sp
+            Rpsp[j,,] <- psp[j,ncoord.x,ncoord.y]
+          }
+          if(meth=='both'){##reflecting/rotating and shifting
+            if(is.null(rotate))
+              rotate<-sample(4,size=1)##how many counterclockwise rotatations to make
+            if(rotate==2){
+              for(x in 1:n){
+                for(y in 1:n){
+                  Rpsp[j,(n-y)+1,x] <- psp[j,x,y]
+                }}}
+            if(rotate==3){
+              for(x in 1:n){
+                for(y in 1:n){
+                  Rpsp[j,(n-x)+1,(n-y)+1] <- psp[j,x,y]
+                }}}
+            if(rotate==4){
+              for(x in 1:n){
+                for(y in 1:n){
+                  Rpsp[j,y,(n-x)+1] <- psp[j,x,y]
+                }}}
+            flips<-sample(2,replace=TRUE) ##generates two coin flips
+            if(flips[1]==1){ #reflect along x-axis
+              if(flips[2]==1) #reflect along y-axis
+                Rpsp[j,n:1,n:1] <- Rpsp[j,ncoord.x,ncoord.y]
+              else #not reflected along y-axis
+                Rpsp[j,n:1,] <- Rpsp[j,ncoord.x,ncoord.y]
+            }
+            else{ #not reflected along x-axis
+              if(flips[2]==1) #reflected along y-axis
+                Rpsp[j,,n:1] <- Rpsp[j,ncoord.x,ncoord.y]
+              else ##not reflected along either axis
+                Rpsp[j,,] <- Rpsp[j,ncoord.x,ncoord.y]
+            }
+          }}}}
+    if(meth=='reflect'){##if only want reflecting/rotating
+      for(j in 1:S){
+        if(is.null(rotate))
+          rotate<-sample(4,size=1)##how many counterclockwise rotatations to make
+        if(rotate==2){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[j,(n-y)+1,x] <- psp[j,x,y]
+            }}}
+        if(rotate==3){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[j,(n-x)+1,(n-y)+1] <- psp[j,x,y]
+            }}}
+        if(rotate==4){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[j,y,(n-x)+1] <- psp[j,x,y]
+            }}}
+        flips<-sample(2,replace=TRUE) ##generates two coin flips
+        if(flips[1]==1){ #reflect along x-axis
+          if(flips[2]==1) #reflect along y-axis
+            Rpsp[j,n:1,n:1] <- Rpsp[j,,]
+          else #not reflected along y-axis
+            Rpsp[j,n:1,] <- Rpsp[j,,]
+        }
+        else{ #not reflected along x-axis
+          if(flips[2]==1) #reflected along y-axis
+            Rpsp[j,,n:1] <- Rpsp[j,,]
+        }
+      }}
+    if(meth=='random'){
+      for(j in 1:S){
+        take<-sample(n^2) #sample w/o replacement
+        Rpsp[j,,] <- matrix(psp[j,,][take],ncol=n,nrow=n)
+      }}}
+  else{##species co-occurances are fixed
+    ##this only makes sense for "shift" or "both" meth
+    if(meth=="reflect"){
+      stop("Reflecting fixed species co-occurances w/o shifting is not meaningful")
+    }
+    ##generate vector of random shifts
+    if(meth!="random"){
+      if(is.null(shiftpos)){
+        shift.x <- sample(n,size=1) ; shift.y <- sample(n,size=1);
+      }
+      else{
+        shift.x <- shiftpos[1] ; shift.y <- shiftpos[2]
+      }
+      #gen new coords
+      if(shift.x==1) ncoord.x <- 1:n
+      else ncoord.x<-c(shift.x:n,1:(shift.x-1))
+      if(shift.y==1) ncoord.y <- 1:n
+      else ncoord.y<-c(shift.y:n,1:(shift.y-1))
+      if(meth=='shift'){
+        ##begin rearranging the rows of matrix for jth sp
+        Rpsp <- psp[,ncoord.x,ncoord.y]
+      }
+      if(meth=='both'){##reflecting/rotating and shifting
+        if(is.null(rotate))
+          rotate<-sample(4,size=1)##how many counterclockwise rotatations to make
+        if(rotate==2){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[,(n-y)+1,x] <- psp[,x,y]
+            }}}
+        if(rotate==3){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[,(n-x)+1,(n-y)+1] <- psp[,x,y]
+            }}}
+        if(rotate==4){
+          for(x in 1:n){
+            for(y in 1:n){
+              Rpsp[,y,(n-x)+1] <- psp[,x,y]
+            }}}
+        if(sample(2,size=1)==1) ##equivalent to a coin flip, if 1 then reflect and shift
+          Rpsp[,n:1,n:1] <- psp[,ncoord.x,ncoord.y]
+        else ##just shift
+          Rpsp <- psp[,ncoord.x,ncoord.y]
+      }}
+    else{#meth is random and sp columns are fixed
+      take<-sample(n^2) #sample w/o replacement
+      for(j in 1:S){
+        Rpsp[j,,] <- matrix(psp[j,,][take],ncol=n,nrow=n)
+      }}}
+  if(flag)
+    Rpsp<-drop(Rpsp)
+  Rpsp
+}
+
+##2.2##
+SpatPerm2D.str<-function(psp,shiftpos=NULL,rotate=NULL,meth='shift',sp=FALSE,nstrata=1){
+  ##Purpose: to permute an array of occurances under a given set of constraints in 2-dimensions of space
+  ##with defined spatial strata, see 'nstrata' argument below
+  ##Arguments:
+  ##psp is the sp x row x col array, where rows and columns specify where on the spatial grid the sample was located
+  ##shiftpos: two numbers that are the x and y places to shift the grid, this is generated randomly if needed
+  ##rotate: a single number 1-4 that indicates how many counterclockwise rotations to perform, generated randomly
+  ##meth the type of permutation to use, options include:
+  ###"reflect": random reflection/rotations of species (only makes sence when sp are not fixed
+  ###"shift": random torodial shifting with or with sp fixed
+  ###"both": both reflection and shifting
+  ###"random": random shuffle
+  ##if 'sp' is FALSE then obs composition of quadrats is fixed to the observed pattern
+  ##if 'sp' is TRUE then species are each shuffled independently
+  ##'nstrata' is the number of strata along a single spatial axis within which to randomize
+  n<-dim(psp)[2]
+  if(length(dim(psp))==3){
+    S<-dim(psp)[1]
+    flag<-FALSE
+  }
+  else{
+    S<-1
+    psp<-array(psp,dim=c(S,n,n))
+    flag<-TRUE
+  }
+  strata.size<-n/nstrata
+  if(round(strata.size)!=strata.size)
+    stop('Number of strata must be evenly divisable by the linear dimension of the grid')
+  ##now simply apply the function SpatPerm2D on subsets of the orginal matrix and append all the pieces together at end
+  Rpsp<-psp
+  brks<-seq(1,n,strata.size)
+  for(i in 1:nstrata){
+    sub.i<-brks[i]:(brks[i]+strata.size-1)
+    for(j in 1:nstrata){
+      sub.j<-brks[j]:(brks[j]+strata.size-1)
+      Rpsp[,sub.i,sub.j]<-SpatPerm2D(psp[,sub.i,sub.j],meth=meth,sp=sp,shiftpos=shiftpos,rotate=rotate)
+    }}
+  if(flag)
+    Rpsp<-drop(Rpsp)
+  Rpsp
+}
+
+
+##2.3##
+RandPat<-function(i,psp,rpsp,n,nstrata,pl,mtrials1=1e3,mtrials2=1e6,alpha=0.01){
+  ##Purpose: to be called in serial or parallel by function "RandPatPar"
+  ##this function evaulates the .C function 'randpatpar' which is the random patterns algo of
+  ##Roxburgh and Chesson 1998. Returns species index, phi stat, number of actual swaps, and the 
+  ##randomized presences as a single vector of numbers
+  ##Arguments:
+  ##i: the ith species index
+  ##psp: multidimenstional S x (n+2) x (n+2) array
+  ##rpsp: a randomized version of psp
+  ##n: the size of the orginal 2-D array along one spatial axis (i.e., without extra rows and columns)
+  ##pl: the places in rpsp that can be swaped
+  ##mtrials1: the number of times to attempt a swap at the strata level
+  ##mtrials2: the number of times to attempt a swap at the pixel level
+  ##alpha: the cutoff value for the phi statistic of Roxburgh and Chesson 1998
+  psp<-psp[i,,]
+  rpsp<-rpsp[i,,]
+  n2<-n+2
+  ##PART I##
+  ##begin permuting the blocks defined by nstrata
+  rpsp.tmp<-rpsp[-c(1,n2),-c(1,n2)]
+  coords<-cbind(rep(1:nstrata,nstrata),rep(1:nstrata,each=nstrata))
+  rcoords<-coords[sample(nstrata^2),]
+  for(j in 1:nstrata^2){
+    rows<-((coords[j,1]-1)*n/nstrata+1) : ((coords[j,1]-1)*n/nstrata+n/nstrata)
+    cols<-((coords[j,2]-1)*n/nstrata+1) : ((coords[j,2]-1)*n/nstrata+n/nstrata)
+    rrows<-((rcoords[j,1]-1)*n/nstrata+1) : ((rcoords[j,1]-1)*n/nstrata+n/nstrata)
+    rcols<-((rcoords[j,2]-1)*n/nstrata+1) : ((rcoords[j,2]-1)*n/nstrata+n/nstrata)
+    rpsp[-c(1,n2),-c(1,n2)][rows,cols]<-rpsp.tmp[rrows,rcols]
+  }
+  rpsp<-FixUnSamp(psp,rpsp)
+  ostat<-.C("spatstat",as.double(as.vector(psp)),as.integer(n),as.double(rep(0,4)))[[3]]
+  nstat<-.C("spatstat",as.double(as.vector(rpsp)),as.integer(n),as.double(rep(0,4)))[[3]]
+  phi<-.C("calcphi",as.double(nstat),as.double(ostat),as.double(0))[[3]]
+  ##now begin random swapping of blocks defined by strata 
+  ntrials<-0 ; gtrials<-0
+  rpsp.tmp1<-rpsp
+  while(phi > alpha & ntrials < mtrials1){
+    rpsp.tmp2<-rpsp.tmp1[-c(1,n2),-c(1,n2)]
+    rcoords<-coords[sample(nstrata^2,2),]
+    startrows<-((rcoords[1,1]-1)*n/nstrata+1) : ((rcoords[1,1]-1)*n/nstrata+n/nstrata)
+    startcols<-((rcoords[1,2]-1)*n/nstrata+1) : ((rcoords[1,2]-1)*n/nstrata+n/nstrata)
+    endrows<-((rcoords[2,1]-1)*n/nstrata+1) : ((rcoords[2,1]-1)*n/nstrata+n/nstrata)
+    endcols<-((rcoords[2,2]-1)*n/nstrata+1) : ((rcoords[2,2]-1)*n/nstrata+n/nstrata)
+    rpsp.tmp1[-c(1,n2),-c(1,n2)][startrows,startcols] <- rpsp.tmp2[endrows,endcols]
+    rpsp.tmp1[-c(1,n2),-c(1,n2)][endrows,endcols] <- rpsp.tmp2[startrows,startcols]
+    rpsp.tmp1<-FixUnSamp(psp,rpsp.tmp1)
+    nstat<-.C("spatstat",as.double(as.vector(rpsp.tmp1)),as.integer(n),as.double(rep(0,4)))[[3]]
+    phiTemp <- .C("calcphi",as.double(nstat),as.double(ostat),as.double(0))[[3]]
+    if(phiTemp < phi){
+      phi <- phiTemp
+      gtrials <- gtrials +1
+      ##make change permanent
+      rpsp<-rpsp.tmp1
+    }
+    else{
+      ##start back with orginal random mat
+      rpsp.tmp1<-rpsp
+    }
+    ntrials<-ntrials+1
+  } 
+  if(phi > alpha & mtrials2>0){
+    ##Part II##
+    ##carry out individual pixel swapping
+    psp<-as.vector(psp)
+    rpsp<-as.vector(rpsp)
+    tmp<-.C("randpatpar",psp = as.double(psp),
+            rpsp = as.double(rpsp), n = as.integer(n),
+            ostat = as.double(rep(0,4)), nstat = as.double(rep(0,4)), 
+            phi = as.double(0), phiTemp = as.double(0),
+            alpha = as.double(alpha), pl = as.integer(pl-1),
+            nplaces = as.integer(length(pl)-1),ntrials = as.double(0),
+            gtrials = as.double(0), mtrials = as.double(mtrials2))
+    out<-c(i,phi,gtrials,tmp$phi,tmp$gtrials,tmp$rpsp)
+  }
+  else
+    out<-c(i,phi,gtrials,NA,NA,as.vector(rpsp))
+  out
+}
+
+##2.4##
+RandPatPar<-function(psp,nstrata,mtrials1=1e3,mtrials2=1e6,alpha=0.01,npar=1){
+  ##Purpose: convience function for working with RandPat which calls the .C function
+  ##'randpatpar'. This function allows you to specify the number of processors to run on
+  ##adding processsors only helps if working with many species as each species is evaulated
+  ##on a different processor. Returns a (5+(n+2)^2) x S matrix, the first five rows of which 
+  ##are species index, phi strata stat, number of strata swaps, phi pixel swap, and number of 
+  ##pixel swaps, and then the remaining rows are the presences/abundances in the randomized occurances
+  ##Arguments:
+  ##psp: multidimenstional S x (n+2) x (n+2) array
+  ##n: the size of the orginal 2-D array along one spatial axis (i.e., without extra rows and columns)
+  ##pl: the places in rpsp that can be swaped
+  ##mtrials: the numbef of times to attempt a swap
+  ##alpha: the cutoff value for the phi statistic of Roxburgh and Chesson 1998
+  ##npar: the number of processors to run the code on
+  n<-dim(psp)[2]
+  if(length(dim(psp))==3)
+    S<-dim(psp)[1]
+  else{
+    S<-1
+    psp<-array(psp,dim=c(S,n,n))
+  }
+  ##first prepare psp for the randomization process
+  ##fill in empty pixels with -999
+  #sampled<-rep(ifelse(apply(psp,c(2,3),sum)>0,0,-999),each=S)
+  #dim(sampled)<-c(S,n,n) 
+  #psp <- psp + sampled
+  ##add border of -999###
+  n2<-n+2
+  psp.temp<- array(0,dim=c(S,n2,n2)) ##create an array with boundary cells
+  psp.temp[,-c(1,n2),-c(1,n2)]<-psp ##populate the array with the input data
+  psp.temp[,1,-c(1,n2)]<--999 ##x of 0
+  psp.temp[,n2,-c(1,n2)]<--999 ##x of n+1
+  psp.temp[,-c(1,n2),1]<--999##y of 0
+  psp.temp[,-c(1,n2),n2]<--999 ##y of n+1
+  psp.temp[,1,1]<--999 ;  psp.temp[,1,n2]<--999 ;  psp.temp[,n2,1]<--999 ;  psp.temp[,n2,n2]<--999
+  psp<-psp.temp
+  pl<-1:n2^2
+  c1<-NA
+  c2<-NA
+  skip<-pl[-999==as.vector(psp[1,,])]
+  pl<-pl[is.na(match(pl,skip))]
+  ##now read to begin intital randomization
+  rpsp<-psp
+  ##inital reflection/rotation for each species independently
+  rpsp[,-c(1,n2),-c(1,n2)]<-SpatPerm2D.str(psp[,-c(1,n2),-c(1,n2)],meth='reflect',sp=TRUE,nstrata=nstrata)
+  nplaces <- length(pl)
+  nswaps <- (nplaces*(nplaces-1))/2
+  if(npar>1){
+    require(snowfall)
+    sfInit(parallel=TRUE, cpus=npar, type="SOCK")
+    sfClusterSetupRNG()
+    sfExport("RandPat", "FixUnSamp", "psp", "rpsp","n","nstrata","pl","mtrials1","mtrials2","alpha")
+    sfClusterEval(dyn.load("randompatternspar.dll"))
+    out<-unlist(sfSapply(1:S,function(i)
+      RandPat(i=i,psp=psp,rpsp=rpsp,n=n,nstrata=nstrata,pl=pl,mtrials1=mtrials1,mtrials2=mtrials2,alpha=alpha)))
+    sfStop()
+  }
+  else{
+    out<-NULL
+    for(i in 1:S)
+      out<-cbind(out,RandPat(i=i,psp=psp,rpsp=rpsp,n=n,nstrata=nstrata,pl=pl,mtrials1=mtrials1,mtrials2=mtrials2,alpha=alpha))
+  }
+  out
+}
+
+##2.5##
+FixUnSamp<-function(oarray,rarray){
+  ##purpose: to maintain the spatial locations
+  ##of the unsampled pixels in rarray which is a random
+  ##realization of oarray, -999 is the identifier for 
+  ##unsampled cells, in this case oarray and rarray DO have a false border of -999
+  rarray.tmp<-rarray
+  if(length(dim(oarray))==3){ ##if multiple species then
+    n2<-dim(oarray)[2]
+    if(-999%in%oarray[1,-c(1,n2),-c(1,n2)]){ ##if there are unsampled pixels in the data, then
+      S<-dim(oarray)[1]
+      o.na<-oarray==-999
+      r.na<-rarray==-999
+      end.tmp<-which(o.na[1,-c(1,n2),-c(1,n2)]) ##identifies where in o.na it is -999
+      for(i in 1:S){
+        start.tmp<-which(r.na[i,-c(1,n2),-c(1,n2)])##identifies where in r.na it is -999
+        if(sum(which(!is.na(match(end.tmp,start.tmp))))>0){
+          ##drop ones in which end.tmp and start.tmp match
+          end<-end.tmp[-which(!is.na(match(end.tmp,start.tmp)))]
+          start<-start.tmp[-which(!is.na(match(start.tmp,end.tmp)))]
+        }
+        else{
+          end <- end.tmp
+          start <-start.tmp
+        }
+        rarray[i,-c(1,n2),-c(1,n2)][end]<- rarray.tmp[i,-c(1,n2),-c(1,n2)][start]
+        rarray[i,-c(1,n2),-c(1,n2)][start]<- rarray.tmp[i,-c(1,n2),-c(1,n2)][end]
+      }}}
+  else{ ##only a single species
+    n2<-dim(oarray)[1]
+    if(-999%in%oarray[-c(1,n2),-c(1,n2)]){ ##if there are unsampled pixels in the data, then
+      o.na<-oarray==-999
+      r.na<-rarray==-999
+      end.tmp<-which(o.na[-c(1,n2),-c(1,n2)]) ##identifies where in o.na it is -999
+      start.tmp<-which(r.na[-c(1,n2),-c(1,n2)])##identifies where in r.na it is -999
+      if(sum(which(!is.na(match(end.tmp,start.tmp))))>0){
+        ##drop ones in which end.tmp and start.tmp match
+        end<-end.tmp[-which(!is.na(match(end.tmp,start.tmp)))]
+        start<-start.tmp[-which(!is.na(match(start.tmp,end.tmp)))]
+      }
+      else{
+        end <- end.tmp
+        start <-start.tmp
+      }
+      rarray[-c(1,n2),-c(1,n2)][end]<- rarray.tmp[-c(1,n2),-c(1,n2)][start]
+      rarray[-c(1,n2),-c(1,n2)][start]<- rarray.tmp[-c(1,n2),-c(1,n2)][end]
+    }}
+  rarray
+}
+
+##2.6##
+FixUnSamp2<-function(oarray,rarray){
+  ##purpose: to maintain the spatial locations
+  ##of the unsampled pixels in rarray which is a random
+  ##realization of oarray, -999 is the identifier for 
+  ##unsampled cells, in this case oarray and rarray DO NOT have a false border of -999
+  if(-999%in%oarray){ ##if there are unsampled pixels in the data, then
+    rarray.tmp<-rarray
+    if(length(dim(oarray))==3){ ##if multiple species then
+      S<-dim(oarray)[1]
+      n<-dim(oarray)[2]
+      o.na<-oarray==-999
+      r.na<-rarray==-999
+      end.tmp<-which(o.na[1,,]) ##identifies where in o.na it is -999
+      for(i in 1:S){
+        start.tmp<-which(r.na[i,,])##identifies where in r.na it is -999
+        if(sum(which(!is.na(match(end.tmp,start.tmp))))>0){
+          ##drop ones in which end.tmp and start.tmp match
+          end<-end.tmp[-which(!is.na(match(end.tmp,start.tmp)))]
+          start<-start.tmp[-which(!is.na(match(start.tmp,end.tmp)))]
+        }
+        else{
+          end <- end.tmp
+          start <-start.tmp
+        }
+        rarray[i,,][end]<- rarray.tmp[i,,][start]
+        rarray[i,,][start]<- rarray.tmp[i,,][end]
+      }}
+    else{ ##only a single species
+      n2<-dim(oarray)[1]
+      o.na<-oarray==-999
+      r.na<-rarray==-999
+      end.tmp<-which(o.na) ##identifies where in o.na it is -999
+      start.tmp<-which(r.na)##identifies where in r.na it is -999
+      if(sum(which(!is.na(match(end.tmp,start.tmp))))>0){
+        ##drop ones in which end.tmp and start.tmp match
+        end<-end.tmp[-which(!is.na(match(end.tmp,start.tmp)))]
+        start<-start.tmp[-which(!is.na(match(start.tmp,end.tmp)))]
+      }
+      else{
+        end <- end.tmp
+        start <-start.tmp
+      }
+      rarray[end]<- rarray.tmp[start]
+      rarray[start]<- rarray.tmp[end]
+    }}
+  rarray
+}
 
 ## ANALYZING AND GRAPHING RESULTS----------------------------
 
@@ -317,7 +775,7 @@ vario_uni = function(x, bisect=FALSE, ...)
     v = vario(x, ...)
   n_cpus = length(suppressMessages(sfGetCluster()))
   if (n_cpus > 0) {
-    sfSource('./scripts/spat_sim_vario_func.R')
+    sfSource('./scripts/spat_functions.R')
     sfLibrary(vegan)
     if (bisect) 
       exp_var = sfSapply(1:S, function(sp) vario_bisect(x[ , sp], ...)$vario$exp.var)
@@ -536,7 +994,7 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both',
     sfExport("pop", "vobject", "coords", "meth", "all", "sp", "RPargs",
              "breaks", "RandPatPar", "RandPat", "FixUnSamp", "FixUnSamp2",
              "SpatPerm2D", "SpatPerm2D.str", "vario", "getCovFractions",
-             "null.gen")
+             "null.gen", "check_vario_direction_args")
     if (linux)
       sfClusterEval(dyn.load("danspkg.so"))
     else {
@@ -631,7 +1089,7 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
   r.vals$p = vobject$p
   if (npar > 0) { ##all permutations option not yet implemented for 1 processor
     sfClusterSetupRNG()
-    sfSource('./scripts/spat_sim_vario_func.R')
+    sfSource('./scripts/spat_functions.R')
     sfExport('x', 'coords', 'distance.metric')
     if (direction == 'bisection') {
       rv = sfSapply(1:nperm, function(...)
