@@ -1,6 +1,5 @@
 ## Purpose: to graphically summarize the empirical results
-setwd('~/maxent/spat')
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2', 
               'sherman3', 'serp', 'oosting', 'ferp', 'luquillo', 'graveyard',
@@ -40,7 +39,7 @@ plotEmpir(empirSorBin[1], metric='median', log='xy')
 plotEmpir(empirSorBin[1], metric='average', log='xy', lty=2, add=T)
 
 ## generate pdfs
-for (metric in c('Sor') {
+for (metric in c('Sor')) {
   for (type in c('Bin', 'Abu')) {
     for (log_it in c(FALSE, TRUE)) {
       if (log_it)
