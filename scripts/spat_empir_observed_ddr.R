@@ -2,12 +2,12 @@
 
 clArgs = commandArgs(trailingOnly=TRUE)
 
-server = clArgs[1]
+server = clArgs[1] ##'unc' or something else
 npar = clArgs[2]
 nperm = clArgs[3]
 commName = clArgs[4]
-method = clArgs[5]
-dataType = clArgs[6]
+method = clArgs[5] ## 'multi' or 'uni' for multivarite and univariate respectively
+dataType = clArgs[6] ## 'abu', 'binary', or 'both'
 
 metricsToCalc = "sorensen"
 
@@ -25,7 +25,7 @@ if (commName[1] == 'all') {
 for (i in commName) {
   for (j in metricsToCalc) {
     for (k in dataType) {
-      log_file = paste('./log_files/error_', j, '_', k, '_', i,
+      log_file = paste('./scripts/log_files/error_', j, '_', k, '_', i,
                        '.log', sep='')
       if (server == 'unc') {
         if (k == 'abu') {
@@ -43,11 +43,11 @@ for (i in commName) {
       }
       else {
         if (k == 'abu')
-          system(paste('nice Rscript spat_empir_analysis.R', i, j, k,
+          system(paste('nice Rscript ./scripts/spat_empir_analysis.R', i, j, k,
                        method, npar, nperm, '>', log_file, '2>&1',
                        sep=' '), wait=FALSE)
         else 
-          system(paste('nice Rscript spat_empir_analysis.R', i, j, k,
+          system(paste('nice Rscript ./scripts/spat_empir_analysis.R', i, j, k,
                        method, 1, NA, '>', log_file, '2>&1', sep=' '),
                        wait=FALSE)
       }
