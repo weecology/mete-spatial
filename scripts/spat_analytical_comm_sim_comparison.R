@@ -130,7 +130,7 @@ summary(mod)
 ## distance
 
 library(vegan)
-source('./spat_sim_vario_func.R')
+source('./spat_functions.R')
 
 S = 20
 abu = matrix(rep(200, S), ncol=S)
@@ -287,7 +287,7 @@ setwd('~/maxent/spat')
 load('./sorensen/empirSorBin.Rdata')
 load('./sorensen/simEmpirSorAvg.Rdata')
 
-source('./scripts/spat_sim_vario_func.R')
+source('./scripts/spat_functions.R')
 
 area = 76.56
 obs = empirSorBin$bormann[empirSorBin$bormann$Comm == area, ]
