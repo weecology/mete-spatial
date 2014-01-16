@@ -290,46 +290,30 @@ sep_orders = function(i, shape='sqr') {
   return(j)
 }
 
-calc_D = function(j, W=1, rect=TRUE, LW_ratio=NULL){
+calc_D = function(j, shape='sqr', W=1){
   ## Distance calculation given serperation order
   ## that are shape preserving
   ## From Ostling et al. (2004) pg. 630
   ## j: seperation order
+  ## shape: sqr, rect, or golden to indicate that A0 is a
+  ##   square, rectangle, or golden rectangle respectively
   ## W: width of rectangle of area A0  
-  ## rect: if A0 is rectangular
-  ## LW_ratio: length-to-width ratio
-  ## Note: be default if rect=TRUE it assumed A0 is  
-  ## a golden rectangle with LW_ratio of sqrt(2)
-  if (is.null(LW_ratio)) {
-    if (rect)
-      LW_ratio = sqrt(2)
-    else
-      LW_ratio = 1
-  }
+  ## Note: golden rectangle has the dimensions W x W(2^.5)
+  ## Note: rectangle is assumed dimension of W x 2W 
   if (length(j) > 1) 
-    D = sapply(j, function(j) calc_D(j, W, rect, LW_ratio))
+    D = sapply(j, function(j) calc_D(j, shape, W))
   else {
-    if (LW_ratio < 1)
-      stop('LW_ratio must be >= 1')
-    if (rect == TRUE & LW_ratio == 1)
-      stop('if rect == TRUE then LW_ratio must be > 1')
-    if (rect == FALSE & LW_ratio != 1) 
-      stop('if rect == FALSE then LW_ratio must == 1')
     ## if area is a square
-    if (rect == FALSE)
+    if (shape == 'sqr')
       D = W / 2 ^(j - floor(j / 2))
-    else 
-      if (LW_ratio == sqrt(2))
-        D = W / 2^(j / 2)
+    if (shape == 'golden')
+      D = W / 2^(j / 2)
+    if (shape == 'rect')
+      if (j %% 2 == 0) ## j is even number
+        D = W * 2 / 2^(j - floor(j/2) + 1)
       else
-        if (LW_ratio == 2)
-          if (j %% 2 == 0) ## even number
-            D = W * LW_ratio / 2^(j - floor(j/2) + 1)
-          else
-            D = W * LW_ratio / 2^(j - floor(j/2))
-        else
-          stop('the specified LW_ratio is not currently supported')
-  }  
+        D = W * 2 / 2^(j - floor(j/2))
+  }
   return(D)
 }
 
@@ -401,7 +385,7 @@ sor_heap = function(A, n0, A0, shape='sqr',
   ## ... : optional arguments to pass on to chi_heap and heap_prob
   i = log2(A0 / A)
   j = sep_orders(i, shape)
-  d = calc_D(j)
+  d = calc_D(j, shape=shape)
   chi = lambda = matrix(NA, nrow=length(n0), ncol=length(d))
   for (s in seq_along(n0)) {
     if (sor_use_c) {  
