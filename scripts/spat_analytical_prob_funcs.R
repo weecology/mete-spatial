@@ -290,7 +290,7 @@ sep_orders = function(i, shape='sqr') {
   return(j)
 }
 
-calc_D = function(j, W=1, rect=FALSE, LW_ratio=2){
+calc_D = function(j, W=1, rect=TRUE, LW_ratio=NULL){
   ## Distance calculation given serperation order
   ## that are shape preserving
   ## From Ostling et al. (2004) pg. 630
@@ -298,12 +298,38 @@ calc_D = function(j, W=1, rect=FALSE, LW_ratio=2){
   ## W: width of rectangle of area A0  
   ## rect: if A0 is rectangular
   ## LW_ratio: length-to-width ratio
-  ## Note: it is not necessary to specify rect or 
-  ## LW_ratio if A0 is a golden rectangle W x W(2^.5)
-  if (rect & j %% 2 == 1)
-    D = W * LW_ratio / 2 ^(j - floor(j / 2))
-  else
-    D = W / 2^(j / 2)
+  ## Note: be default if rect=TRUE it assumed A0 is  
+  ## a golden rectangle with LW_ratio of sqrt(2)
+  if (is.null(LW_ratio)) {
+    if (rect)
+      LW_ratio = sqrt(2)
+    else
+      LW_ratio = 1
+  }
+  if (length(j) > 1) 
+    D = sapply(j, function(j) calc_D(j, W, rect, LW_ratio))
+  else {
+    if (LW_ratio < 1)
+      stop('LW_ratio must be >= 1')
+    if (rect == TRUE & LW_ratio == 1)
+      stop('if rect == TRUE then LW_ratio must be > 1')
+    if (rect == FALSE & LW_ratio != 1) 
+      stop('if rect == FALSE then LW_ratio must == 1')
+    ## if area is a square
+    if (rect == FALSE)
+      D = W / 2 ^(j - floor(j / 2))
+    else 
+      if (LW_ratio == sqrt(2))
+        D = W / 2^(j / 2)
+      else
+        if (LW_ratio == 2)
+          if (j %% 2 == 0) ## even number
+            D = W * LW_ratio / 2^(j - floor(j/2) + 1)
+          else
+            D = W * LW_ratio / 2^(j - floor(j/2))
+        else
+          stop('the specified LW_ratio is not currently supported')
+  }  
   return(D)
 }
 
