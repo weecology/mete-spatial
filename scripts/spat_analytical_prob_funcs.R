@@ -6,13 +6,15 @@
 
 library(hash)
 
-load_heap = function(...){
+load_heap = function(path=NULL){
   if(!is.loaded("heap_prob")){
+    if (is.null(path))
+      path = '.'
     OS = Sys.info()['sysname']
     if (OS == 'Linux')
-      dyn.load('heap.so')
+      dyn.load(file.path(path,'heap.so'))
     else
-      dyn.load('heap.dll')
+      dyn.load(file.path(path,'heap.dll'))
   }
 }
 
@@ -387,9 +389,10 @@ sor_heap = function(A, n0, A0, shape='sqr',
   j = sep_orders(i, shape)
   d = calc_D(j, shape=shape)
   chi = lambda = matrix(NA, nrow=length(n0), ncol=length(d))
+  if (sor_use_c)
+    load_heap()
   for (s in seq_along(n0)) {
     if (sor_use_c) {  
-      load_heap()
       chi[s, ] = sapply(j, function(jval)
                         .C("chi_heap", i=as.integer(i), j=as.integer(jval),
                         n0=as.integer(n0[s]), prob=as.double(0))$prob)
