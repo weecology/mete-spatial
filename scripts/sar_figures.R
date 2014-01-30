@@ -44,7 +44,6 @@ lty = c(1, 3, 1, 3)
 ## arthimetic plots
 png('./figs/mete_&_empir_sar.png', width=480 * 4, height=480 * 4, res=120)
   par(mfrow=c(4,4))
-  ## log-log
   for (i in seq_along(site_names)) {
     true = as.character(pred_sar$site) == site_names[i]
     xlim = range(pred_sar$area[true], na.rm=T)
