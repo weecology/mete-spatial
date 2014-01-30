@@ -49,7 +49,7 @@ system('python ./scripts/spat_mete_sar.py')
 system('Rscript ./scripts/spat_empir_expected_sars.R')
 
 ## aggregated results and generate figures ------------------------------
-system('Rscript ./scripts/spat_sar_load_and_avg_data.R')
+system('Rscript ./scripts/spat_sar_load_and_avg_data.R TRUE FALSE')
 
 system('Rscript ./scripts/sar_figures.R')
 
