@@ -80,7 +80,23 @@ calc_F = function(a, n){
   if (n == 0)
     out = 1
   else
-    out = prod(sapply(1:n, function(i) (a + i - 1) /  i ))
+    out = prod(sapply(1:n, function(n) (a + n - 1) /  n ))
+  return(out)
+}  
+
+calc_F = function(a, n){
+  ## Conlisk et al. (2007)
+  ## Eq. 7
+  ## this is a computationaly efficient way to compute 
+  ## gamma(a + n) / (gamma(a) * gamma(n + 1))
+  if (length(n) > 1)
+    out = sapply(n, function(n) calc_F(a,n))
+  else {
+    if (n == 0)
+      out = 1
+    else
+      out = prod(sapply(1:n, function(n) (a + n - 1) /  n ))
+  }  
   return(out)
 }  
 
@@ -228,21 +244,15 @@ multi_prob = function(abu_matrix, psi, c=2 ){
     if (c == 2) {
       n1 = abu_matrix[,1]
       n2 = abu_matrix[,2]
-      prob = 1
-      for (i in length(n1)) {
-        prob = prob * calc_F(a, n1[i]) * calc_F(a, n2[i]) / calc_F(2 * a, n1[i] + n2[i])
-      }  
+      prob = prod((calc_F(a, n1) * calc_F(a, n2))/ calc_F(2 * a, n1 + n2))
     }
     if (c == 4) {
       n1 = abu_matrix[ , 1]
       n2 = abu_matrix[ , 2]
       n3 = abu_matrix[ , 3]
       n4 = abu_matrix[ , 4]
-      prob = 1
-      for (i in length(n1)) {
-        prob = prob * calc_F(a, n1[i]) * calc_F(a, n2[i]) * calc_F(a, n3[i]) * 
-                      calc_F(a, n4[i]) / calc_F(4 * a, sum(abu_matrix[i, ]))
-      }  
+      prob = prod((calc_F(a, n1) * calc_F(a, n2) * calc_F(a, n3) * calc_F(a, n4)) / 
+                  calc_F(4 * a, n1 + n2 + n3 + n4))
     }  
   }  
   return(prob)
