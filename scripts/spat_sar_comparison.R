@@ -4,6 +4,7 @@ setwd('~/maxent/spat')
 source('./scripts/spat_functions.R')
 
 ## load data
+source('./scripts/spat_sar_load_and_avg_data.R')
 sar_res = read.csv('./sar/sar_residuals.csv')
 sar_data = read.csv('./sar/sar_raw_data.csv')
 
@@ -22,22 +23,66 @@ i = match(site, names(meteEmpirSAD))
     ## Average simulated EmpirSAD CI
     dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
     addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
-#    lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1, type='o')
+    lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1)
     ## RP CI
-    dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
+#    dat = srExp[[match(names(meteEmpirSAD)[i], names(srExp))]]
 #    addCI('grains', 'S_lo', 'S_hi', data='dat', col='pink')
-    lines(S_binom ~ grains, data=dat, col='red', lwd=3)
+#    lines(S_binom ~ grains, data=dat, col='red', lwd=3)
     ## analytical meteEmpirSAD    
-    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
-    lines(sr_iter ~ area, data=meteEmpirSAD[[i]], col='grey25', lwd=3, lty=1)
+#    lines(sr_noniter ~ area, data=meteEmpirSAD[[i]], col='dodgerblue', lwd=3)
+    lines(sr_iter ~ area, data=meteEmpirSAD[[i]], col='red', lwd=3, lty=1)
     ## data
-    lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
+#    lines(richness ~ area, data = empir[[i]], pch=19, type='o', lwd=3)
     legend('bottomright', c('Empirical','RP','meteEmpirSAD noniter sim', 
            'meteEmpirSAD iter analy', 'meteEmpirSAD noniter'),
            pch=c(19, rep(NA, 4)), col=c(1, 'red', 'grey',
            'grey25', 'dodgerblue'), bty='n', lwd=3)
 
+## Compare METE Simulated Iterative and Analytical Iterative for logseries ------
+pdf('./figs/mete_sim_analy_logser_sar_predictions.pdf', width=7 * 2, height=7 * 2)
+  par(mfrow=c(4,4))
+  for (i in seq_along(meteLogSer)) {
+    plot(sr_iter ~ area, data=meteLogSer[[i]], log='xy',
+         ylim=range(c(meteLogSer[[i]]$sr_iter, empir[[i]]$richness)),
+         xlim=range(c(meteLogSer[[i]]$area, empir[[i]]$area)),
+         type='n', main=names(meteLogSer)[i], xlab='Area (m2)', ylab='Richness')
+    ## Simulated log series
+    if (names(meteLogSer)[i] != 'cross') {
+      dat = meteAvgLogSer[[match(names(meteLogSer)[i], names(meteAvgLogSer))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1)
+    }
+    ## Analytical Log series iterative
+    lines(sr_iter ~ area, data=meteLogSer[[i]], type='o', col='red')
+    if (i == 1) {
+      txt = c('Sim CI LogSer', 'Sim LogSer', 'Analy iter LogSer')
+      legend('bottomright', txt, col=c('grey','black','red'),
+             pch=c(NA, NA, 1), lty=1, lwd=c(4, rep(2,2)), bty='n', cex=1.25)    
+    }  
+  }
+dev.off()
 
+## Compare METE Simulated Iterative and Analytical Iterative for observed SAD ------
+pdf('./figs/mete_sim_analy_EmpirSAD_sar_predictions.pdf', width=7 * 2, height=7 * 2)
+par(mfrow=c(4,4))
+for (i in seq_along(meteEmpirSAD)) {
+  plot(sr_iter ~ area, data=meteEmpirSAD[[i]], log='xy',
+       ylim=range(c(meteEmpirSAD[[i]]$sr_iter, empir[[i]]$richness)),
+       xlim=range(c(meteEmpirSAD[[i]]$area, empir[[i]]$area)),
+       type='n', main=names(meteEmpirSAD)[i], xlab='Area (m2)', ylab='Richness')
+  ## Simulated log series
+    dat = meteAvgEmpirSAD[[match(names(meteEmpirSAD)[i], names(meteAvgEmpirSAD))]]
+    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+    lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1)
+  ## Analytical Log series iterative
+  lines(sr_iter ~ area, data=meteEmpirSAD[[i]], type='o', col='red')
+  if (i == 1) {
+    txt = c('Sim CI EmpirSAD', 'Sim EmpirSAD', 'Analy iter EmpirSAD')
+    legend('bottomright', txt, col=c('grey','black','red'),
+           pch=c(NA, NA, 1), lty=1, lwd=c(4, rep(2,2)), bty='n', cex=1.25)    
+  }  
+}
+dev.off()
 
 ## Compare METE SAR predictions--------------------------------------------
 pdf('./figs/mete_sar_predictions.pdf', width=7 * 2, height=7 * 2)
