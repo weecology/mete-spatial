@@ -10,6 +10,10 @@ if (length(clArgs) > 0) {
   write_files = as.logical(clArgs[1])
   avg_sim = as.logical(clArgs[2])
 }
+if (length(clArgs) == 0) {
+  write_files = TRUE
+  avg_sim = TRUE
+}
 
 fileNames = dir('./sar')
 
