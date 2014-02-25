@@ -1055,13 +1055,40 @@ null.perms = function(x, vobject, nperm, coords=NULL, meth='both',
   return(r.vals)
 }
 
-random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
-  ##Purpose: to generate a random shuffle statistical null expectations for
-  ## the variograms
+shuffle_comm = function(comm, swap) {
+  ## Purpose: to returned a shuffled community site x species matrix
+  ## Arguments:
+  ## comm: site x species matrix with abundance or pres/absen data
+  ## swap: two options: 'indiv' or 'sample' for individual or sample-based shuffling
+  if (swap == 'indiv') {
+    nquad = nrow(comm)
+    comm_shuffled = comm
+    for (j in 1:ncol(comm)) {
+      rand_samp = sample(nquad, size=sum(comm[ , j]), replace=T)
+      comm_shuffled[ , j] = as.numeric(table(c(rand_samp, 1:nquad)) - 1)
+    }
+  }
+  else if (swap == 'sample')
+    comm_shuffled = comm[sample(nrow(comm)), ]
+  else
+    stop('swap must be "indiv" or "sample"')
+  return(comm_shuffled)
+}
+
+random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
+  ## Purpose: to generate individual or sample-based random shuffle statistical
+  ## null expectations for variograms. 
+  ## Note: With the sample-based shuffling the mean of the null distribution is
+  ## the same as the average variance across all distance classes. So shuffling
+  ## is only useful in deriving the variance around that expectation.
+  ## Note: if x is a presence-absence matrix then the individual and sample-based
+  ## approaches will generate identical within-species variograms
   ##Arguments:
   ##"x" is either an output of class 'sim' that is the output of 'sim.neut.uni' OR an site x species matrix
   ##"vobject" is the output of 'vario', this informs the function of what parameterization of vario to use
   ###specifically it indiates if the pos.neg components and median should be calculated
+  ##"swap" two options: 'indiv' or 'sample' for individual or sample-based shuffling
+  ### repsectively. 
   ##"nperm" is the number of permutations
   ##"coords" the spatial coordinates of the sites, not needed if x is of class 'sim'
   ##"breaks" what spatial breaks to use
@@ -1090,17 +1117,17 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
   if (npar > 0) { ##all permutations option not yet implemented for 1 processor
     sfClusterSetupRNG()
     sfSource('./scripts/spat_functions.R')
-    sfExport('x', 'coords', 'distance.metric')
+    sfExport('x', 'swap', 'coords', 'distance.metric')
     if (direction == 'bisection') {
       rv = sfSapply(1:nperm, function(...)
-        vario_bisect(x[sample(nrow(x)), ], coords,
-                     distance.metric=distance.metric)$vario[ , 'exp.var'])
+                    vario_bisect(shuffle_comm(x, swap), coords,
+                                 distance.metric=distance.metric)$vario[ , 'exp.var'])
     }  
     else {
       sfExport('grain','breaks','hmin','hmax','pos.neg','median','direction',
                'tolerance','unit.angle')
       rv = sfLapply(1:nperm, function(...)
-        vario(x[sample(nrow(x)), ], coords, grain=grain, breaks=breaks, hmin=hmin,
+        vario(shuffle_comm(x, swap), coords, grain=grain, breaks=breaks, hmin=hmin,
               hmax=hmax, pos.neg=pos.neg, median=median, direction=direction,
               tolerance=tolerance, unit.angle=unit.angle,
               distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
@@ -1109,11 +1136,11 @@ random_shuffle = function(x, vobject, nperm, coords=NULL, breaks=NA) {
   else {
     if (direction == 'bisection')
       rv = sapply(1:nperm, function(...)
-        vario_bisect(x[sample(nrow(x)), ], coords,
+        vario_bisect(shuffle_comm(x, swap), coords,
                      distance.metric=distance.metric)$vario[ , 'exp.var'])
     else
       rv = lapply(1:nperm, function(...)
-        vario(x[sample(nrow(x)), ], coords, grain=grain, breaks=breaks, hmin=hmin,
+        vario(shuffle_comm(x, swap), coords, grain=grain, breaks=breaks, hmin=hmin,
               hmax=hmax, pos.neg=pos.neg, median=median, direction=direction,
               tolerance=tolerance, unit.angle=unit.angle,
               distance.metric=distance.metric)$vario[ , c('exp.var', 'obs.var')])
