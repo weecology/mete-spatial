@@ -2078,8 +2078,8 @@ calc_metrics_par = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
   return(out)
 }
 
-calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
-                               nperm=NA, univariate=FALSE,
+calc_metrics_bisect = function(comms, metricsToCalc, dataType, swap, 
+                               quants=NA, nperm=NA, univariate=FALSE, 
                                writeToFile=FALSE, fileSuffix=NULL)
 {
   ## Purpose: to compuate spatial distance decay metrics for community data.
@@ -2093,6 +2093,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
   ## dataType: if == 'binary' then comms is converted to a pres/absence matrix
   ##           prior to analysis. If == 'abu' then matrix is not transformed
   ##           and an additional analytical null expectation is calculated
+  ## swap: two options: indiv or sample for individual or sample-based shuffling
   ## quants: the quantiles to compute
   ## nperm: number of permutations to carry out for null models
   ## univariate: if TRUE then results are computed on a per species basis
@@ -2123,7 +2124,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varWithinObs = vario_bisect(mat,coords,quants=quants,univariate=univariate)
       if(!is.na(nperm)){ 
-        varWithinNull = random_shuffle(mat,varWithinObs,nperm,coords)
+        varWithinNull = random_shuffle(mat,varWithinObs, swap, nperm,coords)
       }
       else{
         varWithinNull = NULL
@@ -2139,7 +2140,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varBetweenObs = vario_bisect(mat,coords,quants=quants,univariate=univariate) 
       if (!is.na(nperm)) { 
-        varBetweenNull = random_shuffle(mat,varBetweenObs,nperm,coords)
+        varBetweenNull = random_shuffle(mat,varBetweenObs,swap,nperm,coords)
       }
       else {
         varBetweenNull = NULL
@@ -2156,7 +2157,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                           quants=quants, univariate=univariate) 
       jaccardNull = NULL
       if (!is.na(nperm)) {
-        jaccardNull = random_shuffle(mat, jaccardObs, nperm, coords)
+        jaccardNull = random_shuffle(mat, jaccardObs, swap, nperm, coords)
       }        
       jaccardExp = NULL
       if(dataType == 'binary') {
@@ -2175,7 +2176,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                                   quants=quants, univariate=univariate) 
       sorensenNull = NULL
       if (!is.na(nperm)) {
-        sorensenNull = random_shuffle(mat, sorensenObs, nperm, coords)
+        sorensenNull = random_shuffle(mat, sorensenObs, swap, nperm, coords)
       }    
       sorensenExp = NULL
       if (dataType == 'binary') {

@@ -36,8 +36,11 @@ comms = read.csv(paste('./data/',commName, '_comms.csv', sep=''))
 ## specify quantiles to examine variogram at
 quants = c(0.25, 0.50, 0.75)
 
+## specify individual based Random Placement Model null method
+swap = 'indiv'
+
 ## compute Dist Decay statistics
-metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, quants,
+metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, swap, quants,
                               nperm, univariate, writeToFile=TRUE,
                               fileSuffix=commName)
 
