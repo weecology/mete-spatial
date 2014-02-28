@@ -40,7 +40,7 @@ quants = c(0.25, 0.50, 0.75)
 swap = 'indiv'
 
 ## compute Dist Decay statistics
-metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, swap, quants,
+metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, quants, swap,
                               nperm, univariate, writeToFile=TRUE,
                               fileSuffix=commName)
 

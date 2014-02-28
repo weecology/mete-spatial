@@ -1059,7 +1059,7 @@ shuffle_comm = function(comm, swap) {
   ## Purpose: to returned a shuffled community site x species matrix
   ## Arguments:
   ## comm: site x species matrix with abundance or pres/absen data
-  ## swap: two options: 'indiv' or 'sample' for individual or sample-based shuffling
+  ## swap: two options: 'indiv' or 'quad' for individual or quadrat-based shuffling
   if (swap == 'indiv') {
     nquad = nrow(comm)
     comm_shuffled = comm
@@ -1068,10 +1068,10 @@ shuffle_comm = function(comm, swap) {
       comm_shuffled[ , j] = as.numeric(table(c(rand_samp, 1:nquad)) - 1)
     }
   }
-  else if (swap == 'sample')
+  else if (swap == 'quad')
     comm_shuffled = comm[sample(nrow(comm)), ]
   else
-    stop('swap must be "indiv" or "sample"')
+    stop('swap must be "indiv" or "quad"')
   return(comm_shuffled)
 }
 
@@ -1087,7 +1087,7 @@ random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
   ##"x" is either an output of class 'sim' that is the output of 'sim.neut.uni' OR an site x species matrix
   ##"vobject" is the output of 'vario', this informs the function of what parameterization of vario to use
   ###specifically it indiates if the pos.neg components and median should be calculated
-  ##"swap" two options: 'indiv' or 'sample' for individual or sample-based shuffling
+  ##"swap" two options: 'indiv' or 'quad' for individual or quadrat-based shuffling
   ### repsectively. 
   ##"nperm" is the number of permutations
   ##"coords" the spatial coordinates of the sites, not needed if x is of class 'sim'
@@ -2078,8 +2078,8 @@ calc_metrics_par = function(comms,metricsToCalc,dataType,npar,grain=1,breaks=NA,
   return(out)
 }
 
-calc_metrics_bisect = function(comms, metricsToCalc, dataType, swap, 
-                               quants=NA, nperm=NA, univariate=FALSE, 
+calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
+                               swap=NA, nperm=NA, univariate=FALSE, 
                                writeToFile=FALSE, fileSuffix=NULL)
 {
   ## Purpose: to compuate spatial distance decay metrics for community data.
@@ -2093,8 +2093,9 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, swap,
   ## dataType: if == 'binary' then comms is converted to a pres/absence matrix
   ##           prior to analysis. If == 'abu' then matrix is not transformed
   ##           and an additional analytical null expectation is calculated
-  ## swap: two options: indiv or sample for individual or sample-based shuffling
   ## quants: the quantiles to compute
+  ## swap: two options: indiv or quad for individual or quadrat-based shuffling, 
+  ##       defaults to NA.
   ## nperm: number of permutations to carry out for null models
   ## univariate: if TRUE then results are computed on a per species basis
   ## writeToFile: if True an .Rdata file is written for each metric calculated
@@ -2189,23 +2190,25 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, swap,
     for (j in metricsToCalc) { 
       out[[i]][[j]] = eval(parse(text=paste(j,'[[',i,']]')))
     }
-    if (writeToFile) {      
+    if (writeToFile) {
       ## update result files as loop proceeds
+      if (!is.na(nperm)) {
+        RPM_type = paste(swap, 'RPM', sep='')
+        fileSuffix = paste(fileSuffix, datatype, RPM_type, '.Rdata', sep='_')
+      }
+      else
+        fileSuffix = paste(fileSuffix, datatype, '.Rdata', sep='_')
       if (any('varWithin' %in% metricsToCalc)) {
-        save(varWithin, file=paste('./varWithin/varWithin_',
-                                   fileSuffix, '_', dataType, '.Rdata', sep=''))  
+        save(varWithin, file=paste('./varWithin/varWithin', fileSuffix, sep='_'))  
       }
       if (any('varBetween' %in% metricsToCalc)) {
-        save(varBetween, file=paste('./varBetween/varBetween_',
-                                    fileSuffix, '_', dataType, '.Rdata', sep=''))
+        save(varBetween, file=paste('./varBetween/varBetween_', fileSuffix, sep='_'))  
       }
       if (any('jaccard' %in% metricsToCalc)) {
-        save(jaccard, file=paste('./jaccard/jaccard_',
-                                 fileSuffix, '_', dataType, '.Rdata', sep=''))
+        save(jaccard, file=paste('./jaccard/jaccard_', fileSuffix, sep='_'))  
       }
       if (any('sorensen' %in% metricsToCalc)) {
-        save(sorensen, file=paste('./sorensen/sorensen_',
-                                  fileSuffix, '_', dataType, '.Rdata', sep=''))
+        save(sorensen, file=paste('./sorensen/sorensen_', fileSuffix, sep='_'))  
       }             
     }
   }
