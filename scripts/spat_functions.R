@@ -2107,6 +2107,13 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       fileSuffix = paste(fileSuffix,'_uni_bisect', sep='') 
     else
       fileSuffix = paste(fileSuffix,'_bisect', sep='') 
+    if (!is.na(nperm)) {
+      rpmType = paste(swap, 'RPM', sep='')
+      fileSuffix = paste(fileSuffix, '_', dataType, '_', rpmType, '.Rdata',
+                         sep='')
+    }
+    else
+      fileSuffix = paste(fileSuffix, '_', dataType, '.Rdata', sep='')
   }
   grains = unique(comms[,1])
   out = vector('list', length(grains))
@@ -2192,13 +2199,6 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
     }
     if (writeToFile) {
       ## update result files as loop proceeds
-      if (!is.na(nperm)) {
-        rpmType = paste(swap, 'RPM', sep='')
-        fileSuffix = paste(fileSuffix, '_', dataType, '_', rpmType, '.Rdata',
-                           sep='')
-      }
-      else
-        fileSuffix = paste(fileSuffix, '_', dataType, '.Rdata', sep='')
       if (any('varWithin' %in% metricsToCalc)) {
         save(varWithin, file=paste('./varWithin/varWithin', fileSuffix, sep='_'))  
       }
