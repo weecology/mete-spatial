@@ -2193,22 +2193,23 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
     if (writeToFile) {
       ## update result files as loop proceeds
       if (!is.na(nperm)) {
-        RPM_type = paste(swap, 'RPM', sep='')
-        fileSuffix = paste(fileSuffix, datatype, RPM_type, '.Rdata', sep='_')
+        rpmType = paste(swap, 'RPM', sep='')
+        fileSuffix = paste(fileSuffix, '_', dataType, '_', rpmType, '.Rdata',
+                           sep='')
       }
       else
-        fileSuffix = paste(fileSuffix, datatype, '.Rdata', sep='_')
+        fileSuffix = paste(fileSuffix, '_', dataType, '.Rdata', sep='')
       if (any('varWithin' %in% metricsToCalc)) {
         save(varWithin, file=paste('./varWithin/varWithin', fileSuffix, sep='_'))  
       }
       if (any('varBetween' %in% metricsToCalc)) {
-        save(varBetween, file=paste('./varBetween/varBetween_', fileSuffix, sep='_'))  
+        save(varBetween, file=paste('./varBetween/varBetween', fileSuffix, sep='_'))  
       }
       if (any('jaccard' %in% metricsToCalc)) {
-        save(jaccard, file=paste('./jaccard/jaccard_', fileSuffix, sep='_'))  
+        save(jaccard, file=paste('./jaccard/jaccard', fileSuffix, sep='_'))  
       }
       if (any('sorensen' %in% metricsToCalc)) {
-        save(sorensen, file=paste('./sorensen/sorensen_', fileSuffix, sep='_'))  
+        save(sorensen, file=paste('./sorensen/sorensen', fileSuffix, sep='_'))  
       }             
     }
   }
