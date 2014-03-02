@@ -2645,7 +2645,8 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
   return(vobject)
 }
 
-getResults = function(names, metric, dataType, bisect=FALSE, sim_result=FALSE)
+getResults = function(names, metric, dataType, bisect=FALSE, sim_result=FALSE,
+                      swap=NA)
 {
   ## Purpose: to import the results of the 'calc_metrics' function
   ## and to load them into a list
@@ -2654,17 +2655,26 @@ getResults = function(names, metric, dataType, bisect=FALSE, sim_result=FALSE)
   ## metric: the metric calculated, see 'calc_metrics' for options
   ## dataType: the data type of interest, 'binary' or 'abu'
   ## sim_result: specifies if the object is a simulation result
+  ## swap: the type of RPM used either 'indiv' or 'quad' or NA for no permutations
   results = vector('list', length=length(names))
   names(results) = names
   for (i in seq_along(results)) {
     if (bisect) {
-      load(paste('./', metric, '/' ,metric, '_', names[i], '_bisect_', dataType, '.Rdata',
-                 sep=''))
+      if (is.na(swap))
+        fileName = paste(metric, names[i], 'bisect', dataType, sep='_')
+      else 
+        fileName = paste(metric, names[i], 'bisect', dataType, paste(swap, 'RPM', sep=''),
+                         sep='_')
     }
     else {
-      load(paste('./', metric, '/' ,metric, '_', names[i], '_', dataType, '.Rdata',
-                 sep=''))
+      if (is.na(swap))
+        fileName = paste(metric, names[i], dataType, sep='_')
+      else
+        fileName = paste(metric, names[i], dataType, paste(swap, 'RPM', sep=''),
+                         sep='_')
     }
+    fileName = paste(fileName, '.Rdata', sep='')
+    load(paste('./', metric, '/', fileName, sep=''))
     if (sim_result)
       results[[i]] = metrics
     else

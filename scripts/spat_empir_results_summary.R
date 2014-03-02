@@ -7,7 +7,7 @@ shrtnames = c('bci', 'cocoli1', 'cocoli2', 'cross', 'sherman1', 'sherman2',
               'bigoak')
 
 empirBin = getResults(shrtnames, 'sorensen', 'binary', bisect=TRUE)
-empirAbu = getResults(shrtnames, 'sorensen', 'abu', bisect=TRUE)
+empirAbu = getResults(shrtnames, 'sorensen', 'abu', bisect=TRUE, swap='indiv')
 empirSorBin = reshapeResults(empirBin, 'sorensen', bisect=TRUE)
 empirSorAbu = reshapeResults(empirAbu, 'sorensen', perm_null=TRUE, bisect=TRUE)
 
