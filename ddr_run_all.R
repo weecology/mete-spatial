@@ -56,7 +56,7 @@ nperm = 500
 commName = 'all'
 method = 'multi'
 dataType = 'both'
-system(paste("Rscript spat_empir_observed_ddr.R", server,
+system(paste("Rscript ./scripts/spat_empir_observed_ddr.R", server,
              npar, nperm, commName, method, dataType, sep=" "),
        wait=FALSE)
 
@@ -74,7 +74,6 @@ system(paste("Rscript spat_empir_observed_ddr.R", server,
        wait=FALSE)
 
 ## generate analytical mete DDR expectation for the empirical communities
-server = 'usu'
 site_index = 'all'
 sadType = 'both'
 system(paste('Rscript spat_mete_ddr.R', server, site_index, sadType), wait=FALSE)
