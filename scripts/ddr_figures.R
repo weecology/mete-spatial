@@ -359,11 +359,8 @@ for (i in seq_along(site_names)) {
 dev.off()
 
 
-## alternative loess approach with SE
-
-
-## log-arith lowess plots
-tiff('./figs/ddr_log_resid_by_sites.tiff', width=480 * 4, height=480 * 4)
+## log-arith residual plot with lowess lines
+png('./figs/ddr_log_resid_by_sites.png', width=480 * 4, height=480 * 4)
 par(mfrow=c(4,4))
 for (i in seq_along(site_names)) {
   metrics = c('avg.res', 'exp.res')
@@ -407,77 +404,41 @@ dev.off()
 
 
 ## Supplemental Figure 1--------------------------------------------------------
-## r2 of model fits to simulated results
-load('./sorensen/simSorAbuAvg.Rdata')
-S = round(10^seq(log10(10), log10(100), length.out=20))
-N = round(10^seq(log10(120), log10(5e5), length.out=20))
-#stats = getSimStats(simSorAbuAvg, S, N)
+## Compare the fit bettween the power and exponential models
+## for both the METE predicted DDR and the observed DDR
 
-#pdf('./figs/sup_fig1_r2_sim_&_empir_ddr.pdf', width = 7 * 2, height= 7)
-#windows(width= 7 * 2, height=7)
+stats = list(mete = getStats(simSorAbuFixed, 'average'),
+             empir = getStats(empirSorAbu, 'average'))
 
-meth='wtr'
-dpwr = density(stats['pwr', 'r2', meth, , , ], na.rm = TRUE)
-hpwr = hist(stats['pwr', 'r2', meth, , , ], plot=F)
-dexp = density(stats['exp', 'r2', meth, , , ], na.rm = TRUE)
-hexp = hist(stats['exp', 'r2', meth, , , ], plot=F)
+r2pwr = r2exp  = list(mete = NULL, empir = NULL)
+for(i in seq_along(stats)) {
+  r2pwr[[i]] = unlist(sapply(stats[[i]], function(x) x['pwr', 'r2', 'wtr',]))
+  r2exp[[i]] = unlist(sapply(stats[[i]], function(x) x['exp', 'r2', 'wtr',]))
+}
 
-xexp = dexp$x
-yexp = dexp$y / sum(hexp$density) * dexp$n
+## compute density kernals
+dpwr = lapply(r2pwr, density)
+dexp = lapply(r2exp, density)
 
-xpwr = c(min(xexp), dpwr$x)
-ypwr = c(0, dpwr$y / sum(hpwr$density) * dpwr$n)
-
-xlims = range(c(xpwr, xexp, 1))
-ylims = range(c(ypwr, yexp))
-
-linelwd = 3
-
+png('./figs/Sup1_r2_density_kernals.png', width=480*2, height=480)
 par(mfrow=c(1,2))
-
-plot(xpwr, ypwr, type='l', lty=3, lwd=linelwd, xlim=round(xlims,1), ylim=ylims, col='black',
-     xlab='', ylab='', frame.plot=F, axes=F)
-mtext(side=3, 'METE parameter space', cex=2)
-addAxis1(at=c(.7, .8, .9, 1))
-addAxis2()
-addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
-        padj=2)
-addylab('Freqency')
-lines(xpwr, ypwr,  lwd=linewd, col='black')
-lines(xexp, yexp, lwd=linelwd, col='grey')
-
-##
-load('./sorensen/empirSorAbu.Rdata') 
-empir_stats = getStats(empirSorAbu, 'average')
-
-r2pwr = unlist(sapply(empir_stats, function(x) x['pwr', 'r2', 'wtr',]))
-r2exp = unlist(sapply(empir_stats, function(x) x['exp', 'r2', 'wtr',]))
-dpwr = density(r2pwr, na.rm=T)
-hpwr = hist(r2pwr, plot=F)
-dexp = density(r2exp, na.rm=T)
-hexp = hist(r2exp, plot=F)
-
-xexp = dexp$x
-yexp = dexp$y / sum(hexp$density) * dexp$n
-
-xpwr = c(min(xexp), dpwr$x)
-ypwr = c(0, dpwr$y / sum(hpwr$density) * dpwr$n)
-
-
-plot(xpwr, ypwr, type='n', xlim=range(c(xpwr, xexp)), ylim=range(c(ypwr, yexp)),
-     xlab='', ylab='', frame.plot=F, axes=F)
-mtext(side=3, 'Empirical datasets', cex=2)
-addAxes()
-addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
-        padj=2)
-addylab('Freqency')
-lines(xpwr, ypwr,  lwd=linelwd, col='black')
-lines(xexp, yexp, lwd=linelwd, col='grey')
-
-legend('topleft', c('Exponential Model', 'Power  Model'),
-       lty=1, lwd=6, bty='n', cex=1.5, col=c( 'grey', 'black'))
-
-
+linelwd = 3
+xlims = list(c(.8, 1.01), c(0, 1.01))
+ylims = list(c(0, 1250), c(0, 10))
+title = c('METE Functional Form', 'Empirical Functional Form')
+for(i in seq_along(xpwr)) {
+  plot(dpwr[[i]], xlim=xlims[[i]], ylim=ylims[[i]], lwd=linelwd, col='black',
+       main='',  xlab='', ylab='', frame.plot=F, axes=F)
+  lines(dexp[[i]],  lwd=linelwd, col='grey')
+  mtext(side=3, title[i], cex=2)
+  addAxes()
+  addylab('Density')
+  addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
+          padj=2)
+  if(i == 1)
+    legend('topleft', c('Power', 'Exponential'), col=c('black','grey'),
+           lwd = 5, lty=1, bty='n', cex=2)
+} 
 dev.off()
 
 ## Supplemental Figure 2--------------------------------------------------------
