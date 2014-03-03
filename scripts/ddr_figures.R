@@ -402,8 +402,73 @@ for (i in seq_along(site_names)) {
 }
 dev.off()
 
-
 ## Supplemental Figure 1--------------------------------------------------------
+## Examine the difference in the SAR prediction between the recursive
+## and semi-recursive formulations of METE
+source('./scripts/spat_functions.R')
+
+## load data
+source('./scripts/spat_sar_load_and_avg_data.R')
+
+png('./figs/Supl1_mete_sim_analy_logser_sar_predictions.png',
+    width=480 * 2, height=480 * 2)
+par(mfrow=c(4,4))
+for (i in seq_along(meteLogSer)) {
+  plot(sr_iter ~ area, data=meteLogSer[[i]], log='xy',
+       ylim=range(c(meteLogSer[[i]]$sr_iter, empir[[i]]$richness)),
+       xlim=range(c(meteLogSer[[i]]$area, empir[[i]]$area)),
+       type='n', main=names(meteLogSer)[i], xlab='Area (m2)', ylab='Richness')
+  ## Simulated log series
+  if (names(meteLogSer)[i] != 'cross') {
+    dat = meteAvgLogSer[[match(names(meteLogSer)[i], names(meteAvgLogSer))]]
+    addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+    lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1)
+  }
+  ## Analytical Log series iterative
+  lines(sr_iter ~ area, data=meteLogSer[[i]], type='o', col='red')
+  if (i == 1) {
+    txt = c('Semi-recurisve CI', 'Semi-recursive Exp.', 'Recursive Exp.')
+    legend('bottomright', txt, col=c('grey','black','red'),
+           pch=c(NA, NA, 1), lty=1, lwd=c(4, rep(2,2)), bty='n', cex=1.25)    
+  }  
+}
+dev.off()
+
+## Supplemental Fig 3 -----------------------------------------------------
+source('./scripts/spat_functions')
+
+load('simulated_empirical_results_bisect.Rdata')
+
+grain = 2.44
+sim_results = simSorBinFixed$bigoak[simSorBinFixed$bigoak$Comm == grain, ]
+geo_dists = sim_results$Dist
+sim_sor = sim_results$Avg
+
+## load the analytical calculated result
+dat = read.csv('./sorensen/bigoak_empirSAD_mete_sor.csv')
+dat_sub = dat[dat$i == 13, ][seq(1,13,2), ]
+
+png('./figs/Sup3_simulated_analtyical_ddr_comparison.png',
+    width=480*2, height=480*1)
+par(mfrow=c(1,2))
+plot(geo_dists, sim_sor, type='o', ylim=c(.01, .3), log='xy',
+     xlab='', ylab='', axes=F, lwd=3)
+points(geo_dists, dat_sub$sor, type='o', col='red', lwd=3)
+addAxes()
+addxlab('Distance', padj=3)
+addylab('Sorensen')
+legend('bottomleft', c('Simulated METE', 'Analytical METE'),
+       col=c('black', 'red'), lty=1, lwd=4, cex=2, pch=1, bty='n')
+##
+plot(geo_dists, dat_sub$sor - sim_sor, type='o', log='xy',
+     xlab='', ylab='', axes=F, lwd=3)
+addAxes()
+addxlab('Distance', padj=3)
+addylab('Analytical - Simulated Sorensen')
+
+dev.off()
+
+## Supplemental Figure 4--------------------------------------------------------
 ## Compare the fit bettween the power and exponential models
 ## for both the METE predicted DDR and the observed DDR
 
@@ -420,12 +485,12 @@ for(i in seq_along(stats)) {
 dpwr = lapply(r2pwr, density)
 dexp = lapply(r2exp, density)
 
-png('./figs/Sup1_r2_density_kernals.png', width=480*2, height=480)
+png('./figs/Sup4_r2_density_kernals.png', width=480*2, height=480)
 par(mfrow=c(1,2))
 linelwd = 3
 xlims = list(c(.8, 1.01), c(0, 1.01))
 ylims = list(c(0, 1250), c(0, 10))
-title = c('METE Functional Form', 'Empirical Functional Form')
+title = c('METE DDR Functional Form', 'Empirical DDR Functional Form')
 for(i in seq_along(xpwr)) {
   plot(dpwr[[i]], xlim=xlims[[i]], ylim=ylims[[i]], lwd=linelwd, col='black',
        main='',  xlab='', ylab='', frame.plot=F, axes=F)
@@ -441,9 +506,12 @@ for(i in seq_along(xpwr)) {
 } 
 dev.off()
 
-## Supplemental Figure 2--------------------------------------------------------
+## Supplemental Figure 5--------------------------------------------------------
 
 source('./scripts/spat_sar_load_and_avg_data.R')
+
+load('./sorensen/empirSorAbu_bisect.Rdata')
+load('simulated_empirical_results_bisect.Rdata')
 
 ## set up graphic parameters 
 
@@ -460,15 +528,14 @@ dat = data.frame(dat, area = as.numeric(as.character(dat$Comm)))
 sar_data = read.csv('./sar/empir_sars.csv')
 sar_data$area = round(sar_data$area, 2)
 dat = merge(dat, sar_data[ , c('site', 'area', 'richness', 'indiv')], all.x=TRUE)
-## subset so that has at least 20 individuals
-dat = subset(dat, indiv >= 20)
+
 ## bring in habitat type
 shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
 habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
 dat$hab = habitat[match(dat$site, shrtnm)]
 sites = unique(dat$site)
-#pdf('./figs/sup_fig2_raw_ddr_residuals.pdf', width=7 * 2, height=7)
-#windows(width=7 * 3, height=7 * 2)
+
+png('./figs/Sup5_raw_ddr_residuals.png', width=480 * 2, height=480)
 ## raw emprical DDR residuals
 par(mfrow=c(1,2))
 for(j in 1:2){
@@ -476,7 +543,7 @@ for(j in 1:2){
     main = 'METE'
   else
   main = 'RP'
-  plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim = c(-.1, .6), xlim=c(.5,512),
+  plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim = c(-.5, .5), xlim=c(.5,512),
        xlab='', ylab='', axes=F, frame.plot=F)
   addAxis(1, at=2^seq(-1, 9, 2))
   addAxis(2)
