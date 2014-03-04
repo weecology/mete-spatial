@@ -1,9 +1,12 @@
 ## Purpose: to simulate communities that are parameterized by the empirically 
 ## observed communities.
 
+print('Submitting jobs to simulate empirical communities under METE, ...')
+
 clArgs = commandArgs(trailingOnly=TRUE)
 server = clArgs[1]
-sites = clArgs[-1]
+ncomm = clArgs[2]
+sites = clArgs[-(1:2)]
 
 names = read.table('./data/shrtnames.txt', colClasses='character')
 bisect = read.table('./data/bisect_fine.txt')
@@ -25,12 +28,15 @@ for (i in indices) {
     if (server == 'unc')
       system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python ./scripts/spat_community_generation.py',
-                   S[i], N[i], 2, bisect[i], 'False', abu_file,
+                   S[i], N[i], ncomm, bisect[i], 'False', abu_file,
                    names[i], sep=' '))
     else
       system(paste('nice python ./scripts/spat_community_generation.py',
-                   S[i], N[i], 2, bisect[i], 'False', abu_file,
+                   S[i], N[i], ncomm, bisect[i], 'False', abu_file,
                    names[i], '>', log_file, '2>&1', sep=' '),
              wait=FALSE)
   }
 }
+
+print('Submitting jobs to simulate empirical communities under METE, complete!')
+
