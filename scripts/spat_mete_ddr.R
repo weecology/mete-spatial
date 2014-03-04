@@ -1,7 +1,7 @@
 ## Purpose: to generate the analytical METE DDR predictions
 ## given the parameters in the empirically observed communities
 
-setwd('~/maxent/spat')
+print('Submitting jobs to compute the analytical METE DDRs, ...')
 
 source('./scripts/spat_functions.R')
 
@@ -15,16 +15,17 @@ if (length(clArgs) > 0) {
 if (sadType == 'both')
   sadType = c('empirSAD','meteSAD')
 
-if (site_index != 'all')
-  site_index = as.integer(site_index)
-
-if (site_index == 'all')
-  site_index = 1:19
-
 shrtnames = read.table('./data/shrtnames.txt', colClasses='character')
 grain_fine = as.numeric(read.table('./data/grain_fine.txt'))
 bisect_fine = as.numeric(read.table('./data/bisect_fine.txt'))
 bisect_coarse = as.numeric(read.table('./data/bisect_coarse.txt'))
+
+if (site_index != 'all')
+  site_index = as.integer(site_index)
+
+if (site_index == 'all') { 
+  site_index = 1:length(shrtnames)
+}
 
 for(i in site_index) {
   for(j in sadType) {
@@ -56,5 +57,7 @@ for(i in site_index) {
                   unit_distance, '>', log_file, '2>&1', sep=' ')
     
     system(cmd, wait=FALSE)
-  }  
+  }
 }
+
+print('Submitting jobs to compute the analytical METE DDRs, complete!')
