@@ -2852,15 +2852,17 @@ merge_drop = function(results) {
   result_names = names(results)
   to_drop = unlist(sapply(c('cocoli2','sherman2','sherman3'),
                           function(x) grep(x, result_names)))
-  cocoli_results = (subset(results$cocoli1, select= -Comm) + 
-                    subset(results$cocoli2, select= -Comm)) / 2
-  cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
-  sherman_results = (subset(results$sherman1, select= -Comm) + 
-                     subset(results$sherman2, select= -Comm)) / 2
-  sherman_results = data.frame(sherman_results, Comm=results$sherman1[ , 'Comm'])
-  results = results[-to_drop]
-  results[[grep('cocoli1', names(results))]] = cocoli_results
-  results[[grep('sherman1', names(results))]] = sherman_results
+  if (length(to_drop) > 0) {
+    cocoli_results = (subset(results$cocoli1, select= -Comm) + 
+                        subset(results$cocoli2, select= -Comm)) / 2
+    cocoli_results = data.frame(cocoli_results, Comm=results$cocoli1[ , 'Comm'])
+    sherman_results = (subset(results$sherman1, select= -Comm) + 
+                         subset(results$sherman2, select= -Comm)) / 2
+    sherman_results = data.frame(sherman_results, Comm=results$sherman1[ , 'Comm'])
+    results = results[-to_drop]
+    results[[grep('cocoli1', names(results))]] = cocoli_results
+    results[[grep('sherman1', names(results))]] = sherman_results
+  }
   return(results)
 }
 
