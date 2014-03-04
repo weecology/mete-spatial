@@ -3,7 +3,7 @@
 
 clArgs = commandArgs(trailingOnly=TRUE)
 server = clArgs[1]
-indices=clArgs[2]
+sites = clArgs[-1]
 
 names = read.table('./data/shrtnames.txt', colClasses='character')
 bisect = read.table('./data/bisect_fine.txt')
@@ -12,9 +12,11 @@ N = read.table('./data/N_vals.txt')
 
 sadType = c("meteSAD", "empirSAD")
 
+indices = match(sites, names)
+
 for (i in indices) {
   for (j in sadType) {
-    log_file = paste('./scripts/log_files/error_sim_analysis_', names[i],
+    log_file = paste('./scripts/log_files/error_mete_comm_gen_', names[i],
                      '_', j, '.log', sep='')
     if (j == 'meteSAD')
       abu_file = 'None'
@@ -23,11 +25,11 @@ for (i in indices) {
     if (server == 'unc')
       system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python ./scripts/spat_community_generation.py',
-                   S[i], N[i], 200, bisect[i], 'False', abu_file,
+                   S[i], N[i], 2, bisect[i], 'False', abu_file,
                    names[i], sep=' '))
     else
       system(paste('nice python ./scripts/spat_community_generation.py',
-                   S[i], N[i], 200, bisect[i], 'False', abu_file,
+                   S[i], N[i], 2, bisect[i], 'False', abu_file,
                    names[i], '>', log_file, '2>&1', sep=' '),
              wait=FALSE)
   }
