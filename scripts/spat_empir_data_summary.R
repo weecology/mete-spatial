@@ -17,8 +17,9 @@ for (i in seq_along(comms)) {
   grain_coarse[i] = tail(grains, 1)
   bisect_fine[i] = log2(nrow(comms[[i]][ comms[[i]][ , 1] == grain_fine[i], ]))
   bisect_coarse[i] = log2(nrow(comms[[i]][ comms[[i]][ , 1] == grain_coarse[i], ]))
-  S[i] = ncol(comms[[i]][ , -(1:3)])
-  N[i] = sum(comms[[i]][ comms[[i]][ , 1] == grain_coarse[i], -(1:3)])
+  sad = read.csv(paste('./data/', shrtnames[i], '_sad.csv', sep=''), header=F)
+  S[i] = ncol(sad)
+  N[i] = sum(sad)
   shape[i] = ifelse(bisect_coarse[i] %% 2 == 0 , 'square', 'rectangle')
 }
 
