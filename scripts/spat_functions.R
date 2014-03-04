@@ -2234,7 +2234,7 @@ n_pixels_wide = function(i_bisect){
 
 ##3.19 ##
 make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
-                              grainSuffix=NULL)
+                              grainSuffix=NULL, rm_absent_sp=TRUE)
 { 
   ## Output: 
   ## A community matrix where each row is a differnet pixel on a grid.  
@@ -2249,6 +2249,10 @@ make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
   ##      individual per record
   ## grainSuffix : if supplied the grain column will have this appended to it
   ##               so that it is clear what community this corresponds with
+  ## rm_absent_sp: boolean that defaults to TRUE to remove species
+  ##  who no longer occur in the site x species matrix after subsetting base
+  ## on the defined spatial domain (i.e., argument 'domain' specifies a smaller
+  ## area than spatial coordiantes are provided for)
   xdiff = abs(domain[2] - domain[1])
   ydiff = abs(domain[4] - domain[3])
   if (xdiff > ydiff) {
@@ -2304,6 +2308,11 @@ make_comm_matrix = function(spnum, S, coords, n_quadrats, domain, abu = NULL,
         irow = irow + 1 
       }
     }
+  }
+  if (rm_absent_sp) {
+    cols_to_rm = which(apply(comms[ , -(1:3)], 2, function(x) all(x == '0'))) + 3
+    if (length(cols_to_rm) > 0)
+      comms = comms[ , -cols_to_rm]
   }
   return(comms)
 }
