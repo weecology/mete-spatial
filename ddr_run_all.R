@@ -43,9 +43,10 @@ system('Rscript ./scripts/spat_empir_sad.R')
 system('Rscript ./scripts/spat_empir_data_summary.R')
 
 ## simulate communities that are parameterized by the empirical communities (slow)
-indices = paste(1:19, collapse=' ')
-system(paste('Rscript ./scripts/spat_empir_comm_sim.R', server,
-             "'", indices, "'", sep=" "), wait=FALSE)
+sites = read.table('./data/shrtnames.txt', colClasses='character')[1, ]
+sites = paste(as.character(sites), collapse=' ')
+system(paste('Rscript ./scripts/spat_empir_comm_sim.R', server, sites),
+       wait=FALSE)
 
 ## data analysis ---------------------------------------------------------
 
