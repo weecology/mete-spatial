@@ -1,5 +1,7 @@
 ## Purpose: to compute the empirical observed DDR 
 
+print('Submitting jobs to compute the empirical DDRs, ...')
+
 clArgs = commandArgs(trailingOnly=TRUE)
 
 server = clArgs[1] ##'unc' or something else
@@ -55,3 +57,4 @@ for (i in commName) {
   }
 }
 
+print('Submitting jobs to compute the empirical DDRs, complete!')

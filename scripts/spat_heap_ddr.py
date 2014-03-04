@@ -3,6 +3,8 @@ Purpose: to compute the chi_heap recursion equation of Harte 2007
 and to export the results as a .csv file
 """
 
+print 'Compute the analytical HEAP/METE DDR, ...'
+
 import mete
 import numpy as np
 import csv
@@ -54,4 +56,5 @@ for i in range(0, np.shape(sor)[0]):
      
 writer.close()
 
+print 'Compute the analytical HEAP/METE DDR, complete!'
 

@@ -1,6 +1,8 @@
 ## Purpose: to analyze the spatial patterns of community structure
 ## in the empirical datasets
 
+print('Empirical DDR analysis, ...')
+
 library(vegan)
 source('./scripts/spat_functions.R')
 
@@ -47,3 +49,6 @@ metrics = calc_metrics_bisect(comms, metricsToCalc, dataType, quants, swap,
 if (npar > 1) {
   sfStop()
 }
+
+print('Empirical DDR analysis, complete!')
+

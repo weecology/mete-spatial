@@ -13,6 +13,8 @@ by default.
 
 """
 
+print 'Generating simulated community, ...'
+
 import numpy as np
 import csv
 import sys
@@ -120,3 +122,5 @@ if __name__ == "__main__":
      
     comms = [mete.sim_spatial_whole(S, N, bisec, transect, abu) for i in range(0, ncomm)]
     output_results(comms, S, N, ncomm, bisec, transect, abu, shrt_name)
+
+print 'Generating simulated community, complete!'
