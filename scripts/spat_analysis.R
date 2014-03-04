@@ -1,6 +1,6 @@
-##Author: Dan McGlinn
-##Purpose: to compare MaxEnt generate community to null models
-##Outputs: the result of a null permutation routine.
+##Purpose: to compute the DDR of the METE simulated community matrices
+
+print('METE simulated DDR analysis, ...')
 
 library(vegan)
 library(bigmemory)
@@ -73,19 +73,6 @@ if(bisect) {
   fileSuffix = paste(fileSuffix, '_bisect', sep='')
 }
 
-## specify how to bin the spatial lags
-## first fix dataset name
-name = sub('_empirSAD', '', name)
-spat_breaks = read.csv('./data/nbreaks.csv')
-spat_breaks$nbreaks = spat_breaks$nbreaks + 1
-if (any(spat_breaks$comm == name)) {
-  breaks = spat_breaks$nbreaks[spat_breaks$comm == name]
-  log = TRUE
-}
-if (!any(spat_breaks$comm == name)) {
-  breaks = NA
-}
-
 ## specify quantiles to examine variogram at
 quants = c(0.25, 0.50, 0.75)
 
@@ -126,4 +113,6 @@ for (i in seq_along(comm_ids)) {
                              fileSuffix, '_', dataType, '.Rdata', sep=''))
   }
 }
+
+print('METE simulated DDR analysis, complete!')
 
