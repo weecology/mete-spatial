@@ -1433,7 +1433,7 @@ getSAR = function(psp, grains, mv_window=FALSE)
       for (n in brksN) {
         for (m in brksM) {
           psp_tmp = psp[ , n:(n + (lenN[l] - 1)),
-                             m:(m + (lenM[l] - 1))]
+                           m:(m + (lenM[l] - 1))]
           if (S == 1) {
             sr_vec = c(sr_vec, any(psp_tmp > 0) * 1)
             ind[l] = ind[l] + sum(psp_tmp)
@@ -3246,7 +3246,7 @@ addxlab = function(...) {
 }
 
 addylab = function(...) {
-  mtext(side=2, cex=2, padj=-2, ...)
+  mtext(side=2, cex=2, ...)
 }
 
 
