@@ -1,4 +1,3 @@
-## $Id: spat_analytical_prob_funcs.R 1048 2012-12-31 17:10:55Z danmcglinn $ 
 
 ## This package to compute probabilities related to the following models: HEAP, 
 ## single division,bisection, and METE. These probabilities primarily are 
@@ -262,25 +261,33 @@ heap_prob = function(n, A, n0, A0, h=hash(), use_c=FALSE){
   ## HEAP model 
   ## Harte book Eq. 4.16 pg. 93
   ## Source code for method use_c = TRUE is in the file heap.c
-  if (use_c) {
-    load_heap()
-    out = sapply(n,function(x){
-          .C("heap_prob", n=as.integer(x), A=as.integer(A), n0=as.integer(n0),
-             A0=as.integer(A0), prob=as.double(0))$prob})
+  if (A == A0) {
+    if (n == n0)
+      out = 1
+    else
+      out = 0
   }
   else {
-    i = log2(A0 / A)
-    key = paste(n, n0, i, sep=',')
-    if (!(has.key(key, h))) { 
-      if(i == 1)
-        h[key] = 1 / (n0 + 1)
-      else {
-        A = A*2 
-        h[key] = sum(sapply(n:n0, function(q) heap_prob(q, A, n0, A0, h) / (q + 1)))
-      }
+    if (use_c) {
+      load_heap()
+      out = sapply(n,function(x){
+        .C("heap_prob", n=as.integer(x), A=as.integer(A), n0=as.integer(n0),
+           A0=as.integer(A0), prob=as.double(0))$prob})
+    }
+    else {
+      i = log2(A0 / A)
+      key = paste(n, n0, i, sep=',')
+      if (!(has.key(key, h))) { 
+        if(i == 1)
+          h[key] = 1 / (n0 + 1)
+        else {
+          A = A*2 
+          h[key] = sum(sapply(n:n0, function(q) heap_prob(q, A, n0, A0, h) / (q + 1)))
+        }
+      }  
+      out = as.numeric(h[[key]])
     }  
-    out = as.numeric(h[[key]])
-  }  
+  }
   return(out)
 }
 
