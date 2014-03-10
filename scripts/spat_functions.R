@@ -2545,7 +2545,7 @@ dimensional_match = function(coord1, coord2) {
 }
 
 vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
-                        quants=NA, univariate=FALSE){
+                        quants=NA, univariate=FALSE, NA_replace=NA){
   ## Computes a variogram based upon the possible seperation orders
   ## Only seperation orders that compare square samples are considered.
   ## Arguments:
@@ -2556,6 +2556,13 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
   ## distance.metric': can be one of the speices turnover metrics listed by the
   ##   vegan function vegdist(). Common options include, 'jaccard' and 'bray'.
   ##   If computed on pres/abse data then soreson index is computed by 'bray'.
+  ## quants: numerical values between 0 and 1 for the quantiles to compute
+  ## univarite: boolean, defaults to FALSE. If true the univariate variograms are
+  ##   are computed instead of the multivariate community variograms
+  ## NA_replace: what to replace NA values with in the distance matrix with, the 
+  ##   default behavior is to omit them from calculations of average. This should
+  ##   not typically be changed from the default behavior unless there is a very
+  ##   good reason to do so.
   if (distance.metric != 'euclidean') {
     require(vegan)
   }
@@ -2613,6 +2620,8 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
     geo_dist = as.matrix(geo_dist)
     if (distance.metric == 'euclidean')
       sp_dist = as.matrix(dist(x))
+    else if ( distance.metric == 'shared')
+      sp_dist = as.matrix(betadiver(x)$a)
     else
       sp_dist = as.matrix(vegdist(x, method=distance.metric))
     geo_dist_avg = rep(NA, length(sep_orders))
@@ -2628,6 +2637,10 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
       geo_dist_mat = geo_dist * pairs_mat
       geo_dist_avg[j] = mean(geo_dist_mat[geo_dist_mat > 0])
       sp_dist_mat = sp_dist * pairs_mat
+      if (!is.na(NA_replace))
+        ## replace NA's with NA_replace
+        sp_dist_mat = ifelse(is.na(sp_dist_mat), NA_replace, sp_dist_mat)
+      ## compute average at that seperation order and drop NA values
       sp_dist_avg[j] = mean(sp_dist_mat[geo_dist_mat > 0], na.rm=T)
       if (!is.na(quants[1])) {
         sp_dist_qt[j, ] = quantile(sp_dist_mat[geo_dist_mat > 0], quants, na.rm=TRUE)
@@ -2640,7 +2653,8 @@ vario_bisect = function(x, coord, sep_orders=NULL, distance.metric='euclidean',
                                pos.neg=FALSE, median=FALSE, direction,
                                tolerance=NA, unit.angle=NA, distance.metric, 
                                quants = ifelse(is.na(quants[1]), NA, 
-                                               paste(quants* 100, collapse=", ")))
+                                               paste(quants* 100, collapse=", ")),
+                               NA_replace = NA_replace)
     vobject$vario = data.frame(j = sep_orders, Dist = geo_dist_avg, n = n_pairs,
                                exp.var = sp_dist_avg, obs.var = NA)
     if (!is.na(quants[1]))
