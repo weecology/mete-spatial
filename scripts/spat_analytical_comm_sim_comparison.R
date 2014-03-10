@@ -187,24 +187,47 @@ for(i in 1:500) {
   v = vario_bisect(tmp_comm[ , -(1:3)] > 0, 
                    tmp_comm[ , 2:3],
                    distance.metric='bray')
-  sim_ddr1 [i, ] = v$vario$var
+  sim_ddr1 [i, ] = v$vario$exp.var
 }
 1 - apply(sim_ddr1, 2, mean)
 heap_ddr
 
 pdf('../figs/heap_ddr_check_geo_dist_raw.pdf', width=7 *2 , height=7)
   par(mfrow=c(1, 2))
-  plot(v$vario$dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
+  plot(v$vario$Dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
        ylim=c(.2, .6), xlim=c(0.05, .8), col='red', xlab='Dist',ylab='Sor',
        pch=19)
   lines(heap_ddr$dist, heap_ddr$sor, col='blue', type='o', pch=19)
   ##
-  plot(v$vario$dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
+  plot(v$vario$Dist * min(heap_ddr$dist), 1 - apply(sim_ddr1, 2, mean), type='o',
        ylim=c(.2, .6), xlim=c(0.05, .8), col='red', xlab='Dist',ylab='Sor',
        log='xy', pch=19)
   lines(heap_ddr$dist, heap_ddr$sor, col='blue', type='o', pch=19)
   legend('topright',c('simul','analy'), col=c('red','blue'),pch=19, lty=1,
          bty='n')
+dev.off()
+
+indices = seq(1, nrow(heap_ddr), 2)
+qts = 1 - apply(sim_ddr1, 2, quantile, c(.025, .975))
+avg = 1 - apply(sim_ddr1, 2, mean)
+
+pdf('../figs/heap_ddr_check_geo_dist_raw_NA_as_0.pdf', width=7 *2 , height=7)
+par(mfrow=c(1, 2))
+plot(v$vario$Dist, avg, type='n', ylim=c(.2, .6), col='red',
+     xlab='Dist',ylab='Sor', pch=19)
+addCI(v$vario$Dist, qts[1, ], qts[2, ], col='grey')
+lines(v$vario$Dist, avg, col='red', type='o', pch=19)
+lines(v$vario$Dist, heap_ddr$sor[indices], col='blue', type='o', pch=19)
+
+##
+plot(v$vario$Dist, avg, type='n', ylim=c(.2, .6), xlab='Dist',ylab='Sor',
+     log='xy')
+addCI(v$vario$Dist, qts[1, ], qts[2, ], col='grey')
+lines(v$vario$Dist, avg, col='red', type='o', pch=19)
+lines(v$vario$Dist, heap_ddr$sor[indices], col='blue', type='o', pch=19)
+legend('topright',c('Simul. CI', 'Simul. Exp.','Analy. Exp.'),
+       col=c('grey', 'red','blue'), pch=c(NA, 19, 19), lty=1,
+       lwd=c(10, 1, 1), bty='n')
 dev.off()
 
 
