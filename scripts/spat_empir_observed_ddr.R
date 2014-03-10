@@ -19,7 +19,7 @@ if (dataType == 'both') {
 
 commName = unlist(strsplit(commName, ' '))
 if (commName[1] == 'all') {
-  commName = as.character(read.table('../data/shrtnames.txt',
+  commName = as.character(read.table('./data/shrtnames.txt',
                                      colClasses='character')[1, ])
 }
 
