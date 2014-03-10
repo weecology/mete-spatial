@@ -69,7 +69,7 @@ A0 = 2^bisect[ , 2] * grain_fine
 bisect_num = ifelse(bisect[ , 2] %% 2 == 0, 8, 9)
 area_of_interest = as.numeric(round(A0 / 2 ^ bisect_num, 2))
 
-png('./figs/ddr_arith_by_sites.png', width=480 * 4, height=480 * 4)
+png('./figs/ddr_arith_by_sites.png', width=480 * 4.25, height=480 * 4)
 par(mfrow=c(4,4))
 for (i in seq_along(site_names)) {
   metrics = c('mete', 'rp', 'Metric.avg')
@@ -78,7 +78,7 @@ for (i in seq_along(site_names)) {
   index = match(site_names[i], shrtnames)
   true_fix = true_fix & fixed$area == area_of_interest[index]
   true_log = true_log & logser$area == area_of_interest[index]
-  xlim = (range(fixed$Dist[true_fix], na.rm=T))
+  xlim = (range(c(0,fixed$Dist[true_fix]), na.rm=T))
   if (sum(true_log) > 0)
     ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
   else
@@ -103,14 +103,63 @@ for (i in seq_along(site_names)) {
             lwd=5, lty=lty[2], col=col[j], type='l')
     }  
   }
+  if(i == 13)
+    legend('bottomleft', 
+           c('observed', 'recursive, observed SAD',
+             'recursive, METE SAD','random, observed SAD'),
+           col=c('black', rep(col, each=2)), cex=2.75, bty='n',
+           lwd=6, lty=c(1, lty), pch=c(19, rep(NA, 4)))
+}
+dev.off()
+
+png('./figs/ddr_arithY_logX_by_sites.png', width=480 * 4, height=480 * 4)
+par(mfrow=c(4,4))
+for (i in seq_along(site_names)) {
+  metrics = c('mete', 'rp', 'Metric.avg')
+  true_fix = as.character(fixed$site) == site_names[i]
+  true_log = as.character(logser$site) == site_names[i]
+  index = match(site_names[i], shrtnames)
+  true_fix = true_fix & fixed$area == area_of_interest[index]
+  true_log = true_log & logser$area == area_of_interest[index]
+  xlim = range(fixed$Dist[true_fix], na.rm=T)
+  xliml2= log2(xlim)
+  xends = c(floor(xliml2[1]), ceiling(xliml2[2]))
+  xlim = 2^xends
+  if (sum(true_log) > 0)
+    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+  else
+    ylim = (range(fixed[true_fix , metrics], na.rm=T))
+  yliml2= log2(ylim)
+  yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
+  ylim = 2^yends
+  plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
+       xlim=xlim, ylim=ylim, type='o', lwd=3, cex=2, pch=19,
+       xlab='', ylab='', frame.plot=F, axes=F, log='x')
+  xticks = 2^(xends[1]:xends[2]) 
+  yticks = 2^(yends[1]:yends[2])
+  addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
+  addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
+  hab_type = habitat[match(site_names[i], shrtnm)]
+  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+  metrics = metrics[-3]
+  for (j in seq_along(metrics)) {
+    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
+          lwd=3, lty=lty[1], col=col[j], type='l')
+    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
+      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
+            lwd=5, lty=lty[2], col=col[j], type='l')
+    }  
+  }
   if(i == 1)
-    legend('right', 
+    legend('bottomleft', 
            c('observed', 'recursive, observed SAD',
              'recursive, METE SAD','random, observed SAD'),
            col=c('black', rep(col, each=2)), cex=2.5, bty='n',
            lwd=rep(5, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
 }
 dev.off()
+
 
 png('./figs/ddr_loglog_by_sites.png', width=480 * 4, height=480 * 4)
 par(mfrow=c(4,4))
@@ -207,6 +256,8 @@ dev.off()
 titles = c('recursive, METE SAD', 'recursive, observed SAD',
            'random, observed SAD')
 
+cutoff = 10
+
 png('./figs/ddr_one_to_one.png',
     width = 480 * 3, height= 480 * 1)
 par(mfrow=c(1,3))
@@ -224,12 +275,12 @@ for(i in 1:3) {
   plot((x), (y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
        xlim=lims, ylim=lims)
   if (i == 1) {
-    true = logser$indiv >= 20
+    true = logser$indiv >= cutoff
     points((x[true]), (y[true]), pch=19)
     points((x[!true]), (y[!true]), pch=19, col='grey')
   } 
   else {
-    true = fixed$indiv >= 20
+    true = fixed$indiv >= cutoff
     points((x[true]), (y[true]), pch=19)
     points((x[!true]), (y[!true]), pch=19, col='grey')
   } 
@@ -258,12 +309,12 @@ for(i in 1:3) {
   plot((x), (y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
        xlim=lims, ylim=lims, log='xy')
   if (i == 1) {
-    true = logser$indiv >= 20
+    true = logser$indiv >= cutoff
     points((x[true]), (y[true]), pch=19)
     points((x[!true]), (y[!true]), pch=19, col='grey')
   } 
   else {
-    true = fixed$indiv >= 20
+    true = fixed$indiv >= cutoff
     points((x[true]), (y[true]), pch=19)
     points((x[!true]), (y[!true]), pch=19, col='grey')
   } 
@@ -293,12 +344,12 @@ png('./figs/ddr_log2log2_one_to_one.png',
     plot(log2(x), log2(y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
          xlim=lims, ylim=lims)
     if (i == 1) {
-      true = logser$indiv >= 20
+      true = logser$indiv >= cutoff
       points(log2(x[true]), log2(y[true]), pch=19)
       points(log2(x[!true]), log2(y[!true]), pch=19, col='grey')
     } 
     else {
-      true = fixed$indiv >= 20
+      true = fixed$indiv >= cutoff
       points(log2(x[true]), log2(y[true]), pch=19)
       points(log2(x[!true]), log2(y[!true]), pch=19, col='grey')
     }
@@ -312,7 +363,7 @@ png('./figs/ddr_log2log2_one_to_one.png',
 dev.off()
 
 
-## Supplemental site speciefic arith-arith residual plots -----------------------------------
+## Supplemental site specific arith-arith residual plots -----------------------------------
 png('./figs/ddr_arith_resid_by_sites.png', width=480 * 4, height=480 * 4)
 par(mfrow=c(4,4))
 for (i in seq_along(site_names)) {
@@ -359,8 +410,8 @@ for (i in seq_along(site_names)) {
 dev.off()
 
 
-## log-arith residual plot with lowess lines
-png('./figs/ddr_log_resid_by_sites.png', width=480 * 4, height=480 * 4)
+## log-arith residual plot with lowess lines to summarize results across grains
+png('./figs/ddr_arith_resid_by_sites_lowess_across_scales.png', width=480 * 4, height=480 * 4)
 par(mfrow=c(4,4))
 for (i in seq_along(site_names)) {
   metrics = c('avg.res', 'exp.res')
@@ -379,7 +430,7 @@ for (i in seq_along(site_names)) {
            ceiling((ylim[2] %% 1) * 10) / 10)
   plot((Dist) ~ (Metric.avg), data=fixed[true_fix, ],
        xlim=xlim, ylim=ylim, type='n',
-       xlab='', ylab='', frame.plot=F, axes=F, log='x')
+       xlab='', ylab='', frame.plot=F, axes=F)
   addAxis(side=1, cex.axis=3, padj=.75)
   addAxis(side=2, cex.axis=3, padj=0)
   hab_type = habitat[match(site_names[i], shrtnm)]
@@ -402,7 +453,7 @@ for (i in seq_along(site_names)) {
 }
 dev.off()
 
-## Supplemental Figure 1--------------------------------------------------------
+## Sup Fig - SAR differences-----------------------------------------------
 ## Examine the difference in the SAR prediction between the recursive
 ## and semi-recursive formulations of METE
 source('./scripts/spat_functions.R')
@@ -410,7 +461,7 @@ source('./scripts/spat_functions.R')
 ## load data
 source('./scripts/spat_sar_load_and_avg_data.R')
 
-png('./figs/Supl1_mete_sim_analy_logser_sar_predictions.png',
+png('./figs/sup_fig_mete_sim_analy_logser_sar_predictions.png',
     width=480 * 2, height=480 * 2)
 par(mfrow=c(4,4))
 for (i in seq_along(meteLogSer)) {
@@ -425,50 +476,19 @@ for (i in seq_along(meteLogSer)) {
     lines(sr.avg ~ grains, data=dat, lwd=3, col=1, lty=1)
   }
   ## Analytical Log series iterative
-  lines(sr_iter ~ area, data=meteLogSer[[i]], type='o', col='red')
+  lines(sr_iter ~ area, data=meteLogSer[[i]], lwd=3, col='red')
+  ## Analytical Log series iterative
+  lines(sr_noniter ~ area, data=meteLogSer[[i]], lwd=3, col='dodgerblue')  
   if (i == 1) {
-    txt = c('Semi-recurisve CI', 'Semi-recursive Exp.', 'Recursive Exp.')
-    legend('bottomright', txt, col=c('grey','black','red'),
-           pch=c(NA, NA, 1), lty=1, lwd=c(4, rep(2,2)), bty='n', cex=1.25)    
+    txt = c('Semi-recurisve CI', 'Semi-recursive Exp.', 'Recursive Exp.',
+            'Non-recursive Exp.')
+    legend('bottomright', txt, col=c('grey','black','red', 'dodgerblue'),
+           lty=1, lwd=c(6, rep(3,3)), bty='n', cex=1.15)
   }  
 }
 dev.off()
 
-## Supplemental Fig 3 -----------------------------------------------------
-source('./scripts/spat_functions')
-
-load('simulated_empirical_results_bisect.Rdata')
-
-grain = 2.44
-sim_results = simSorBinFixed$bigoak[simSorBinFixed$bigoak$Comm == grain, ]
-geo_dists = sim_results$Dist
-sim_sor = sim_results$Avg
-
-## load the analytical calculated result
-dat = read.csv('./sorensen/bigoak_empirSAD_mete_sor.csv')
-dat_sub = dat[dat$i == 13, ][seq(1,13,2), ]
-
-png('./figs/Sup3_simulated_analtyical_ddr_comparison.png',
-    width=480*2, height=480*1)
-par(mfrow=c(1,2))
-plot(geo_dists, sim_sor, type='o', ylim=c(.01, .3), log='xy',
-     xlab='', ylab='', axes=F, lwd=3)
-points(geo_dists, dat_sub$sor, type='o', col='red', lwd=3)
-addAxes()
-addxlab('Distance', padj=3)
-addylab('Sorensen')
-legend('bottomleft', c('Simulated METE', 'Analytical METE'),
-       col=c('black', 'red'), lty=1, lwd=4, cex=2, pch=1, bty='n')
-##
-plot(geo_dists, dat_sub$sor - sim_sor, type='o', log='xy',
-     xlab='', ylab='', axes=F, lwd=3)
-addAxes()
-addxlab('Distance', padj=3)
-addylab('Analytical - Simulated Sorensen')
-
-dev.off()
-
-## Supplemental Figure 4--------------------------------------------------------
+## Sup Fig - Power vs Exponential models of DDR-------------------------------
 ## Compare the fit bettween the power and exponential models
 ## for both the METE predicted DDR and the observed DDR
 
@@ -485,7 +505,7 @@ for(i in seq_along(stats)) {
 dpwr = lapply(r2pwr, density)
 dexp = lapply(r2exp, density)
 
-png('./figs/Sup4_r2_density_kernals.png', width=480*2, height=480)
+png('./figs/sup_fig_r2_density_kernals.png', width=480*2, height=480)
 par(mfrow=c(1,2))
 linelwd = 3
 xlims = list(c(.8, 1.01), c(0, 1.01))
@@ -506,7 +526,7 @@ for(i in seq_along(xpwr)) {
 } 
 dev.off()
 
-## Supplemental Figure 5--------------------------------------------------------
+## Sup Fig - DDR Residuals Habitat Comparison----------------------------------
 
 source('./scripts/spat_sar_load_and_avg_data.R')
 
@@ -535,14 +555,14 @@ habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
 dat$hab = habitat[match(dat$site, shrtnm)]
 sites = unique(dat$site)
 
-png('./figs/Sup5_raw_ddr_residuals.png', width=480 * 2, height=480)
+png('./figs/sup_fig_raw_ddr_residuals.png', width=480 * 2, height=480)
 ## raw emprical DDR residuals
 par(mfrow=c(1,2))
 for(j in 1:2){
   if(j == 1)
     main = 'METE'
   else
-  main = 'RP'
+    main = 'RP'
   plot(avg.res ~ Dist, data=dat, log='x', type='n', ylim = c(-.5, .5), xlim=c(.5,512),
        xlab='', ylab='', axes=F, frame.plot=F)
   addAxis(1, at=2^seq(-1, 9, 2))
@@ -562,4 +582,105 @@ for(j in 1:2){
     }
   }  
 }  
+dev.off()
+
+# Sup Fig - Analytical & Simulation DDR Comparison---------------------------
+source('./scripts/spat_functions.R')
+source('./scripts/spat_analytical_prob_funcs.R')
+load_heap('./scripts')
+
+## set parameters of METE community simulation
+S = 100        ## number of species
+n0 = 50      ## abundance of each species
+N = n0 * S    ## total abundance
+ncomm = 200   ## number of communites to generate
+bisect = 8    ## number of bisections
+shrtname = 'test'
+
+sad = matrix(rep(n0, S), ncol=S)
+write.table(sad, file='./tests/ddr_sad.csv', sep=',',
+            row.names=FALSE, col.names=FALSE)
+
+cmd = paste('python ./scripts/spat_heap_ddr.py', bisect, bisect, 'empirSAD',
+            './tests/ddr_sad.csv', './tests/ddr_sor.csv')
+system(cmd, wait=T)
+analy_ddr = read.csv('./tests/ddr_sor.csv')
+
+areas = 2^(0:bisect)
+analy_sar = sapply(areas, function(A) S * (1 - heap_prob(0, A, n0, 2^8, use_c=T)))
+
+cmd = paste('python ./scripts/spat_community_generation.py', S, N, ncomm, bisect,
+            'False ./tests/ddr_sad.csv', shrtname)
+system(cmd, wait=T)
+comms = read.csv(paste('./comms/simulated_comms_', shrtname, '_empirSAD_C', ncomm,
+                       '_B', bisect, '_grid.txt', sep=''))
+comms = as.matrix(comms)
+
+siml_sar = matrix(NA, nrow=ncomm, ncol=bisect + 1)
+siml_shared = matrix(NA, nrow=ncomm, ncol=bisect)
+siml_ddr = matrix(NA, nrow=ncomm, ncol=bisect)
+for(i in 1:ncomm) {
+  tmp_comm = comms[comms[,1] == i, ]
+  sp_mat = tmp_comm[ , -(1:3)]
+  coords = tmp_comm[, 2:3]
+  psp = mat2psp(sp_mat, coords)
+  sar = getSAR(psp, grains=areas)
+  shared = vario_bisect(sp_mat > 0,  coords, sep_orders=1:bisect,
+                        distance.metric='shared')
+  sor = vario_bisect(sp_mat > 0,  coords, sep_orders=1:bisect,
+                     distance.metric='bray', NA_replace=0)
+  ## export results
+  siml_sar[i, ] = data.frame(sar)$richness
+  siml_shared[i, ] = shared$vario$exp.var
+  siml_ddr[i, ] = 1 - sor$vario$exp.var
+}
+
+avg_sar = apply(siml_sar, 2, mean)
+avg_shared = apply(siml_shared, 2, mean)
+avg_ddr = apply(siml_ddr, 2, mean)
+
+qts_sar = apply(siml_sar, 2, quantile, c(.025, .975))
+qts_shared = apply(siml_shared, 2, quantile, c(.025, .975))
+qts_ddr = apply(siml_ddr, 2, quantile, c(.025, .975))
+
+
+plot(1, avg_sar[1], ylim=range(qts_sar[,1]))
+addCI(c(.95, 1.05), rep(qts_sar[1,1],2), rep(qts_sar[2,1],2), col='pink')
+lines(c(.95, 1.05), rep(avg_sar[1], 2), col='red', lwd=3)
+lines(c(.95, 1.05), rep(analy_sar[1],2), col='blue', lwd=3, lty=2)
+
+png('./figs/sup_fig_analy_simul_sar_ddr_check.png', width=480*3 ,
+    height=480)
+par(mfrow=c(1, 3))
+## compare SARs
+plot(areas, avg_sar, type='n', xlab='', ylab='', log='xy', axes=F,
+     ylim=range(qts_sar))
+addxlab('Area', padj=2)
+addylab('Richness', padj=-1)
+addCI(areas, qts_sar[1, ], qts_sar[2, ], col='pink')
+lines(areas, avg_sar, lwd=3, col='red')
+lines(areas, analy_sar, lwd=3, col='blue')
+addAxes()
+## compare # shared species versus distance
+plot(analy_ddr$dist, avg_shared, type='n', xlab='', ylab='',
+     ylim=range(qts_shared), axes=F)
+addxlab('Distance', padj=2)
+addylab('Number of shared species', padj=-1)
+addCI(analy_ddr$dist, qts_shared[1, ], qts_shared[2, ], col='pink')
+lines(analy_ddr$dist, avg_shared, col='red', lwd=3)
+lines(analy_ddr$dist, analy_ddr$sor * analy_sar[1], col='blue', lwd=3)
+addAxes()
+## compare DDR curves
+plot(analy_ddr$dist, avg_ddr, type='n', ylim=range(qts_ddr),
+     xlab='',ylab='', axes=F)
+addxlab('Distance', padj=2)
+addylab('Sorensen Similarity', padj=-1)
+addCI(analy_ddr$dist, qts_ddr[1, ], qts_ddr[2, ], col='pink')
+lines(analy_ddr$dist, avg_ddr, col='red', lwd=3)
+lines(analy_ddr$dist, analy_ddr$sor, col='blue', lwd=3)
+legend('topright',c('Simul. CI', 'Simul. Avg.','Analy. Exp.'),
+       col=c('pink', 'red','blue'), lty=1, lwd=c(10, 5, 5),
+       bty='n', cex=3)
+addAxes()
+
 dev.off()
