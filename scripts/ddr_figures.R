@@ -362,8 +362,34 @@ png('./figs/ddr_log2log2_one_to_one.png',
   }
 dev.off()
 
+## Supplemental site specific empirical DDR plots --------------------------
+## generate pdfs
+for (metric in c('Sor')) {
+  for (type in c('Bin', 'Abu')) {
+    for (log_it in c(FALSE, TRUE)) {
+      if (log_it)
+        prefix = './figs/spat_empir_loglog_bisect_'
+      else
+        prefix = './figs/spat_empir_bisect_'
+      pdf(paste(prefix, metric, '_', type, '_curves.pdf', sep=''),
+          width = 7 * 3, height = 7 * 1)
+      par(mfrow=c(1, 3))
+      data = eval(parse(text=paste('empir', metric, type, sep='')))
+      if (log_it) {
+        plotEmpir(data, quants=FALSE, type='o', log='xy')
+        plotEmpir(data, quants=TRUE, type='o', log='xy')
+      }  
+      else {
+        plotEmpir(data, quants=FALSE, type='o')
+        plotEmpir(data, quants=TRUE, type='o')
+      }
+      rm(data)
+      dev.off()
+    }  
+  }  
+}
 
-## Supplemental site specific arith-arith residual plots -----------------------------------
+## Supplemental site specific residual DDR plots -----------------------------------
 png('./figs/ddr_arith_resid_by_sites.png', width=480 * 4, height=480 * 4)
 par(mfrow=c(4,4))
 for (i in seq_along(site_names)) {
