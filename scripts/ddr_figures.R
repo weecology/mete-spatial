@@ -517,6 +517,10 @@ dev.off()
 ## Sup Fig - Power vs Exponential models of DDR-------------------------------
 ## Compare the fit bettween the power and exponential models
 ## for both the METE predicted DDR and the observed DDR
+source('./scripts/spat_functions.R')
+
+load('./sorensen/empirSorAbu_bisect.Rdata')
+load('simulated_empirical_results_bisect.Rdata')
 
 stats = list(mete = getStats(simSorAbuFixed, 'average'),
              empir = getStats(empirSorAbu, 'average'))
@@ -537,13 +541,13 @@ linelwd = 3
 xlims = list(c(.8, 1.01), c(0, 1.01))
 ylims = list(c(0, 1250), c(0, 10))
 title = c('METE DDR Functional Form', 'Empirical DDR Functional Form')
-for(i in seq_along(xpwr)) {
+for(i in seq_along(dpwr)) {
   plot(dpwr[[i]], xlim=xlims[[i]], ylim=ylims[[i]], lwd=linelwd, col='black',
        main='',  xlab='', ylab='', frame.plot=F, axes=F)
   lines(dexp[[i]],  lwd=linelwd, col='grey')
   mtext(side=3, title[i], cex=2)
   addAxes()
-  addylab('Density')
+  addylab('Density', padj=-2)
   addxlab(expression('Coefficient of Determination, ' * italic(R^2)),
           padj=2)
   if(i == 1)
