@@ -35,9 +35,9 @@ neg_bin_prob = function(n, A, n0, A0, k=1){
 calc_g = function(n0, area_ratio){
   ## Harte book Eq. 4.10 pg. 93
   ## returns the number of ways n0 indistinguishable individuals can be 
-  ## arranged into Mo cells
+  ## arranged into M0 cells
   ## The algebraic form of the function is: 
-  ## factorial(Mo0 + n0 - 1) / (factorial(n0) * factorial(Mo - 1))
+  ## factorial(M0 + n0 - 1) / (factorial(n0) * factorial(Mo - 1))
   ## But the following function makes numerical shortcuts so that fewer
   ## terms must be multiplied together
   num = 1
