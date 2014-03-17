@@ -182,28 +182,37 @@ bisect_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
   return(out)
 }
 
-quad_prob = function(n, A, n0, A0, psi, h=hash()){
+quad_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
   ## Conlisk et al. Eq. 3.3
   if (round(A) != A | round(A0) != A0)
     stop('A and A0 must be integers')
-  if (psi <= 0 | psi >= 1) {  
+  if (psi <= 0 | psi >= 1) 
     out = 0
-  }
-  else {
-    i = log2(A0 / A)
-    key = paste(n, n0, i, sep=',')
-    if (!(has.key(key, h))) {
-      if (i == 2)
-        h[key] = single_prob(n, n0, psi, c=4)
-      else {
-        A = A * 4
-        h[key] = sum(sapply(n:n0, function(q) 
-                            quad_prob(q, A, n0, A0, psi, h) * 
-                            single_prob(n, q, psi, c=4)))
-      }  
+  else if (log2(A0/A) %% 2 == 1)
+    out = 0
+  else {    
+    if (use_c) {
+      load_heap()
+      out = sapply(n,function(x)
+        .C("quad_prob", n=as.integer(x), A=as.integer(A), n0=as.integer(n0),
+           A0=as.integer(A0), psi=as.double(psi), prob=as.double(0))$prob)
     }
-    out = as.numeric(h[[key]])
-  }  
+    else {
+      i = log2(A0 / A)
+      key = paste(n, n0, i, sep=',')
+      if (!(has.key(key, h))) {
+        if (i == 2)
+          h[key] = single_prob(n, n0, psi, c=4)
+        else {
+          A = A * 4
+          h[key] = sum(sapply(n:n0, function(q) 
+            quad_prob(q, A, n0, A0, psi, h) * 
+              single_prob(n, q, psi, c=4)))
+        }  
+      }
+      out = as.numeric(h[[key]])
+    }
+  }
   return(out)
 }
 
@@ -318,14 +327,18 @@ calc_D = function(j, shape='sqr', W=1){
   return(D)
 }
 
-calc_lambda = function(i, n0, ...){ 
+calc_lambda = function(i, n0, c=2, ...){ 
   ## Scaling Biodiveristy Chp. Eq. 6.4, pg.106 
   ## i: number of bisections
+  ## c: division scheme defaults to bisections
   if (i == 0)
     lambda = 1
   if (i != 0) {
     A0 = 2^i
-    lambda = 1 - heap_prob(0, 1, n0, A0, ...)
+    if (c == 2)
+      lambda = 1 - heap_prob(0, 1, n0, A0, ...)
+    if (c == 4)
+      lambda = 1 - quad_prob(0, 1, n0, A0, .5, ...)
   }
   return(lambda)
 }
@@ -371,11 +384,47 @@ chi_heap = function(i, j, n0, chi_hash=hash(), use_c=FALSE, ...){
   return(out)
 }
 
+chi_gen = function(i, j, n0, psi, c=2, chi_hash=hash(), use_c=FALSE, ...){
+  ## first attempt at a generalized CHI given psi and c arguments
+  ## currently incomplete DO NOT USE
+  if(n0 == 1){
+    out = 0
+  }
+  else {
+    if (use_c) {
+    #  load_heap()
+    #  out = .C("chi_heap", i=as.integer(i), j=as.integer(j),
+    #           n0=as.integer(n0), prob=as.double(0))$prob
+    }
+    else {
+      key = paste(i, j, n0, sep=',')
+      if (!(has.key(key, chi_hash))) {
+        if(j == 1){
+          ## this will need to be changed such that other division scenarios are possible
+          chi_hash[key] = single_prob(n, n0, psi, c) *
+            sum(sapply(1:(n0-1), function(m) calc_lambda(i - 1, m, c, ...) * 
+                         calc_lambda(i - 1, n0 - m, c, ...)))
+        }  
+        else {
+          ## here we will need to update how i and j change depending on 
+          ## divsion scheme (i.e. the c-value)
+          i = i - 1
+          j = j - 1
+          chi_hash[key] = single_prob(n, n0, psi, c) * sum(sapply(2:n0, function(m)
+            chi_heap(i, j, m, c, chi_hash, ...)))
+        }  
+      }
+      out = as.numeric(chi_hash[[key]])
+    }
+  }
+  return(out)
+}
+
 chi_heap_approx = function(i, j, n0) {
   calc_lambda(i, n0, use_c=TRUE)^2 / calc_lambda(j, n0, use_c=TRUE)
 }
 
-sor_heap = function(A, n0, A0, shape='sqr',
+sor_heap = function(A, n0, A0, c=2, shape='sqr',
                     sor_use_c = FALSE, heap_use_c = FALSE, ...){
   ## Computes sorensen's simiarilty index for a 
   ## given spatial grain (A) at all possible seperation distances 
@@ -398,9 +447,9 @@ sor_heap = function(A, n0, A0, shape='sqr',
     }                   
     else {
       chi[s, ] = sapply(j, function(jval) 
-                        chi_heap(i, jval, n0[s], use_c = heap_use_c, ...))
+                        chi_heap(i, jval, n0[s], c, use_c = heap_use_c, ...))
     }  
-    lambda[s, ] = calc_lambda(i, n0[s], use_c = heap_use_c, ...)
+    lambda[s, ] = calc_lambda(i, n0[s], c, use_c = heap_use_c, ...)
   }
   sor = apply(chi, 2, sum) / apply(lambda, 2, sum)
   out = data.frame(Dist = d, Sor = sor)
