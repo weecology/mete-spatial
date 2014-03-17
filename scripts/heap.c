@@ -128,8 +128,10 @@ double calc_F(double a, int n){
 double single_prob(int n, int A, int n0, int A0, double psi, int c){
     /* Single division model of Conlisk et al. (2007) Theorem 1.3 */
     double a ; 
+    double out ;
     a = (1 - psi) / psi ; 
-    return (calc_F(a, n) * calc_F((c - 1) * a, n0 - n)) / calc_F(c * a, n0) ;
+    out =  (calc_F(a, n) * calc_F((c - 1) * a, n0 - n)) / calc_F(c * a, n0) ;
+    return out ;
 }
 
 void single_cdf(int *A, int *n0, int *A0, double *psi, int *c, double *cdf){
@@ -161,9 +163,7 @@ double bisect_recur(int n, int A, int n0, int A0, double psi){
     */
     int area_ratio, q ;  
     double total = 0 ;
-    double a ; 
     area_ratio = A0 / A ; 
-    a = (1 - psi) / psi ; 
     if(area_ratio == 2){
         return single_prob(n, A, n0, A0, psi, 2) ; 
     }
@@ -191,16 +191,14 @@ double quad_recur(int n, int A, int n0, int A0, double psi){
     */
     int area_ratio, q ;  
     double total = 0 ;
-    double a ; 
     area_ratio = A0 / A ; 
-    a = (1 - psi) / psi ; 
-    if(area_ratio == 2){
+    if(area_ratio == 4){
         return single_prob(n, A, n0, A0, psi, 4) ; 
     }
     else{
         A = A * 4 ;
         for(q = n ; q < (n0 + 1) ; q++){
-            total += bisect_recur(q, A, n0, A0, psi) * single_prob(n, A, q, A0, psi, 4) ;
+            total += quad_recur(q, A, n0, A0, psi) * single_prob(n, A, q, A0, psi, 4) ;
         }
         return total ; 
     }
