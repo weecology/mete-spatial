@@ -76,22 +76,12 @@ calc_F = function(a, n){
   ## Eq. 7
   ## this is a computationaly efficient way to compute 
   ## gamma(a + n) / (gamma(a) * gamma(n + 1))
-  if (n == 0)
-    out = 1
-  else
-    out = prod(sapply(1:n, function(n) (a + n - 1) /  n ))
-  return(out)
-}  
-
-calc_F = function(a, n){
-  ## Conlisk et al. (2007)
-  ## Eq. 7
-  ## this is a computationaly efficient way to compute 
-  ## gamma(a + n) / (gamma(a) * gamma(n + 1))
   if (length(n) > 1)
     out = sapply(n, function(n) calc_F(a,n))
   else {
-    if (n == 0)
+    if (a == 1) 
+      out = 1
+    else if (n == 0)
       out = 1
     else
       out = prod(sapply(1:n, function(n) (a + n - 1) /  n ))
@@ -192,37 +182,29 @@ bisect_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
   return(out)
 }
 
-quad_prob = function(n, A, n0, A0, psi, h=hash(), use_c=FALSE){
+quad_prob = function(n, A, n0, A0, psi, h=hash()){
+  ## Conlisk et al. Eq. 3.3
   if (round(A) != A | round(A0) != A0)
     stop('A and A0 must be integers')
   if (psi <= 0 | psi >= 1) {  
     out = 0
   }
   else {
-    if (use_c) {
-      #load_heap()
-      #out = sapply(n,function(x)
-      #      .C("bisect_prob", n=as.integer(x), A=as.integer(A), n0=as.integer(n0),
-      #         A0=as.integer(A0), psi=as.double(psi), prob=as.double(0))$prob)
+    i = log2(A0 / A)
+    key = paste(n, n0, i, sep=',')
+    if (!(has.key(key, h))) {
+      if (i == 2)
+        h[key] = single_prob(n, n0, psi, c=4)
+      else {
+        A = A * 4
+        h[key] = sum(sapply(n:n0, function(q) 
+                            quad_prob(q, A, n0, A0, psi, h) * 
+                            single_prob(n, q, psi, c=4)))
+      }  
     }
-    else {
-      i = log2(A0 / A)
-      key = paste(n, n0, i, sep=',')
-      if (!(has.key(key, h))) {
-        if (i == 1)
-          h[key] = single_prob(n, n0, psi, c=4)
-        else {
-          A = A * 2
-          h[key] = sum(sapply(n:n0, function(q) 
-                       bisect_prob(q, A, n0, A0, psi, h) * 
-                       single_prob(n, q, psi)))
-        }  
-      }
-      out = as.numeric(h[[key]])
-    }
+    out = as.numeric(h[[key]])
   }  
   return(out)
-  
 }
 
 multi_prob = function(abu_matrix, psi, c=2 ){
