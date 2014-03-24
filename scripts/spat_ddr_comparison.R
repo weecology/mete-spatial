@@ -1,4 +1,6 @@
-## Purpose: to compare the fit of the simulated ddr to the empirical ddr
+## Purpose: to visually compare the fit of the simulated ddr to the empirical ddr
+
+print('Comparing empirical and METE DDR, ...')
 
 source('./scripts/spat_functions.R')
 
@@ -6,14 +8,6 @@ source('./scripts/spat_functions.R')
 load('./simulated_empirical_results_bisect.Rdata')
 load('./sorensen/empirSorBin_bisect.Rdata') 
 load('./sorensen/empirSorAbu_bisect.Rdata') 
-
-## compute residuals between observed and expected-------------------------------
-resSorAbuFixed = get_ddr_resid(empirSorAbu, simSorAbuFixed)
-resSorAbuLogSer = get_ddr_resid(empirSorAbu, simSorAbuLogSer)
-
-resSorBinFixed = get_ddr_resid(empirSorBin, simSorBinFixed)
-resSorBinLogSer = get_ddr_resid(empirSorBin, simSorBinLogSer)
-
 
 ## export pdf summaries of the empirical and simulated results------------------
 mk_summary = function() {
@@ -86,3 +80,4 @@ for (i in seq_along(results2)) {
 dev.off()
 
 
+print('Comparing empirical and METE DDR, complete!')
