@@ -17,6 +17,8 @@ sadType = c("meteSAD", "empirSAD")
 
 indices = match(sites, names)
 
+nice = FALSE # make TRUE to use nice when submitting jobs
+
 for (i in indices) {
   for (j in sadType) {
     log_file = paste('./scripts/log_files/error_mete_comm_gen_', names[i],
@@ -25,16 +27,22 @@ for (i in indices) {
       abu_file = 'None'
     else
       abu_file = paste('./data/', names[i], '_sad.csv', sep='')
-    if (server == 'unc')
+    if (server == 'LSF')
       system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python ./scripts/spat_community_generation.py',
                    S[i], N[i], ncomm, bisect[i], 'False', abu_file,
                    names[i], sep=' '))
-    else
-      system(paste('nice python ./scripts/spat_community_generation.py',
+    }
+    else {
+      if (nice)
+        cmd = 'nice python'
+      else
+        cmd = 'python'
+      system(paste(cmd, './scripts/spat_community_generation.py',
                    S[i], N[i], ncomm, bisect[i], 'False', abu_file,
                    names[i], '>', log_file, '2>&1', sep=' '),
              wait=FALSE)
+    }  
   }
 }
 

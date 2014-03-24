@@ -27,6 +27,8 @@ if (site_index == 'all') {
   site_index = 1:length(shrtnames)
 }
 
+nice = FALSE # make TRUE to use nice when submitting jobs
+
 for(i in site_index) {
   for(j in sadType) {
     unit_distance = sqrt(grain_fine[i]) * n_pixels_wide(bisect_fine[i])
@@ -43,15 +45,19 @@ for(i in site_index) {
       log_file = paste('./scripts/log_files/', shrtnames[i],
                        '_empirSAD_mete_sor.log', sep='')    
     }    
-    if (server == 'unc') {
+    if (server == 'LSF') {
       cmd = paste('bsub -q week -M 10 -o', log_file, '-J', shrtnames[i],
                   'python ./scripts/spat_heap_ddr.py',
                   bisect_fine[i], bisect_coarse[i], 
                   j, abu_file, out_file, 
                   unit_distance, sep=' ')
     }
-    if (server == 'usu')
-      cmd = paste('nice python ./scripts/spat_heap_ddr.py',
+    else {
+      if (nice)
+        cmd = 'nice python'
+      else
+        cmd = 'python'
+      cmd = paste(cmd, './scripts/spat_heap_ddr.py',
                   bisect_fine[i], bisect_coarse[i],
                   j, abu_file, out_file, 
                   unit_distance, '>', log_file, '2>&1', sep=' ')
