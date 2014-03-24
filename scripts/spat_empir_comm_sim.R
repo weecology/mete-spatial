@@ -28,7 +28,7 @@ for (i in indices) {
       abu_file = 'None'
     else
       abu_file = paste('./data/', names[i], '_sad.csv', sep='')
-    if (server == 'LSF')
+    if (server == 'LSF') {
       system(paste('bsub -q week -M 8 -J', names[i], '-o',
                    log_file, 'python ./scripts/spat_community_generation.py',
                    S[i], N[i], ncomm, bisect[i], 'False', abu_file,
