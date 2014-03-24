@@ -39,6 +39,8 @@ indices = match(commName, names)
 sadType = c("meteSAD", "empirSAD")
 metrics = "sorensen"
 
+nice = FALSE # make TRUE to use nice when submitting jobs
+
 for (i in indices) {
   for (j in sadType) {
     for (k in dataType) {
@@ -49,18 +51,24 @@ for (i in indices) {
           name = names[i]
         if (j == 'empirSAD')
           name = paste(names[i], '_empirSAD', sep='')
-        if ( server == 'unc') 
+        if (server == 'LSF') {
           system(paste('bsub -q week -M', memory, '-J', names[i],
                        '-o', log_file, 'Rscript ./scripts/spat_analysis.R',
                        S[i], N[i], ncomm, bisect_fine[i], bisect_coarse[i],
                        grain_fine[i], FALSE, k, m, bisect, NA, NA,
                        name, TRUE, iteration, sep=' '))
-        else
-          system(paste('nice Rscript ./scripts/spat_analysis.R', S[i], N[i], ncomm,
+        }
+        else {
+          if (nice)
+            cmd = 'nice Rscript'
+          else
+            cmd = 'Rscript'
+          system(paste(cmd, './scripts/spat_analysis.R', S[i], N[i], ncomm,
                        bisect_fine[i], bisect_coarse[i],
                        grain_fine[i], FALSE, k, m, bisect, NA, NA,
                        name, TRUE, iteration, '>', log_file, '2>&1', sep=' '),
                  wait=FALSE)
+        }  
       }    
     }
   }

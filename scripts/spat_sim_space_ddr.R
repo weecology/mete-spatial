@@ -18,21 +18,30 @@ tolerance = NA
 name = NA
 big = TRUE
 
+nice = FALSE # make TRUE to use nice when submitting jobs
+
 for (S in Svals) {
   for (N in Nvals) {
     for (type in dataType) {
       log_file = paste('./log_files/error_', S, '_', N, '.log', sep='')
-      if (server == unc)
+      if (server == 'LSF') {
         system(paste('bsub -q week -M 8 -J space -o', log_file,
                      'Rscript spat_analysis.R', S, N,
                      ncomm, bisec_fine, bisec_coarse, grain_fine, transect,
                      type, metricsToCalc, direction, tolerance, name, big,
                      sep=' '), wait = FALSE)
-      if (server == usu)0
-        system(paste('Rscript spat_analysis.R', S, N, ncomm, bisec_fine,
+      }
+      else {
+        if (nice)
+          cmd = 'nice Rscript'
+        else
+          cmd = 'Rscript'        
+        system(paste(cmd, 'spat_analysis.R', S, N, ncomm, bisec_fine,
                      bisec_coarse, grain_fine, transect, type, 
                      metricsToCalc, direction, tolerance, name, big,
                      '>', log_file, '2>&1 &', sep=' '), wait = FALSE)
+      }  
+    }  
   }
 }
 

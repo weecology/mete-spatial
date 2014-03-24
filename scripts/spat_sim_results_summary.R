@@ -8,11 +8,11 @@ source('./scripts/spat_functions.R')
 shrtnames = as.character(read.table('./data/shrtnames.txt', colClasses='character')[1,])
 
 files = get_file_names(path = './sorensen/', 
-                      strings = list(shrtnames, 'C200', 'bisect', 'sherman3'), 
-                      invert = c(F, F, F, T))
+                      strings = list(shrtnames, 'bisect', 'sherman3'), 
+                      invert = c(F, F, T))
 
 longnames = sub('sorensen_', '', files)
-longnames = sub('_bisect_abu.Rdata', '', longnames)
+longnames = sub('_bisect_abu_indivRPM.Rdata', '', longnames)
 longnames = unique(sub('_bisect_binary.Rdata', '', longnames))
 
 simSorBin = getResults(longnames, 'sorensen', 'binary', bisect=TRUE, sim_result=TRUE)
