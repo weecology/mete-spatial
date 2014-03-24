@@ -1,7 +1,10 @@
 #!/usr/bin/Rscript
 
-## install custom python dependencies
+print('Analysis Begin')
+start.time = proc.time()
 
+
+## install custom python dependencies
 system('git clone git@github.com:weecology/METE.git')
 setwd('./METE')
 system('python setup.py install')
@@ -15,8 +18,8 @@ setwd('..')
 ## Additional python packages required include:
 ## matplotlib, mpmath, numpy, scipy
 
-## install R dependencies
-install.packages(c('vegan', 'RCurl', 'bigmemory'))
+## Additional R packages required include:
+# install.packages(c('vegan', 'RCurl', 'bigmemory'))
 
 dir.create('./comms')
 dir.create('./sorensen')
@@ -131,4 +134,7 @@ system('Rscript ./scripts/spat_ddr_comparison.R')
 system('Rscript ./scripts/ddr_figures.R')
 
 
+end.time = proc.time()
+print ('Analysis Complete')
+print (end.time - start.time)
 
