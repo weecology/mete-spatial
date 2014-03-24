@@ -20,4 +20,4 @@ empirSorAbu = merge_drop(empirSorAbu)
 save(empirSorBin, file='./sorensen/empirSorBin_bisect.Rdata')
 save(empirSorAbu, file='./sorensen/empirSorAbu_bisect.Rdata')
 
-print('Aggregating and exporting the empirical DDR results, complete.!)
+print('Aggregating and exporting the empirical DDR results, complete!')
