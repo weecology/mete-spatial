@@ -24,6 +24,7 @@ if (commName[1] == 'all') {
 }
 
 nice = FALSE # make TRUE to use nice when submitting jobs
+wait = TRUE  # make FALSE to submit all the jobs at once
 
 for (i in commName) {
   for (j in metricsToCalc) {
@@ -52,11 +53,11 @@ for (i in commName) {
         if (k == 'abu')
           system(paste(cmd, './scripts/spat_empir_analysis.R', i, j, k,
                        method, npar, nperm, '>', log_file, '2>&1',
-                       sep=' '), wait=FALSE)
+                       sep=' '), wait=wait)
         else 
           system(paste(cmd, './scripts/spat_empir_analysis.R', i, j, k,
                        method, 1, NA, '>', log_file, '2>&1', sep=' '),
-                       wait=FALSE)
+                       wait=wait)
       }
     }
   }

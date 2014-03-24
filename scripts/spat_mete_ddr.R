@@ -28,6 +28,7 @@ if (site_index == 'all') {
 }
 
 nice = FALSE # make TRUE to use nice when submitting jobs
+wait = TRUE  # make FALSE to submit all the jobs at once
 
 for(i in site_index) {
   for(j in sadType) {
@@ -62,7 +63,7 @@ for(i in site_index) {
                   j, abu_file, out_file, 
                   unit_distance, '>', log_file, '2>&1', sep=' ')
     
-    system(cmd, wait=FALSE)
+    system(cmd, wait=wait)
   }
 }
 

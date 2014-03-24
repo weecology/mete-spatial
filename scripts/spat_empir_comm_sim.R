@@ -18,6 +18,7 @@ sadType = c("meteSAD", "empirSAD")
 indices = match(sites, names)
 
 nice = FALSE # make TRUE to use nice when submitting jobs
+wait = TRUE  # make FALSE to submit all the jobs at once
 
 for (i in indices) {
   for (j in sadType) {
@@ -41,7 +42,7 @@ for (i in indices) {
       system(paste(cmd, './scripts/spat_community_generation.py',
                    S[i], N[i], ncomm, bisect[i], 'False', abu_file,
                    names[i], '>', log_file, '2>&1', sep=' '),
-             wait=FALSE)
+             wait=wait)
     }  
   }
 }

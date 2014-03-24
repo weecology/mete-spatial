@@ -40,6 +40,7 @@ sadType = c("meteSAD", "empirSAD")
 metrics = "sorensen"
 
 nice = FALSE # make TRUE to use nice when submitting jobs
+wait = TRUE  # make FALSE to submit all the jobs at once
 
 for (i in indices) {
   for (j in sadType) {
@@ -67,7 +68,7 @@ for (i in indices) {
                        bisect_fine[i], bisect_coarse[i],
                        grain_fine[i], FALSE, k, m, bisect, NA, NA,
                        name, TRUE, iteration, '>', log_file, '2>&1', sep=' '),
-                 wait=FALSE)
+                 wait=wait)
         }  
       }    
     }
