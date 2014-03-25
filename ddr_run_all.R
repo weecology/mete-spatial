@@ -3,18 +3,6 @@
 print('Analysis Begin')
 start.time = proc.time()
 
-
-## install custom python dependencies
-system('git clone git@github.com:weecology/METE.git')
-setwd('./METE')
-system('python setup.py install')
-setwd('..')
-
-system('git clone git@github.com:weecology/macroecotools.git')
-setwd('./macroecotools')
-system('python setup.py install')
-setwd('..')
-
 ## Additional python packages required include:
 ## matplotlib, mpmath, numpy, scipy
 
