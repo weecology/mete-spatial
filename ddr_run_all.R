@@ -19,7 +19,7 @@ setwd('..')
 ## matplotlib, mpmath, numpy, scipy
 
 ## Additional R packages required include:
-# install.packages(c('vegan', 'RCurl', 'bigmemory'))
+# install.packages(c('vegan', 'RCurl', 'bigmemory', 'snowfall'))
 
 dir.create('./comms')
 dir.create('./sorensen')
