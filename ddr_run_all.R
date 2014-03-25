@@ -95,7 +95,7 @@ npar = params$npar   # number of processors to run code on.
 nperm = params$nperm # specify as NA if RPM is not to be generated
 commName = 'all'
 method = 'multi'
-dataType = 'abu'
+dataType = 'both'
 system(paste('Rscript ./scripts/spat_empir_observed_ddr.R', server,
              npar, nperm, commName, method, dataType, sep=' '),
        wait=TRUE)
@@ -133,6 +133,7 @@ system('Rscript ./scripts/spat_ddr_comparison.R')
 ## generate figures ------------------------------------------------------------
 system('Rscript ./scripts/ddr_figures.R')
 
+print('Figures are stored in the directory ./figs/')
 
 end.time = proc.time()
 print ('Analysis Complete')
