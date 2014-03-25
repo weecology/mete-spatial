@@ -32,7 +32,7 @@ set_analysis_params = function(analysis_type) {
     params$sites = c('oosting', 'ucsc')
     params$ncomm = 10
     params$nperm = 20
-    params$npar = 2 
+    params$npar = 1
   }
   if (analysis_type == 'full') {
     params$sites = NULL
