@@ -7,7 +7,7 @@ start.time = proc.time()
 ## matplotlib, mpmath, numpy, scipy
 
 ## Additional R packages required include:
-# install.packages(c('vegan', 'RCurl', 'bigmemory', 'snowfall', 'rlecuyer'))
+# install.packages(c('vegan', 'RCurl', 'bigmemory'))
 
 dir.create('./comms')
 dir.create('./sorensen')
