@@ -47,8 +47,7 @@ Distance-decay Project
 
 The DDR code provides the supplemental material to:  
 
-McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. in revision. An empirical evaluation of four
-variants of a universal species-area relationship. PeerJ.
+McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. in prep. Exploring the spatially explicit predictions of the Maximum Entropy Theory of Ecology
 
 ### Setup
 
