@@ -51,9 +51,18 @@ McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. in prep. Exploring the spatially 
 
 ### Setup
 
-Requirements: R ≥ 2.7.0 with the R packages vegan, RCurl, and bigmemory installed. Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
+Requirements: 4 GB of RAM, 64-bit R ≥ 2.7.0 with the R packages vegan, RCurl, and bigmemory installed. Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
 These modules can be installed by running the following commands from the command
 line (with sufficient permissions)
+
+```sh
+git clone https://github.com/weecology/METE.git
+cd METE
+python setup.py install
+git clone https://github.com/weecology/macroecotools.git
+cd macroecotools
+python setup.py install
+```
 
 ### Replicate analyses
 
