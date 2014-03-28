@@ -17,7 +17,7 @@ variants of a universal species-area relationship. PeerJ. 1: e212. (http://dx.do
 
 ### Setup
 
-Requirements: R ≥ 2.7.0 with the R package RCurl installed. Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
+Requirements: R ≥ 2.7.0 with the R package `RCurl` installed. Python 2.x and the following Python modules: `numpy`, `scipy`, `matplotlib`, `mpmath`. You will also need two of our custom Python modules: `mete` (https://github.com/weecology/METE) and `macroecotools` (https://github.com/weecology/macroecotools).
 These modules can be installed by running the following commands from the command
 line (with sufficient permissions):
 
@@ -51,7 +51,7 @@ McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. in prep. Exploring the spatially 
 
 ### Setup
 
-Requirements: 4 GB of RAM, 64-bit R ≥ 2.7.0 with the R packages vegan, RCurl, hash, and bigmemory installed. Python 2.x and the following Python modules: numpy, scipy, matplotlib, mpmath. You will also need two of our custom Python modules: METE (https://github.com/weecology/METE) and macroecotools (https://github.com/weecology/macroecotools).
+Requirements: 4 GB of RAM, 64-bit R ≥ 2.7.0 with the R packages `vegan`, `RCurl`, `hash`, and `bigmemory `installed. Python 2.x and the following Python modules: `numpy`, `scipy`, `matplotlib`, `mpmath`. You will also need two of our custom Python modules: `mete` (https://github.com/weecology/METE) and `macroecotools` (https://github.com/weecology/macroecotools).
 These modules can be installed by running the following commands from the command
 line (with sufficient permissions)
 
@@ -92,3 +92,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Acknowledgments
 ---------------
 Development of this software was funded by the [National Science Foundation](http://nsf.gov/) as part of a [CAREER award to Ethan White](http://www.nsf.gov/awardsearch/showAward?AWD_ID=0953694)
+
+Contact
+-------
+Dan McGlinn email: danmcglinn@gmail.com
+
+Dan's website: http://mcglinn.web.unc.edu/
