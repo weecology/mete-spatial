@@ -33,14 +33,16 @@ logser$hab =habitat[match(logser$site, shrtnm)]
 
 ## compute raw METE and RPM values
 fixed$mete = fixed$Metric.avg - fixed$avg.res
+fixed$mete.50 = fixed$Metric.50 - fixed$med.res
 fixed$rp = fixed$Metric.avg - fixed$exp.res
 logser$mete = logser$Metric.avg - logser$avg.res
+logser$mete.50 = logser$Metric.50 - logser$med.res
 logser$rp = logser$Metric.avg - logser$exp.res
 
 site_names = as.character(as.matrix(read.table('./data/shrtnames.txt'))) 
 site_titles = site_names
 
-if (length(site_names) == 16) {
+if (length(site_names) >= 16) {
   site_names = "bci, sherman1, cocoli1, luquillo, bryan, bigoak, oosting, rocky, bormann, woodbridge, baldmnt, landsend, graveyard, ferp, serp, cross"
   site_names = unlist(strsplit(site_names, split=', '))
   site_titles = sub('1', '', site_names)
@@ -52,7 +54,7 @@ if (length(site_names) == 16) {
   site_titles[16] = "Cross Timbers"
 }
 
-col = c('red', 'dodgerblue', 'black')
+col = c('red3', 'lightskyblue3', 'black')
 lty = c(1, 3)
 
 find_middle = function(len) floor(len/2) + (len %%2)
@@ -78,9 +80,8 @@ if (length(site_names) == 16) {
   pltpar$mfrow = c(4, 4)
 }
 
-
 png('./figs/ddr_arith_by_sites.png',
-    width=480 * pltpar$wd_mult, height=480 * pltpar$ht_mult)
+    width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
 par(mfrow=pltpar$mfrow)
 for (i in seq_along(site_names)) {
   metrics = c('mete', 'rp', 'Metric.avg')
@@ -98,7 +99,7 @@ for (i in seq_along(site_names)) {
   ylim = c(floor((ylim[1] %% x) * 10) / 10, 
            ceiling((ylim[2] %% 1) * 10) / 10)
   plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=3, cex=2, pch=19,
+       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
        xlab='', ylab='', frame.plot=F, axes=F, log='')
   addAxis(side=1, cex.axis=3, padj=.75)
   addAxis(side=2, cex.axis=3, padj=0)
@@ -108,7 +109,7 @@ for (i in seq_along(site_names)) {
   metrics = metrics[-3]
   for (j in seq_along(metrics)) {
     lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=3, lty=lty[1], col=col[j], type='l')
+          lwd=5, lty=lty[1], col=col[j], type='l')
     if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
       lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
             lwd=5, lty=lty[2], col=col[j], type='l')
@@ -118,8 +119,52 @@ for (i in seq_along(site_names)) {
     legend('bottomleft', 
            c('observed', 'recursive, observed SAD',
              'recursive, METE SAD','random, observed SAD'),
-           col=c('black', rep(col, each=2)), cex=2.75, bty='n',
-           lwd=6, lty=c(1, lty), pch=c(19, rep(NA, 4)))
+           col=c('black', rep(col, each=2)), cex=3, bty='n',
+           lwd=8, lty=c(1, lty), pch=c(19, rep(NA, 4)))
+}
+dev.off()
+
+png('./figs/ddr_arith_by_sites_median.png',
+    width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
+par(mfrow=pltpar$mfrow)
+for (i in seq_along(site_names)) {
+  metrics = c('mete.50', 'Exp.50', 'Metric.50')
+  true_fix = as.character(fixed$site) == site_names[i]
+  true_log = as.character(logser$site) == site_names[i]
+  index = match(site_names[i], shrtnames)
+  true_fix = true_fix & fixed$area == area_of_interest[index]
+  true_log = true_log & logser$area == area_of_interest[index]
+  xlim = (range(c(0,fixed$Dist[true_fix]), na.rm=T))
+  if (sum(true_log) > 0)
+    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+  else
+    ylim = (range(fixed[true_fix , metrics], na.rm=T))
+  x = ifelse(ylim[1] < 0, -1, 1)
+  ylim = c(floor((ylim[1] %% x) * 10) / 10, 
+           ceiling((ylim[2] %% 1) * 10) / 10)
+  plot(Metric.50 ~ Dist, data=fixed[true_fix, ],
+       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
+       xlab='', ylab='', frame.plot=F, axes=F, log='')
+  addAxis(side=1, cex.axis=3, padj=.75)
+  addAxis(side=2, cex.axis=3, padj=0)
+  hab_type = habitat[match(site_names[i], shrtnm)]
+  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+  metrics = metrics[-3]
+  for (j in seq_along(metrics)) {
+    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
+          lwd=5, lty=lty[1], col=col[j], type='l')
+    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
+      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
+            lwd=5, lty=lty[2], col=col[j], type='l')
+    }  
+  }
+  if(i == 13)
+    legend('bottomleft', 
+           c('observed', 'recursive, observed SAD',
+             'recursive, METE SAD','random, observed SAD'),
+           col=c('black', rep(col, each=2)), cex=3, bty='n',
+           lwd=8, lty=c(1, lty), pch=c(19, rep(NA, 4)))
 }
 dev.off()
 
@@ -145,7 +190,7 @@ for (i in seq_along(site_names)) {
   yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
   ylim = 2^yends
   plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=3, cex=2, pch=19,
+       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
        xlab='', ylab='', frame.plot=F, axes=F, log='x')
   xticks = 2^(xends[1]:xends[2]) 
   yticks = 2^(yends[1]:yends[2])
@@ -157,7 +202,7 @@ for (i in seq_along(site_names)) {
   metrics = metrics[-3]
   for (j in seq_along(metrics)) {
     lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=3, lty=lty[1], col=col[j], type='l')
+          lwd=5, lty=lty[1], col=col[j], type='l')
     if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
       lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
             lwd=5, lty=lty[2], col=col[j], type='l')
@@ -167,8 +212,8 @@ for (i in seq_along(site_names)) {
     legend('bottomleft', 
            c('observed', 'recursive, observed SAD',
              'recursive, METE SAD','random, observed SAD'),
-           col=c('black', rep(col, each=2)), cex=2.5, bty='n',
-           lwd=rep(5, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
+           col=c('black', rep(col, each=2)), cex=3, bty='n',
+           lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
 }
 dev.off()
 
@@ -195,7 +240,7 @@ for (i in seq_along(site_names)) {
   yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
   ylim = 2^yends
   plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=3, cex=2, pch=19,
+       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
        xlab='', ylab='', frame.plot=F, axes=F, log='xy')
   xticks = 2^(xends[1]:xends[2]) 
   yticks = 2^(yends[1]:yends[2])
@@ -207,7 +252,7 @@ for (i in seq_along(site_names)) {
   metrics = metrics[-3]
   for (j in seq_along(metrics)) {
     lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=3, lty=lty[1], col=col[j], type='l')
+          lwd=5, lty=lty[1], col=col[j], type='l')
     if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
       lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
             lwd=5, lty=lty[2], col=col[j], type='l')
@@ -217,8 +262,57 @@ for (i in seq_along(site_names)) {
     legend('bottomleft', 
             c('observed', 'recursive, observed SAD',
               'recursive, METE SAD','random, observed SAD'),
-            col=c('black', rep(col, each=2)), cex=2.5, bty='n',
-            lwd=rep(5, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
+            col=c('black', rep(col, each=2)), cex=3, bty='n',
+            lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
+}
+dev.off()
+
+png('./figs/ddr_loglog_by_sites_med.png',
+    width=480 * pltpar$wd_mult, height=480 * pltpar$ht_mult)
+par(mfrow=pltpar$mfrow)
+for (i in seq_along(site_names)) {
+  metrics = c('mete.50', 'Exp.50', 'Metric.50')
+  true_fix = as.character(fixed$site) == site_names[i]
+  true_log = as.character(logser$site) == site_names[i]
+  index = match(site_names[i], shrtnames)
+  true_fix = true_fix & fixed$area == area_of_interest[index]
+  true_log = true_log & logser$area == area_of_interest[index]
+  xlim = range(fixed$Dist[true_fix], na.rm=T)
+  xliml2= log2(xlim)
+  xends = c(floor(xliml2[1]), ceiling(xliml2[2]))
+  xlim = 2^xends
+  if (sum(true_log) > 0)
+    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+  else
+    ylim = (range(fixed[true_fix , metrics], na.rm=T))
+  yliml2= log2(ylim)
+  yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
+  ylim = 2^yends
+  plot(Metric.50 ~ Dist, data=fixed[true_fix, ],
+       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
+       xlab='', ylab='', frame.plot=F, axes=F, log='xy')
+  xticks = 2^(xends[1]:xends[2]) 
+  yticks = 2^(yends[1]:yends[2])
+  addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
+  addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
+  hab_type = habitat[match(site_names[i], shrtnm)]
+  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+  metrics = metrics[-3]
+  for (j in seq_along(metrics)) {
+    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
+          lwd=5, lty=lty[1], col=col[j], type='l')
+    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
+      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
+            lwd=5, lty=lty[2], col=col[j], type='l')
+    }  
+  }
+  if(i == 13)
+    legend('bottomleft', 
+           c('observed', 'recursive, observed SAD',
+             'recursive, METE SAD','random, observed SAD'),
+           col=c('black', rep(col, each=2)), cex=3, bty='n',
+           lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
 }
 dev.off()
 
@@ -262,6 +356,40 @@ for(i in 1:3) {
 }
 dev.off()
 
+png('./figs/ddr_one_to_one_median.png',
+    width = 480 * 3, height= 480 * 1)
+par(mfrow=c(1,3))
+lims = c(0, .85)
+for(i in 1:3) {
+  metrics = c('mete.50', 'mete.50', 'Exp.50')
+  if (i == 1) {
+    x = logser[ , metrics[i]]
+    y = logser[ , 'Metric.50']
+  }
+  else {
+    x = fixed[ , metrics[i]]
+    y = fixed[ , 'Metric.50']
+  }
+  plot((x), (y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
+       xlim=lims, ylim=lims)
+  if (i == 1) {
+    true = logser$indiv >= cutoff
+    points((x[true]), (y[true]), pch=19)
+    points((x[!true]), (y[!true]), pch=19, col='grey')
+  } 
+  else {
+    true = fixed$indiv >= cutoff
+    points((x[true]), (y[true]), pch=19)
+    points((x[!true]), (y[!true]), pch=19, col='grey')
+  } 
+  addAxis(side=1)
+  addAxis(side=2)
+  lines(lims, lims, lwd=2)
+  mtext(side=3, titles[i], cex=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+}
+dev.off()
+
 png('./figs/ddr_loglog_one_to_one.png',
     width = 480 * 3, height= 480 * 1)
 par(mfrow=c(1,3))
@@ -275,6 +403,41 @@ for(i in 1:3) {
   else {
     x = fixed[ , metrics[i]]
     y = fixed[ , 'Metric.avg']
+  }
+  plot((x), (y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
+       xlim=lims, ylim=lims, log='xy')
+  if (i == 1) {
+    true = logser$indiv >= cutoff
+    points((x[true]), (y[true]), pch=19)
+    points((x[!true]), (y[!true]), pch=19, col='grey')
+  } 
+  else {
+    true = fixed$indiv >= cutoff
+    points((x[true]), (y[true]), pch=19)
+    points((x[!true]), (y[!true]), pch=19, col='grey')
+  } 
+  ticks = round(2^(-7:0), 3)
+  addAxis(side=1, at = ticks, lab = as.character(ticks))
+  addAxis(side=2, at = ticks, lab = as.character(ticks), padj=0)
+  lines(lims, lims, lwd=2)
+  mtext(side=3, titles[i], cex=2)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+}
+dev.off()
+
+png('./figs/ddr_loglog_one_to_one_median.png',
+    width = 480 * 3, height= 480 * 1)
+par(mfrow=c(1,3))
+lims = c(2^-7, 1)
+for(i in 1:3) {
+  metrics = c('mete.50', 'mete.50', 'Exp.50')
+  if (i == 1) {
+    x = logser[ , metrics[i]]
+    y = logser[ , 'Metric.50']
+  }
+  else {
+    x = fixed[ , metrics[i]]
+    y = fixed[ , 'Metric.50']
   }
   plot((x), (y), type='n', axes=F, frame.plot=F, xlab='', ylab='',
        xlim=lims, ylim=lims, log='xy')
@@ -466,20 +629,56 @@ if (mk_sup_figs) {
       lines(logser_avg ~ area, data=sar_tmp, lwd=3, col=1, lty=1)
     }
     ## Analytical Log series iterative
-    lines(logser_iter ~ area, data=sar_tmp, lwd=3, col='red')
+    lines(logser_iter ~ area, data=sar_tmp, lwd=3, col='red3')
     ## Analytical Log series noniterative
-    lines(logser_noniter ~ area, data=sar_tmp, lwd=3, col='dodgerblue')  
+    lines(logser_noniter ~ area, data=sar_tmp, lwd=3, col='lightskyblue3')  
     ## Observed richness
     points(richness ~ area, data=sar_tmp, pch=1, cex=1.25)
     if (i == 1) {
       txt = c('Observed', 'Semi-recurisve CI', 'Semi-recursive Exp.',
               'Recursive Exp.', 'Non-recursive Exp.')
-      legend('bottomright', txt, col=c('black', 'grey','black','red', 'dodgerblue'),
+      legend('bottomright', txt, col=c('black', 'grey','black','red3', 'lightskyblue3'),
              lty=c(NA, rep(1,4)), lwd=c(NA, 6, rep(3,3)), pch=c(1, rep(NA,4)),
-             bty='n', cex=1.15)
+             bty='n', cex=1.25)
     }  
   }
   dev.off()
+  
+  ## arithmetic SARs
+  png('./figs/sup_fig_mete_sim_analy_logser_sar_predictions_arith.png',
+      width=480 * 2, height=480 * 2)
+  par(mfrow=c(4,4))
+  for (i in seq_along(site_names)) {
+    sar_tmp = subset(sar_data, subset=site==site_names[i])
+    ylim = range(sar_tmp$logser_iter,
+                 sar_tmp$logser_noniter,
+                 sar_tmp$logser_avg,
+                 na.rm=T)
+    plot(logser_iter ~ area, data=sar_tmp, log='', 
+         ylim=ylim,  type='n', main=site_titles[i],
+         xlab='Area (m2)', ylab='Richness')
+    ## Simulated log series
+    if (site_names[i] != 'cross') {
+      dat = meteAvgLogSer[[match(site_names[i], names(meteAvgLogSer))]]
+      addCI('grains', 'sr.lo', 'sr.hi', data='dat', col='grey')
+      lines(logser_avg ~ area, data=sar_tmp, lwd=3, col=1, lty=1)
+    }
+    ## Analytical Log series iterative
+    lines(logser_iter ~ area, data=sar_tmp, lwd=3, col='red3')
+    ## Analytical Log series noniterative
+    lines(logser_noniter ~ area, data=sar_tmp, lwd=3, col='lightskyblue3')  
+    ## Observed richness
+    points(richness ~ area, data=sar_tmp, pch=1, cex=1.25)
+    if (i == 1) {
+      txt = c('Observed', 'Semi-recurisve CI', 'Semi-recursive Exp.',
+              'Recursive Exp.', 'Non-recursive Exp.')
+      legend('bottomright', txt, col=c('black', 'grey','black','red3', 'lightskyblue3'),
+             lty=c(NA, rep(1,4)), lwd=c(NA, 6, rep(3,3)), pch=c(1, rep(NA,4)),
+             bty='n', cex=1.25)
+    }  
+  }
+  dev.off()
+  
 }
 ## Sup Fig - Power vs Exponential models of DDR-------------------------------
 ## Compare the fit bettween the power and exponential models
