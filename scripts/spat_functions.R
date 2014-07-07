@@ -1075,7 +1075,7 @@ shuffle_comm = function(comm, swap) {
   return(comm_shuffled)
 }
 
-random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
+random_shuffle = function(x, vobject, swap, nperm, npar, coords=NULL, breaks=NA) {
   ## Purpose: to generate individual or sample-based random shuffle statistical
   ## null expectations for variograms. 
   ## Note: With the sample-based shuffling the mean of the null distribution is
@@ -1090,10 +1090,10 @@ random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
   ##"swap" two options: 'indiv' or 'quad' for individual or quadrat-based shuffling
   ### repsectively. 
   ##"nperm" is the number of permutations
+  ##"npar" is the number of processors to run the analysis over
   ##"coords" the spatial coordinates of the sites, not needed if x is of class 'sim'
   ##"breaks" what spatial breaks to use
-  require(snowfall)
-  npar = length(suppressMessages(sfGetCluster()))
+  ## NOTE: this function requires snowfall and rlecuyer packages are loaded
   dists = vobject$vario$Dist
   grain = vobject$parms$grain
   hmin = vobject$parms$hmin
@@ -1114,7 +1114,7 @@ random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
   r.vals = list()
   r.vals$parms = vobject$parms
   r.vals$p = vobject$p
-  if (npar > 0) { ##all permutations option not yet implemented for 1 processor
+  if (npar > 1) {
     sfClusterSetupRNG()
     sfSource('./scripts/spat_functions.R')
     sfExport('x', 'swap', 'coords', 'distance.metric')
@@ -1136,8 +1136,8 @@ random_shuffle = function(x, vobject, swap, nperm, coords=NULL, breaks=NA) {
   else {
     if (direction == 'bisection')
       rv = sapply(1:nperm, function(...)
-        vario_bisect(shuffle_comm(x, swap), coords,
-                     distance.metric=distance.metric)$vario[ , 'exp.var'])
+                  vario_bisect(shuffle_comm(x, swap), coords,
+                               distance.metric=distance.metric)$vario[ , 'exp.var'])
     else
       rv = lapply(1:nperm, function(...)
         vario(shuffle_comm(x, swap), coords, grain=grain, breaks=breaks, hmin=hmin,
@@ -2132,7 +2132,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varWithinObs = vario_bisect(mat,coords,quants=quants,univariate=univariate)
       if(!is.na(nperm)){ 
-        varWithinNull = random_shuffle(mat,varWithinObs, swap, nperm,coords)
+        varWithinNull = random_shuffle(mat,varWithinObs, swap, nperm, npar, coords)
       }
       else{
         varWithinNull = NULL
@@ -2148,7 +2148,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
       }  
       varBetweenObs = vario_bisect(mat,coords,quants=quants,univariate=univariate) 
       if (!is.na(nperm)) { 
-        varBetweenNull = random_shuffle(mat,varBetweenObs,swap,nperm,coords)
+        varBetweenNull = random_shuffle(mat, varBetweenObs, swap, nperm, npar, coords)
       }
       else {
         varBetweenNull = NULL
@@ -2165,7 +2165,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                           quants=quants, univariate=univariate) 
       jaccardNull = NULL
       if (!is.na(nperm)) {
-        jaccardNull = random_shuffle(mat, jaccardObs, swap, nperm, coords)
+        jaccardNull = random_shuffle(mat, jaccardObs, swap, nperm, npar, coords)
       }        
       jaccardExp = NULL
       if(dataType == 'binary') {
@@ -2184,7 +2184,7 @@ calc_metrics_bisect = function(comms, metricsToCalc, dataType, quants=NA,
                                   quants=quants, univariate=univariate) 
       sorensenNull = NULL
       if (!is.na(nperm)) {
-        sorensenNull = random_shuffle(mat, sorensenObs, swap, nperm, coords)
+        sorensenNull = random_shuffle(mat, sorensenObs, swap, nperm, npar, coords)
       }    
       sorensenExp = NULL
       if (dataType == 'binary') {

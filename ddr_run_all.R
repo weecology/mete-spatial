@@ -3,23 +3,11 @@
 print('Analysis Begin')
 start.time = proc.time()
 
-
-## install custom python dependencies
-system('git clone git@github.com:weecology/METE.git')
-setwd('./METE')
-system('python setup.py install')
-setwd('..')
-
-system('git clone git@github.com:weecology/macroecotools.git')
-setwd('./macroecotools')
-system('python setup.py install')
-setwd('..')
-
 ## Additional python packages required include:
 ## matplotlib, mpmath, numpy, scipy
 
 ## Additional R packages required include:
-# install.packages(c('vegan', 'RCurl', 'bigmemory'))
+# install.packages(c('vegan', 'hash', 'RCurl', 'bigmemory'))
 
 dir.create('./comms')
 dir.create('./sorensen')
@@ -44,7 +32,7 @@ set_analysis_params = function(analysis_type) {
     params$sites = c('oosting', 'ucsc')
     params$ncomm = 10
     params$nperm = 20
-    params$npar = 2 
+    params$npar = 1
   }
   if (analysis_type == 'full') {
     params$sites = NULL
