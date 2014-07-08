@@ -739,6 +739,34 @@ for(i in seq_along(dpwr)) {
 } 
 dev.off()
 
+## compute density kernals
+db0 = lapply(lapply(b0pwr, function(x) 10^x), density)
+db1 = lapply(b1pwr, density)
+db = list(db0, db1)
+
+## beta coefficient kernal plots
+png('./figs/sup_fig_pwr_beta_density_kernals.png', width=480*2, height=480)
+par(mfrow=c(1,2))
+linelwd = 3
+xlims = list(c(-0.2, 1), c(-.8, .01))
+ylims = list(c(0, 3), c(0, 10))
+xlab = c('Intercept', 'Slope')
+#title = c('', 'Empirical DDR Functional Form')
+for(i in seq_along(db)) {
+  plot(db[[i]][[1]], xlim=xlims[[i]], ylim=ylims[[i]], lwd=linelwd, col='black',
+       main='',  xlab='', ylab='', frame.plot=F, axes=F)
+  lines(db[[i]][[2]],  lwd=linelwd, col='grey')
+  #mtext(side=3, title[i], cex=2)
+  addAxes()
+  addylab('Density', padj=-2)
+  addxlab(xlab[i], padj=2.5)
+  if(i == 1)
+    legend('topleft', c('METE', 'Observed'), col=c('black','grey'),
+           lwd = 5, lty=1, bty='n', cex=2)
+} 
+dev.off()
+
+
 ## set up graphic parameters 
 shrtnm = as.character(read.table('./data/shrtnames.txt', colClasses='character'))
 habitat = as.character(read.table('./data/habitat.txt', colClasses='character'))
