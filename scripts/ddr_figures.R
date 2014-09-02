@@ -80,93 +80,62 @@ if (length(site_names) == 16) {
   pltpar$mfrow = c(4, 4)
 }
 
-png('./figs/ddr_arith_by_sites.png',
-    width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
-par(mfrow=pltpar$mfrow)
-for (i in seq_along(site_names)) {
-  metrics = c('mete', 'rp', 'Metric.avg')
-  true_fix = as.character(fixed$site) == site_names[i]
-  true_log = as.character(logser$site) == site_names[i]
-  index = match(site_names[i], shrtnames)
-  true_fix = true_fix & fixed$area == area_of_interest[index]
-  true_log = true_log & logser$area == area_of_interest[index]
-  xlim = (range(c(0,fixed$Dist[true_fix]), na.rm=T))
-  if (sum(true_log) > 0)
-    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
-  else
-    ylim = (range(fixed[true_fix , metrics], na.rm=T))
-  x = ifelse(ylim[1] < 0, -1, 1)
-  ylim = c(floor((ylim[1] %% x) * 10) / 10, 
-           ceiling((ylim[2] %% 1) * 10) / 10)
-  plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
-       xlab='', ylab='', frame.plot=F, axes=F, log='')
-  addAxis(side=1, cex.axis=3, padj=.75)
-  addAxis(side=2, cex.axis=3, padj=0)
-  hab_type = habitat[match(site_names[i], shrtnm)]
-  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
-  metrics = metrics[-3]
-  for (j in seq_along(metrics)) {
-    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=5, lty=lty[1], col=col[j], type='l')
-    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
-      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
-            lwd=5, lty=lty[2], col=col[j], type='l')
-    }  
-  }
-  if(i == 13)
-    legend('bottomleft', 
-           c('observed', 'recursive, observed SAD',
-             'recursive, METE SAD','random, observed SAD'),
-           col=c('black', rep(col, each=2)), cex=3, bty='n',
-           lwd=8, lty=c(1, lty), pch=c(19, rep(NA, 4)))
-}
-dev.off()
+## correlation between average and median results
+cor(fixed$Metric.avg, fixed$Metric.50)
+cor(logser$Metric.avg, logser$Metric.50)
 
-png('./figs/ddr_arith_by_sites_median.png',
-    width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
-par(mfrow=pltpar$mfrow)
-for (i in seq_along(site_names)) {
-  metrics = c('mete.50', 'Exp.50', 'Metric.50')
-  true_fix = as.character(fixed$site) == site_names[i]
-  true_log = as.character(logser$site) == site_names[i]
-  index = match(site_names[i], shrtnames)
-  true_fix = true_fix & fixed$area == area_of_interest[index]
-  true_log = true_log & logser$area == area_of_interest[index]
-  xlim = (range(c(0,fixed$Dist[true_fix]), na.rm=T))
-  if (sum(true_log) > 0)
-    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+for (type in c('avg', 'med')) {
+  if (type == 'med')
+    figname = './figs/ddr_arith_by_sites_median.png'
   else
-    ylim = (range(fixed[true_fix , metrics], na.rm=T))
-  x = ifelse(ylim[1] < 0, -1, 1)
-  ylim = c(floor((ylim[1] %% x) * 10) / 10, 
-           ceiling((ylim[2] %% 1) * 10) / 10)
-  plot(Metric.50 ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
-       xlab='', ylab='', frame.plot=F, axes=F, log='')
-  addAxis(side=1, cex.axis=3, padj=.75)
-  addAxis(side=2, cex.axis=3, padj=0)
-  hab_type = habitat[match(site_names[i], shrtnm)]
-  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
-  metrics = metrics[-3]
-  for (j in seq_along(metrics)) {
-    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=5, lty=lty[1], col=col[j], type='l')
-    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
-      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
-            lwd=5, lty=lty[2], col=col[j], type='l')
-    }  
+    figname = './figs/ddr_arith_by_sites.png'
+  png(figname, width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
+  par(mfrow=pltpar$mfrow)
+  for (i in seq_along(site_names)) {
+    if (type == 'med')
+      metrics = c('mete.50', 'Exp.50', 'Metric.50')
+    else
+      metrics = c('mete', 'rp', 'Metric.avg')
+    true_fix = as.character(fixed$site) == site_names[i]
+    true_log = as.character(logser$site) == site_names[i]
+    index = match(site_names[i], shrtnames)
+    true_fix = true_fix & fixed$area == area_of_interest[index]
+    true_log = true_log & logser$area == area_of_interest[index]
+    xlim = (range(c(0,fixed$Dist[true_fix]), na.rm=T))
+    if (sum(true_log) > 0)
+      ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+    else
+      ylim = (range(fixed[true_fix , metrics], na.rm=T))
+    x = ifelse(ylim[1] < 0, -1, 1)
+    ylim = c(floor((ylim[1] %% x) * 10) / 10, 
+             ceiling((ylim[2] %% 1) * 10) / 10)
+    plot(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[3]],
+         xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
+         xlab='', ylab='', frame.plot=F, axes=F, log='')
+    addAxis(side=1, cex.axis=3, padj=.75)
+    addAxis(side=2, cex.axis=3, padj=0)
+    hab_type = habitat[match(site_names[i], shrtnm)]
+    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+    metrics = metrics[-3]
+    for (j in seq_along(metrics)) {
+      lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
+            lwd=5, lty=lty[1], col=col[j], type='l')
+      if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
+        lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
+              lwd=5, lty=lty[2], col=col[j], type='l')
+      }  
+    }
+    if(i == 13)
+      legend('bottomleft', 
+             c('observed', 'recursive, observed SAD',
+               'recursive, METE SAD','random, observed SAD'),
+             col=c('black', rep(col, each=2)), cex=3, bty='n',
+             lwd=8, lty=c(1, lty), pch=c(19, rep(NA, 4)))
   }
-  if(i == 13)
-    legend('bottomleft', 
-           c('observed', 'recursive, observed SAD',
-             'recursive, METE SAD','random, observed SAD'),
-           col=c('black', rep(col, each=2)), cex=3, bty='n',
-           lwd=8, lty=c(1, lty), pch=c(19, rep(NA, 4)))
+  dev.off()
 }
-dev.off()
+
 
 png('./figs/ddr_arithY_logX_by_sites.png',
     width=480 * pltpar$wd_mult, height=480 * pltpar$ht_mult)
@@ -217,104 +186,62 @@ for (i in seq_along(site_names)) {
 }
 dev.off()
 
-
-png('./figs/ddr_loglog_by_sites.png',
-    width=480 * pltpar$wd_mult, height=480 * pltpar$ht_mult)
-par(mfrow=pltpar$mfrow)
-for (i in seq_along(site_names)) {
-  metrics = c('mete', 'rp', 'Metric.avg')
-  true_fix = as.character(fixed$site) == site_names[i]
-  true_log = as.character(logser$site) == site_names[i]
-  index = match(site_names[i], shrtnames)
-  true_fix = true_fix & fixed$area == area_of_interest[index]
-  true_log = true_log & logser$area == area_of_interest[index]
-  xlim = range(fixed$Dist[true_fix], na.rm=T)
-  xliml2= log2(xlim)
-  xends = c(floor(xliml2[1]), ceiling(xliml2[2]))
-  xlim = 2^xends
-  if (sum(true_log) > 0)
-    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+for (type in c('avg', 'med')) {
+  if (type == 'med')
+    figname = './figs/ddr_loglog_by_sites_median.png'
   else
-    ylim = (range(fixed[true_fix , metrics], na.rm=T))
-  yliml2= log2(ylim)
-  yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
-  ylim = 2^yends
-  plot(Metric.avg ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
-       xlab='', ylab='', frame.plot=F, axes=F, log='xy')
-  xticks = 2^(xends[1]:xends[2]) 
-  yticks = 2^(yends[1]:yends[2])
-  addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
-  addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
-  hab_type = habitat[match(site_names[i], shrtnm)]
-  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
-  metrics = metrics[-3]
-  for (j in seq_along(metrics)) {
-    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=5, lty=lty[1], col=col[j], type='l')
-    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
-      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
-            lwd=5, lty=lty[2], col=col[j], type='l')
-    }  
+    figname = './figs/ddr_loglog_by_sites.png'
+  png(figname, width=480*pltpar$wd_mult, height=480*pltpar$ht_mult)
+  par(mfrow=pltpar$mfrow)
+  for (i in seq_along(site_names)) {
+    if (type == 'med')
+      metrics = c('mete.50', 'Exp.50', 'Metric.50')
+    else
+      metrics = c('mete', 'rp', 'Metric.avg')
+    true_fix = as.character(fixed$site) == site_names[i]
+    true_log = as.character(logser$site) == site_names[i]
+    index = match(site_names[i], shrtnames)
+    true_fix = true_fix & fixed$area == area_of_interest[index]
+    true_log = true_log & logser$area == area_of_interest[index]
+    xlim = range(fixed$Dist[true_fix], na.rm=T)
+    xliml2= log2(xlim)
+    xends = c(floor(xliml2[1]), ceiling(xliml2[2]))
+    xlim = 2^xends
+    if (sum(true_log) > 0)
+      ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
+    else
+      ylim = (range(fixed[true_fix , metrics], na.rm=T))
+    yliml2= log2(ylim)
+    yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
+    ylim = 2^yends
+    plot(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[3]],
+         xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
+         xlab='', ylab='', frame.plot=F, axes=F, log='xy')
+    xticks = 2^(xends[1]:xends[2]) 
+    yticks = 2^(yends[1]:yends[2])
+    addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
+    addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
+    hab_type = habitat[match(site_names[i], shrtnm)]
+    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+    metrics = metrics[-3]
+    for (j in seq_along(metrics)) {
+      lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
+            lwd=5, lty=lty[1], col=col[j], type='l')
+      if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
+        lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
+              lwd=5, lty=lty[2], col=col[j], type='l')
+      }  
+    }
+    if(i == 13)
+      legend('bottomleft', 
+             c('observed', 'recursive, observed SAD',
+               'recursive, METE SAD','random, observed SAD'),
+             col=c('black', rep(col, each=2)), cex=3, bty='n',
+             lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
   }
-  if(i == 13)
-    legend('bottomleft', 
-            c('observed', 'recursive, observed SAD',
-              'recursive, METE SAD','random, observed SAD'),
-            col=c('black', rep(col, each=2)), cex=3, bty='n',
-            lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
+  dev.off()
 }
-dev.off()
-
-png('./figs/ddr_loglog_by_sites_med.png',
-    width=480 * pltpar$wd_mult, height=480 * pltpar$ht_mult)
-par(mfrow=pltpar$mfrow)
-for (i in seq_along(site_names)) {
-  metrics = c('mete.50', 'Exp.50', 'Metric.50')
-  true_fix = as.character(fixed$site) == site_names[i]
-  true_log = as.character(logser$site) == site_names[i]
-  index = match(site_names[i], shrtnames)
-  true_fix = true_fix & fixed$area == area_of_interest[index]
-  true_log = true_log & logser$area == area_of_interest[index]
-  xlim = range(fixed$Dist[true_fix], na.rm=T)
-  xliml2= log2(xlim)
-  xends = c(floor(xliml2[1]), ceiling(xliml2[2]))
-  xlim = 2^xends
-  if (sum(true_log) > 0)
-    ylim = (range(fixed[true_fix , metrics], logser[true_log, metrics], na.rm=T))
-  else
-    ylim = (range(fixed[true_fix , metrics], na.rm=T))
-  yliml2= log2(ylim)
-  yends = c(floor(yliml2[1]), ceiling(yliml2[2]))
-  ylim = 2^yends
-  plot(Metric.50 ~ Dist, data=fixed[true_fix, ],
-       xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
-       xlab='', ylab='', frame.plot=F, axes=F, log='xy')
-  xticks = 2^(xends[1]:xends[2]) 
-  yticks = 2^(yends[1]:yends[2])
-  addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
-  addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
-  hab_type = habitat[match(site_names[i], shrtnm)]
-  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
-  metrics = metrics[-3]
-  for (j in seq_along(metrics)) {
-    lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
-          lwd=5, lty=lty[1], col=col[j], type='l')
-    if (j == 1 & sum(true_log) > 0) { ## logser results only for METE model
-      lines(logser[true_log, 'Dist'], logser[true_log, metrics[j]],
-            lwd=5, lty=lty[2], col=col[j], type='l')
-    }  
-  }
-  if(i == 13)
-    legend('bottomleft', 
-           c('observed', 'recursive, observed SAD',
-             'recursive, METE SAD','random, observed SAD'),
-           col=c('black', rep(col, each=2)), cex=3, bty='n',
-           lwd=rep(8, 5), lty=c(1, lty), pch=c(19, rep(NA, 4)))
-}
-dev.off()
 
 ## Figure 3: one-to-one plots---------------------------------------------------
 titles = c('recursive, METE SAD', 'recursive, observed SAD',
