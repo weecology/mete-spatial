@@ -51,7 +51,7 @@ if (length(site_names) >= 16) {
   site_titles[11] = "Bald Mtn."
   site_titles[14] = "UCSC"
   site_titles[15] = "Serpentine"
-  site_titles[16] = "Cross Timbers"
+  site_titles[16] = "Cross"
 }
 
 col = c('red3', 'lightskyblue3', 'black')
@@ -84,6 +84,9 @@ if (length(site_names) == 16) {
 cor(fixed$Metric.avg, fixed$Metric.50)
 cor(logser$Metric.avg, logser$Metric.50)
 
+axis_cex = 3.5
+mtext_cex = 2.5
+
 for (type in c('avg', 'med')) {
   if (type == 'med')
     figname = './figs/ddr_arith_by_sites_median.png'
@@ -112,11 +115,11 @@ for (type in c('avg', 'med')) {
     plot(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[3]],
          xlim=xlim, ylim=ylim, type='o', lwd=5, cex=2, pch=19,
          xlab='', ylab='', frame.plot=F, axes=F, log='')
-    addAxis(side=1, cex.axis=3, padj=.75)
-    addAxis(side=2, cex.axis=3, padj=0)
+    addAxis(side=1, cex.axis=axis_cex, padj=.75)
+    addAxis(side=2, cex.axis=axis_cex, padj=0)
     hab_type = habitat[match(site_names[i], shrtnm)]
-    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=mtext_cex)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=mtext_cex, font=2)
     metrics = metrics[-3]
     for (j in seq_along(metrics)) {
       lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
@@ -163,11 +166,11 @@ for (i in seq_along(site_names)) {
        xlab='', ylab='', frame.plot=F, axes=F, log='x')
   xticks = 2^(xends[1]:xends[2]) 
   yticks = 2^(yends[1]:yends[2])
-  addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
-  addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
+  addAxis(side=1, cex.axis=axis_cex, padj=.75, at=xticks, lab=as.character(xticks))
+  addAxis(side=2, cex.axis=axis_cex, padj=0, at=yticks, lab=as.character(yticks))
   hab_type = habitat[match(site_names[i], shrtnm)]
-  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+  mtext(side=3, paste(site_titles[i], '-', hab_type), cex=axis_cex)
+  mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=axis_cex, font=2)
   metrics = metrics[-3]
   for (j in seq_along(metrics)) {
     lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
@@ -219,11 +222,11 @@ for (type in c('avg', 'med')) {
          xlab='', ylab='', frame.plot=F, axes=F, log='xy')
     xticks = 2^(xends[1]:xends[2]) 
     yticks = 2^(yends[1]:yends[2])
-    addAxis(side=1, cex.axis=3, padj=.75, at=xticks, lab=as.character(xticks))
-    addAxis(side=2, cex.axis=3, padj=0, at=yticks, lab=as.character(yticks))
+    addAxis(side=1, cex.axis=axis_cex, padj=.75, at=xticks, lab=as.character(xticks))
+    addAxis(side=2, cex.axis=axis_cex, padj=0, at=yticks, lab=as.character(yticks))
     hab_type = habitat[match(site_names[i], shrtnm)]
-    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=2)
-    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=2, font=2)
+    mtext(side=3, paste(site_titles[i], '-', hab_type), cex=mtext_cex)
+    mtext(side=3, paste('(', LETTERS[i], ')', sep=''), adj=0, cex=mtext_cex, font=2)
     metrics = metrics[-3]
     for (j in seq_along(metrics)) {
       lines(fixed[true_fix, 'Dist'], fixed[true_fix, metrics[j]],
