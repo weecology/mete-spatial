@@ -2,4 +2,4 @@ sitename,url,delim
 luquillo,http://luq.lternet.edu/sites/default/files/data/LFDP_Census4-Part1.csv,comma
 luquillo,http://luq.lternet.edu/sites/default/files/data/LFDP_Census4-Part2.csv,comma
 oosting,http://esapubs.org/archive/ecol/E088/162/Oosting_Trees_1998.txt,tab
-ucsc,http://people.ucsc.edu/~ggilbert/Rclass_docs/FERP07data.csv,comma
+ucsc,http://ferp.ucsc.edu/wp-content/uploads/sites/257/2015/09/FERP07data.csv,comma
