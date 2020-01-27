@@ -47,7 +47,7 @@ Distance-decay Project
 
 The DDR code provides the supplemental material to:  
 
-McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. in prep. Exploring the spatially explicit predictions of the Maximum Entropy Theory of Ecology
+McGlinn, D.J., X. Xiao, J. Kitizes E.P. White. 2015. Exploring the spatially explicit predictions of the Maximum Entropy Theory of Ecology. 24:675-684. https://onlinelibrary.wiley.com/doi/full/10.1111/geb.12295
 
 ### Setup
 
