@@ -20,7 +20,9 @@ load_heap = function(path=NULL){
 binomial_prob = function(n, A, n0, A0){
   ## replaced the function 'piBin'
   p = A/A0
-  out = choose(n0,n) * p^n * (1 - p)^(n0 - n)
+  #out = choose(n0,n) * p^n * (1 - p)^(n0 - n)
+  # or identical to the above but slightly faster use internal binomial pdf
+  out = dbinom(n, n0, p)
   return(out)
 }
 
